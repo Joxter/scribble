@@ -4,9 +4,10 @@
   "main": "index.js",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build",
+    "build": "vite build",
     "check-types": "tsc",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "deploy": "npm run build && gh-pages -d dist"
   },
   "author": "",
   "license": "ISC",
@@ -15,6 +16,7 @@
     "@instantdb/react": "^0.20.6",
     "@preact/preset-vite": "^2.10.2",
     "@types/react-dom": "^19.1.6",
+    "@vitejs/plugin-react": "^4.6.0",
     "effector": "^23.4.1",
     "effector-react": "^23.3.0",
     "react": "^19.1.0",
@@ -22,5 +24,8 @@
     "typescript": "^5.8.3",
     "vite": "^6.3.5",
     "wouter": "^3.7.1"
+  },
+  "devDependencies": {
+    "gh-pages": "^6.2.0"
   }
 }
