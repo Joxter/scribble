@@ -5,7 +5,11 @@ const scale = window.devicePixelRatio;
 const width = 800;
 const height = 400;
 
-type History = any[];
+type History = {
+  event: string;
+  x: number;
+  y: number;
+}[];
 
 type Props = {
   onHistoryChange: (event: any) => void;
@@ -35,11 +39,15 @@ export function Canvas({ history: initHistory, onHistoryChange }: Props) {
     ctx.beginPath();
 
     history.forEach((ev) => {
-      const [eventName, x, y] = ev;
-      if (eventName === "start") {
+      const { event, x, y } = ev;
+      if (event === "start") {
         ctx.moveTo(x, y);
-      } else {
+      } else if (event === "move") {
         ctx.lineTo(x, y);
+      } else if (event === "end") {
+        // nothing
+      } else {
+        console.log("Unknown event", ev);
       }
     });
     ctx.stroke();
