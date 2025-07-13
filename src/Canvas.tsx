@@ -5,11 +5,17 @@ const scale = window.devicePixelRatio;
 const width = 800;
 const height = 400;
 
-let history: any[] = [];
+type History = any[];
 
-export function Canvas() {
+type Props = {
+  onHistoryChange: (event: any) => void;
+  history: History;
+};
+
+export function Canvas({ history: initHistory, onHistoryChange }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isDrawing, setIsDrawing] = useState(false);
+  const [history, setHistory] = useState(initHistory);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -25,6 +31,18 @@ export function Canvas() {
     ctx.strokeStyle = "#000";
     ctx.lineWidth = 2;
     ctx.lineCap = "round";
+
+    ctx.beginPath();
+
+    history.forEach((ev) => {
+      const [eventName, x, y] = ev;
+      if (eventName === "start") {
+        ctx.moveTo(x, y);
+      } else {
+        ctx.lineTo(x, y);
+      }
+    });
+    ctx.stroke();
   }, []);
 
   const startDrawing = (e: React.MouseEvent) => {
@@ -41,7 +59,7 @@ export function Canvas() {
     ctx.beginPath();
     ctx.moveTo(x, y);
 
-    history.push(["start", x, y]);
+    onHistoryChange(["start", x, y]);
     setIsDrawing(true);
   };
 
@@ -60,15 +78,12 @@ export function Canvas() {
     const y = e.clientY - rect.top;
 
     ctx.lineTo(x, y);
-    history.push(["move", x, y]);
     ctx.stroke();
+    onHistoryChange(["move", x, y]);
   };
 
   const stopDrawing = () => {
-    if (history.at(-1)[0] !== "end") {
-      history.push(["end"]);
-    }
-    console.log(history);
+    onHistoryChange(["end"]);
 
     setIsDrawing(false);
   };

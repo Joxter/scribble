@@ -1,7 +1,7 @@
 import React from "react";
 import "./main.css";
 import { createRoot } from "react-dom/client";
-import { Canvas } from "./Canvas";
+import { Router } from "./Router";
 
 const root = createRoot(document.getElementById("app")!);
-root.render(<Canvas />);
+root.render(<Router />);
