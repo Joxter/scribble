@@ -12,14 +12,15 @@ type History = {
 }[];
 
 type Props = {
+  db: any;
   onHistoryChange: (event: any) => void;
-  history: History;
+  history?: History;
 };
 
-export function Canvas({ history: initHistory, onHistoryChange }: Props) {
+export function Canvas({ onHistoryChange, db }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isDrawing, setIsDrawing] = useState(false);
-  const [history, setHistory] = useState(initHistory);
+  const history = db.useQuery({ history: {} })?.data.history;
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -36,6 +37,8 @@ export function Canvas({ history: initHistory, onHistoryChange }: Props) {
     ctx.lineWidth = 2;
     ctx.lineCap = "round";
 
+    // Clear canvas and redraw from history
+    ctx.clearRect(0, 0, width, height);
     ctx.beginPath();
 
     history.forEach((ev) => {
@@ -51,24 +54,24 @@ export function Canvas({ history: initHistory, onHistoryChange }: Props) {
       }
     });
     ctx.stroke();
-  }, []);
+  }, [history]);
 
   const getCoordinates = (e: React.MouseEvent | React.TouchEvent) => {
     const canvas = canvasRef.current;
     if (!canvas) return null;
 
     const rect = canvas.getBoundingClientRect();
-    
-    if ('touches' in e) {
+
+    if ("touches" in e) {
       const touch = e.touches[0] || e.changedTouches[0];
       return {
         x: touch.clientX - rect.left,
-        y: touch.clientY - rect.top
+        y: touch.clientY - rect.top,
       };
     } else {
       return {
         x: e.clientX - rect.left,
-        y: e.clientY - rect.top
+        y: e.clientY - rect.top,
       };
     }
   };

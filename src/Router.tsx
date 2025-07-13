@@ -28,8 +28,6 @@ export function Router() {
     return <p>no data</p>;
   }
 
-  console.log(data);
-
   return (
     <div>
       <button
@@ -45,7 +43,7 @@ export function Router() {
       </button>
       <br />
       <Canvas
-        history={data.history || []}
+        db={db}
         onHistoryChange={(ev) => {
           db.transact(
             db.tx.history[id()].update({
