@@ -1,0 +1,26 @@
+{
+  "name": "scribble",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "check-types": "tsc",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "@instantdb/react": "^0.20.6",
+    "@preact/preset-vite": "^2.10.2",
+    "@types/react-dom": "^19.1.6",
+    "effector": "^23.4.1",
+    "effector-react": "^23.3.0",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "typescript": "^5.8.3",
+    "vite": "^6.3.5",
+    "wouter": "^3.7.1"
+  }
+}
