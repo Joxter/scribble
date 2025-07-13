@@ -53,16 +53,38 @@ export function Canvas({ history: initHistory, onHistoryChange }: Props) {
     ctx.stroke();
   }, []);
 
-  const startDrawing = (e: React.MouseEvent) => {
+  const getCoordinates = (e: React.MouseEvent | React.TouchEvent) => {
+    const canvas = canvasRef.current;
+    if (!canvas) return null;
+
+    const rect = canvas.getBoundingClientRect();
+    
+    if ('touches' in e) {
+      const touch = e.touches[0] || e.changedTouches[0];
+      return {
+        x: touch.clientX - rect.left,
+        y: touch.clientY - rect.top
+      };
+    } else {
+      return {
+        x: e.clientX - rect.left,
+        y: e.clientY - rect.top
+      };
+    }
+  };
+
+  const startDrawing = (e: React.MouseEvent | React.TouchEvent) => {
+    e.preventDefault();
     const canvas = canvasRef.current;
     if (!canvas) return;
 
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    const rect = canvas.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
+    const coords = getCoordinates(e);
+    if (!coords) return;
+
+    const { x, y } = coords;
 
     ctx.beginPath();
     ctx.moveTo(x, y);
@@ -71,8 +93,9 @@ export function Canvas({ history: initHistory, onHistoryChange }: Props) {
     setIsDrawing(true);
   };
 
-  const draw = (e: React.MouseEvent) => {
+  const draw = (e: React.MouseEvent | React.TouchEvent) => {
     if (!isDrawing) return;
+    e.preventDefault();
 
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -80,19 +103,19 @@ export function Canvas({ history: initHistory, onHistoryChange }: Props) {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    const rect = canvas.getBoundingClientRect();
+    const coords = getCoordinates(e);
+    if (!coords) return;
 
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
+    const { x, y } = coords;
 
     ctx.lineTo(x, y);
     ctx.stroke();
     onHistoryChange(["move", x, y]);
   };
 
-  const stopDrawing = () => {
+  const stopDrawing = (e?: React.TouchEvent) => {
+    if (e) e.preventDefault();
     onHistoryChange(["end"]);
-
     setIsDrawing(false);
   };
 
@@ -106,11 +129,16 @@ export function Canvas({ history: initHistory, onHistoryChange }: Props) {
         cursor: "crosshair",
         width: width + "px",
         height: height + "px",
+        touchAction: "none",
       }}
       onMouseDown={startDrawing}
       onMouseMove={draw}
       onMouseUp={stopDrawing}
       onMouseLeave={stopDrawing}
+      onTouchStart={startDrawing}
+      onTouchMove={draw}
+      onTouchEnd={stopDrawing}
+      onTouchCancel={stopDrawing}
     />
   );
 }
