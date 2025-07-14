@@ -1,19 +1,10 @@
 import React from "react";
 import { Canvas } from "./Canvas";
-
-import { id, i, init, InstaQLEntity } from "@instantdb/react";
+import schema from "../instant.schema";
+import { init } from "@instantdb/react";
+import { DEMO_ID } from "./config";
 
 const APP_ID = "59599101-16e7-493b-8644-ccb75b6cb032";
-
-const schema = i.schema({
-  entities: {
-    history: i.entity({
-      event: i.string(),
-      x: i.number(),
-      y: i.number(),
-    }),
-  },
-});
 
 // todo:
 //   https://lazybrush.dulnan.net/ плавные линии
@@ -22,13 +13,19 @@ const schema = i.schema({
 const db = init({ appId: APP_ID, schema });
 
 export function Router() {
-  const { isLoading, error, data } = db.useQuery({ history: {} });
+  const { isLoading, error, data } = db.useQuery({
+    party: {
+      $: {
+        where: { id: "f259a402-be81-4806-ba5b-86a4814fb9b1" },
+      },
+    },
+  });
 
   if (isLoading) {
     return <p>loading</p>;
   }
 
-  if (!data || !data.history) {
+  if (!data || !data.party[0]) {
     return <p>no data</p>;
   }
 
@@ -36,11 +33,7 @@ export function Router() {
     <div>
       <button
         onClick={() => {
-          db.transact(
-            data.history.map(({ id }) => {
-              return db.tx.history[id].delete();
-            }),
-          );
+          db.tx.party[DEMO_ID].update({ canvas: [] });
         }}
       >
         reset
@@ -58,13 +51,14 @@ export function Router() {
         <Canvas
           db={db}
           onHistoryChange={(ev) => {
-            db.transact(
-              db.tx.history[id()].update({
-                event: ev[0],
-                x: ev[1] || 0,
-                y: ev[2] || 0,
-              }),
-            );
+            // "f259a402-be81-4806-ba5b-86a4814fb9b1"
+            // db.transact(
+            //   db.tx.history[id()].update({
+            //     event: ev[0],
+            //     x: ev[1] || 0,
+            //     y: ev[2] || 0,
+            //   }),
+            // );
           }}
         />
       </div>

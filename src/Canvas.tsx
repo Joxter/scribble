@@ -1,14 +1,11 @@
 import React, { useRef, useEffect, useState } from "react";
+import { DEMO_ID } from "./config";
 
 const scale = window.devicePixelRatio;
 
 const canvasSize = 1000;
 
-type History = {
-  event: string;
-  x: number;
-  y: number;
-}[];
+type History = [event: string, x: number, y: number];
 
 type Props = {
   db: any;
@@ -19,7 +16,9 @@ type Props = {
 export function Canvas({ onHistoryChange, db }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isDrawing, setIsDrawing] = useState(false);
-  const history = db.useQuery({ history: {} })?.data.history;
+  const history = db.useQuery({
+    party: { $: { where: { id: DEMO_ID } } },
+  }).data.party[0].canvas;
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -40,7 +39,7 @@ export function Canvas({ onHistoryChange, db }: Props) {
     ctx.beginPath();
 
     history.forEach((ev) => {
-      const { event, x, y } = ev;
+      const [event, x, y] = ev;
       if (event === "start") {
         ctx.moveTo(x, y);
       } else if (event === "move") {
@@ -92,7 +91,12 @@ export function Canvas({ onHistoryChange, db }: Props) {
     ctx.beginPath();
     ctx.moveTo(x, y);
 
-    onHistoryChange(["start", x, y]);
+    db.transact(
+      db.tx.party[DEMO_ID].update({
+        canvas: [...history, ["start", x, y], ["move", x, y]],
+      }),
+    );
+
     setIsDrawing(true);
   };
 
@@ -113,12 +117,21 @@ export function Canvas({ onHistoryChange, db }: Props) {
 
     ctx.lineTo(x, y);
     ctx.stroke();
-    onHistoryChange(["move", x, y]);
+    db.transact(
+      db.tx.party[DEMO_ID].update({
+        canvas: [...history, ["move", x, y]],
+      }),
+    );
   };
 
   const stopDrawing = (e?: React.TouchEvent) => {
     if (e) e.preventDefault();
-    onHistoryChange(["end"]);
+    db.transact(
+      db.tx.party[DEMO_ID].update({
+        canvas: [...history, ["end"]],
+      }),
+    );
+
     setIsDrawing(false);
   };
 
