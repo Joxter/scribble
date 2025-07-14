@@ -2,8 +2,7 @@ import React, { useRef, useEffect, useState } from "react";
 
 const scale = window.devicePixelRatio;
 
-const width = 800;
-const height = 400;
+const canvasSize = 1000;
 
 type History = {
   event: string;
@@ -26,8 +25,8 @@ export function Canvas({ onHistoryChange, db }: Props) {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    canvas.width = Math.floor(width * scale);
-    canvas.height = Math.floor(height * scale);
+    canvas.width = Math.floor(canvasSize * scale);
+    canvas.height = Math.floor(canvasSize * scale);
 
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
@@ -37,8 +36,7 @@ export function Canvas({ onHistoryChange, db }: Props) {
     ctx.lineWidth = 2;
     ctx.lineCap = "round";
 
-    // Clear canvas and redraw from history
-    ctx.clearRect(0, 0, width, height);
+    ctx.clearRect(0, 0, canvasSize, canvasSize);
     ctx.beginPath();
 
     history.forEach((ev) => {
@@ -60,18 +58,20 @@ export function Canvas({ onHistoryChange, db }: Props) {
     const canvas = canvasRef.current;
     if (!canvas) return null;
 
+    const k = canvasSize / canvas.getBoundingClientRect().width;
+
     const rect = canvas.getBoundingClientRect();
 
     if ("touches" in e) {
       const touch = e.touches[0] || e.changedTouches[0];
       return {
-        x: touch.clientX - rect.left,
-        y: touch.clientY - rect.top,
+        x: (touch.clientX - rect.left) * k,
+        y: (touch.clientY - rect.top) * k,
       };
     } else {
       return {
-        x: e.clientX - rect.left,
-        y: e.clientY - rect.top,
+        x: (e.clientX - rect.left) * k,
+        y: (e.clientY - rect.top) * k,
       };
     }
   };
@@ -125,13 +125,11 @@ export function Canvas({ onHistoryChange, db }: Props) {
   return (
     <canvas
       ref={canvasRef}
-      width={width}
-      height={height}
       style={{
         border: "1px solid #ccc",
         cursor: "crosshair",
-        width: width + "px",
-        height: height + "px",
+        width: "100%",
+        aspectRatio: "1",
         touchAction: "none",
       }}
       onMouseDown={startDrawing}
