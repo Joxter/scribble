@@ -16,7 +16,7 @@ export function Router() {
   const { isLoading, error, data } = db.useQuery({
     party: {
       $: {
-        where: { id: "f259a402-be81-4806-ba5b-86a4814fb9b1" },
+        where: { id: DEMO_ID },
       },
     },
   });
@@ -33,7 +33,7 @@ export function Router() {
     <div>
       <button
         onClick={() => {
-          db.tx.party[DEMO_ID].update({ canvas: [] });
+          db.transact(db.tx.party[DEMO_ID].update({ canvas: [""] }));
         }}
       >
         reset

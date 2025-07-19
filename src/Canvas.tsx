@@ -3,7 +3,8 @@ import { DEMO_ID } from "./config";
 
 const scale = window.devicePixelRatio;
 
-const canvasSize = 1000;
+const canvasSize = 800;
+const lineWidth = 3;
 
 type History = [event: string, x: number, y: number];
 
@@ -32,7 +33,7 @@ export function Canvas({ onHistoryChange, db }: Props) {
 
     ctx.scale(scale, scale);
     ctx.strokeStyle = "#000";
-    ctx.lineWidth = 2;
+    ctx.lineWidth = lineWidth;
     ctx.lineCap = "round";
 
     ctx.clearRect(0, 0, canvasSize, canvasSize);
