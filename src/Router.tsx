@@ -50,6 +50,8 @@ export function Router() {
       >
         <Canvas
           db={db}
+          color="#a5d"
+          lineWidth={5}
           onHistoryChange={(ev) => {
             // "f259a402-be81-4806-ba5b-86a4814fb9b1"
             // db.transact(

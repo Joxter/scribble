@@ -4,7 +4,6 @@ import { DEMO_ID } from "./config";
 const scale = window.devicePixelRatio;
 
 const canvasSize = 800;
-const lineWidth = 3;
 
 type History = [event: string, x: number, y: number];
 
@@ -12,9 +11,11 @@ type Props = {
   db: any;
   onHistoryChange: (event: any) => void;
   history?: History;
+  lineWidth?: number;
+  color?: string;
 };
 
-export function Canvas({ onHistoryChange, db }: Props) {
+export function Canvas({ onHistoryChange, db, lineWidth = 3, color = "#000" }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isDrawing, setIsDrawing] = useState(false);
   const history = db.useQuery({
@@ -32,7 +33,7 @@ export function Canvas({ onHistoryChange, db }: Props) {
     if (!ctx) return;
 
     ctx.scale(scale, scale);
-    ctx.strokeStyle = "#000";
+    ctx.strokeStyle = color;
     ctx.lineWidth = lineWidth;
     ctx.lineCap = "round";
 
