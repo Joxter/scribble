@@ -1,4 +1,5 @@
 import React, { useRef, useEffect, useState } from "react";
+import { LazyBrush } from "lazy-brush";
 import { DEMO_ID } from "./config";
 import { db } from "./DB";
 
@@ -15,6 +16,12 @@ type Props = {
   color?: string;
 };
 
+const lazy = new LazyBrush({
+  radius: 3,
+  enabled: true,
+  initialPoint: { x: 0, y: 0 },
+});
+
 export function Canvas({ initHistory, lineWidth = 3, color = "#000" }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isDrawing, setIsDrawing] = useState(false);
@@ -25,6 +32,8 @@ export function Canvas({ initHistory, lineWidth = 3, color = "#000" }: Props) {
   const [history, setHistory] = useState<HistoryItem[]>(initHistory);
 
   useEffect(() => {
+    return;
+
     const now = Date.now();
     const timeSinceLastExecution = now - lastExecutionRef.current;
 

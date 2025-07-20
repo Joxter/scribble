@@ -22,21 +22,25 @@ export function DrawingPage() {
   }
 
   return (
-    <div style={{ maxWidth: "600px", margin: "0 auto" }}>
-      <p>players</p>
-      <p>id: {id}</p>
-      <button onClick={resetDEMO}>reset</button>
-      <br />
-      <p>line width: </p>
-      <LineWidthSelector value={lineWidth} onChange={setLineWidth} />
-      <p>color: </p>
-      <ColorSelector value={color} onChange={setColor} />
+    <div style={{ display: "flex" }}>
+      <div>
+        <p>players</p>
+        <p>id: {id}</p>
+        <button onClick={resetDEMO}>reset</button>
+        <br />
+        <p>line width: </p>
+        <LineWidthSelector value={lineWidth} onChange={setLineWidth} />
+        <p>color: </p>
+        <ColorSelector value={color} onChange={setColor} />
+      </div>
       <div
         style={{
-          maxWidth: "calc(min(100vw, 100vh) - 50px)",
-          maxHeight: "calc(min(100vw, 100vh) - 50px)",
-          width: "100%",
-          aspectRatio: "1",
+          // maxWidth: "calc(min(100vw, 100vh) - 50px)",
+          // maxHeight: "calc(min(100vw, 100vh) - 50px)",
+          width: "500px",
+          height: "500px",
+          // width: "100%",
+          // aspectRatio: "1",
           margin: "0 auto",
         }}
       >
