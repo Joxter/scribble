@@ -3,9 +3,11 @@ import { DEMO_ID } from "../config";
 import { db } from "../DB";
 import { Canvas } from "../Canvas";
 import { LineWidthSelector } from "./LineWidthSelector";
+import { ColorSelector } from "./ColorSelector";
 
 export function DrawingPage() {
   const [lineWidth, setLineWidth] = useState(5);
+  const [color, setColor] = useState("#000000");
   const { isLoading, error, data } = db.useQuery({
     party: { $: { where: { id: DEMO_ID } } },
   });
@@ -26,6 +28,7 @@ export function DrawingPage() {
       <p>line width: </p>
       <LineWidthSelector value={lineWidth} onChange={setLineWidth} />
       <p>color: </p>
+      <ColorSelector value={color} onChange={setColor} />
       <div
         style={{
           maxWidth: "calc(min(100vw, 100vh) - 50px)",
@@ -36,7 +39,7 @@ export function DrawingPage() {
         }}
       >
         <Canvas
-          color="#a5d"
+          color={color}
           lineWidth={lineWidth}
           initHistory={data.party[0].canvas}
           onHistoryChange={(ev) => {
