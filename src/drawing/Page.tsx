@@ -1,9 +1,11 @@
-import React from "react";
+import React, { useState } from "react";
 import { DEMO_ID } from "../config";
 import { db } from "../DB";
 import { Canvas } from "../Canvas";
+import { LineWidthSelector } from "./LineWidthSelector";
 
 export function DrawingPage() {
+  const [lineWidth, setLineWidth] = useState(5);
   const { isLoading, error, data } = db.useQuery({
     party: { $: { where: { id: DEMO_ID } } },
   });
@@ -22,6 +24,7 @@ export function DrawingPage() {
       <button onClick={resetDEMO}>reset</button>
       <br />
       <p>line width: </p>
+      <LineWidthSelector value={lineWidth} onChange={setLineWidth} />
       <p>color: </p>
       <div
         style={{
@@ -34,7 +37,7 @@ export function DrawingPage() {
       >
         <Canvas
           color="#a5d"
-          lineWidth={5}
+          lineWidth={lineWidth}
           initHistory={data.party[0].canvas}
           onHistoryChange={(ev) => {
             // "f259a402-be81-4806-ba5b-86a4814fb9b1"
