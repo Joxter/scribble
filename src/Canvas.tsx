@@ -5,22 +5,34 @@ const scale = window.devicePixelRatio;
 
 const canvasSize = 800;
 
-type History = [event: string, x: number, y: number];
+type HistoryItem = [event: string, x?: number, y?: number];
 
 type Props = {
   db: any;
   onHistoryChange: (event: any) => void;
-  history?: History;
+  initHistory: HistoryItem[];
   lineWidth?: number;
   color?: string;
 };
 
-export function Canvas({ onHistoryChange, db, lineWidth = 3, color = "#000" }: Props) {
+export function Canvas({
+  initHistory,
+  db,
+  lineWidth = 3,
+  color = "#000",
+}: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isDrawing, setIsDrawing] = useState(false);
-  const history = db.useQuery({
-    party: { $: { where: { id: DEMO_ID } } },
-  }).data.party[0].canvas;
+
+  const [history, setHistory] = useState<HistoryItem[]>(initHistory);
+
+  useEffect(() => {
+    db.transact(
+      db.tx.party[DEMO_ID].update({
+        canvas: history,
+      }),
+    );
+  }, [history]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -40,7 +52,7 @@ export function Canvas({ onHistoryChange, db, lineWidth = 3, color = "#000" }: P
     ctx.clearRect(0, 0, canvasSize, canvasSize);
     ctx.beginPath();
 
-    history.forEach((ev) => {
+    initHistory.forEach((ev) => {
       const [event, x, y] = ev;
       if (event === "start") {
         ctx.moveTo(x, y);
@@ -53,7 +65,7 @@ export function Canvas({ onHistoryChange, db, lineWidth = 3, color = "#000" }: P
       }
     });
     ctx.stroke();
-  }, [history]);
+  }, []);
 
   const getCoordinates = (e: React.MouseEvent | React.TouchEvent) => {
     const canvas = canvasRef.current;
@@ -93,12 +105,8 @@ export function Canvas({ onHistoryChange, db, lineWidth = 3, color = "#000" }: P
     ctx.beginPath();
     ctx.moveTo(x, y);
 
-    db.transact(
-      db.tx.party[DEMO_ID].update({
-        canvas: [...history, ["start", x, y], ["move", x, y]],
-      }),
-    );
-
+    const newHistory = [...history, ["start", x, y], ["move", x, y]];
+    setHistory(newHistory);
     setIsDrawing(true);
   };
 
@@ -119,20 +127,14 @@ export function Canvas({ onHistoryChange, db, lineWidth = 3, color = "#000" }: P
 
     ctx.lineTo(x, y);
     ctx.stroke();
-    db.transact(
-      db.tx.party[DEMO_ID].update({
-        canvas: [...history, ["move", x, y]],
-      }),
-    );
+    const newHistory = [...history, ["move", x, y]];
+    setHistory(newHistory);
   };
 
   const stopDrawing = (e?: React.TouchEvent) => {
     if (e) e.preventDefault();
-    db.transact(
-      db.tx.party[DEMO_ID].update({
-        canvas: [...history, ["end"]],
-      }),
-    );
+    const newHistory = [...history, ["end"]];
+    setHistory(newHistory);
 
     setIsDrawing(false);
   };

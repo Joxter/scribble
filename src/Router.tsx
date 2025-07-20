@@ -25,9 +25,11 @@ export function Router() {
     return <p>loading</p>;
   }
 
-  if (!data || !data.party[0]) {
+  if (!data || !data.party?.[0]?.canvas) {
     return <p>no data</p>;
   }
+
+  console.log("initHistory", data.party?.[0]?.canvas);
 
   return (
     <div>
@@ -52,6 +54,7 @@ export function Router() {
           db={db}
           color="#a5d"
           lineWidth={5}
+          initHistory={data.party[0].canvas}
           onHistoryChange={(ev) => {
             // "f259a402-be81-4806-ba5b-86a4814fb9b1"
             // db.transact(
