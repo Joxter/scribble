@@ -18,15 +18,52 @@ type Props = {
 export function Canvas({ initHistory, lineWidth = 3, color = "#000" }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isDrawing, setIsDrawing] = useState(false);
+  const throttleRef = useRef<NodeJS.Timeout | null>(null);
+  const lastCallRef = useRef<NodeJS.Timeout | null>(null);
+  const lastExecutionRef = useRef<number>(0);
 
   const [history, setHistory] = useState<HistoryItem[]>(initHistory);
 
   useEffect(() => {
-    db.transact(
-      db.tx.party[DEMO_ID].update({
-        canvas: history,
-      }),
-    );
+    const now = Date.now();
+    const timeSinceLastExecution = now - lastExecutionRef.current;
+
+    const executeTransact = () => {
+      db.transact(
+        db.tx.party[DEMO_ID].update({
+          canvas: history,
+        }),
+      );
+      lastExecutionRef.current = Date.now();
+    };
+
+    if (timeSinceLastExecution >= 300) {
+      executeTransact();
+    } else {
+      if (throttleRef.current) {
+        clearTimeout(throttleRef.current);
+      }
+
+      throttleRef.current = setTimeout(
+        executeTransact,
+        300 - timeSinceLastExecution,
+      );
+    }
+
+    if (lastCallRef.current) {
+      clearTimeout(lastCallRef.current);
+    }
+
+    lastCallRef.current = setTimeout(executeTransact, 300);
+
+    return () => {
+      if (throttleRef.current) {
+        clearTimeout(throttleRef.current);
+      }
+      if (lastCallRef.current) {
+        clearTimeout(lastCallRef.current);
+      }
+    };
   }, [history]);
 
   useEffect(() => {

@@ -17,3 +17,20 @@ const schema: AppSchema = _schema;
 export type { AppSchema };
 
 export default schema;
+// {
+//   players: string[];
+//   id: string;
+//   link: string;
+//   gamestage: "wait-players" | "ongoing" | "done";
+//   settings: {
+//     timer: number;
+//     suggestionsNumber: number;
+//     wordList: string;
+//   };
+//   history: HistoryItem[];
+//   canvas: {
+//     size: number;
+//     history: CanvasHistory[];
+//     word: string;
+//   };
+// }

@@ -11,6 +11,7 @@ export function DrawingPage() {
   const { isLoading, error, data } = db.useQuery({
     party: { $: { where: { id: DEMO_ID } } },
   });
+  const id = db.useLocalId("guest");
 
   if (isLoading) {
     return <p>loading</p>;
@@ -23,6 +24,7 @@ export function DrawingPage() {
   return (
     <div style={{ maxWidth: "600px", margin: "0 auto" }}>
       <p>players</p>
+      <p>id: {id}</p>
       <button onClick={resetDEMO}>reset</button>
       <br />
       <p>line width: </p>
