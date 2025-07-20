@@ -1,5 +1,6 @@
 import React, { useRef, useEffect, useState } from "react";
 import { DEMO_ID } from "./config";
+import { db } from "./DB";
 
 const scale = window.devicePixelRatio;
 
@@ -8,19 +9,13 @@ const canvasSize = 800;
 type HistoryItem = [event: string, x?: number, y?: number];
 
 type Props = {
-  db: any;
   onHistoryChange: (event: any) => void;
   initHistory: HistoryItem[];
   lineWidth?: number;
   color?: string;
 };
 
-export function Canvas({
-  initHistory,
-  db,
-  lineWidth = 3,
-  color = "#000",
-}: Props) {
+export function Canvas({ initHistory, lineWidth = 3, color = "#000" }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isDrawing, setIsDrawing] = useState(false);
 
