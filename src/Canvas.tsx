@@ -1,5 +1,6 @@
 import React, { useRef, useEffect, useState } from "react";
 import { LazyBrush } from "lazy-brush";
+import { getStroke } from "perfect-freehand";
 import { DEMO_ID } from "./config";
 import { db } from "./DB";
 

@@ -4,6 +4,7 @@ import { db } from "../DB";
 import { Canvas } from "../Canvas";
 import { LineWidthSelector } from "./LineWidthSelector";
 import { ColorSelector } from "./ColorSelector";
+import { CanvasSmoth } from "../CanvasSmoth";
 
 export function DrawingPage() {
   const [lineWidth, setLineWidth] = useState(5);
@@ -22,7 +23,44 @@ export function DrawingPage() {
   }
 
   return (
-    <div style={{ display: "flex" }}>
+    <div>
+      <div style={{ display: "flex" }}>
+        <div style={{ width: "500px" }}>
+          <CanvasSmoth
+            color={color}
+            lineWidth={lineWidth}
+            initHistory={data.party[0].canvas}
+            onHistoryChange={() => {}}
+          />
+        </div>
+        <div
+          style={{
+            // maxWidth: "calc(min(100vw, 100vh) - 50px)",
+            // maxHeight: "calc(min(100vw, 100vh) - 50px)",
+            width: "500px",
+            height: "500px",
+            // width: "100%",
+            // aspectRatio: "1",
+            margin: "0 auto",
+          }}
+        >
+          <Canvas
+            color={color}
+            lineWidth={lineWidth}
+            initHistory={data.party[0].canvas}
+            onHistoryChange={(ev) => {
+              // "f259a402-be81-4806-ba5b-86a4814fb9b1"
+              // db.transact(
+              //   db.tx.history[id()].update({
+              //     event: ev[0],
+              //     x: ev[1] || 0,
+              //     y: ev[2] || 0,
+              //   }),
+              // );
+            }}
+          />
+        </div>
+      </div>
       <div>
         <p>players</p>
         <p>id: {id}</p>
@@ -32,33 +70,6 @@ export function DrawingPage() {
         <LineWidthSelector value={lineWidth} onChange={setLineWidth} />
         <p>color: </p>
         <ColorSelector value={color} onChange={setColor} />
-      </div>
-      <div
-        style={{
-          // maxWidth: "calc(min(100vw, 100vh) - 50px)",
-          // maxHeight: "calc(min(100vw, 100vh) - 50px)",
-          width: "500px",
-          height: "500px",
-          // width: "100%",
-          // aspectRatio: "1",
-          margin: "0 auto",
-        }}
-      >
-        <Canvas
-          color={color}
-          lineWidth={lineWidth}
-          initHistory={data.party[0].canvas}
-          onHistoryChange={(ev) => {
-            // "f259a402-be81-4806-ba5b-86a4814fb9b1"
-            // db.transact(
-            //   db.tx.history[id()].update({
-            //     event: ev[0],
-            //     x: ev[1] || 0,
-            //     y: ev[2] || 0,
-            //   }),
-            // );
-          }}
-        />
       </div>
     </div>
   );
