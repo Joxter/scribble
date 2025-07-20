@@ -29,7 +29,7 @@ export function Router() {
     return <p>no data</p>;
   }
 
-  console.log("initHistory", data.party?.[0]?.canvas);
+  // console.log("initHistory", data.party?.[0]?.canvas);
 
   return (
     <div>

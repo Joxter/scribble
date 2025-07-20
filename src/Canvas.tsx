@@ -35,6 +35,7 @@ export function Canvas({
   }, [history]);
 
   useEffect(() => {
+    console.log("MOUNT", initHistory);
     const canvas = canvasRef.current;
     if (!canvas) return;
 
