@@ -44,6 +44,16 @@ export function Canvas({ initHistory, lineWidth = 3, color = "#000" }: Props) {
     );
   });
 
+  // const smoth = historyToLinesNumbers(initHistory).map((line) => {
+  //   const stroke = getStroke(line, {
+  //     size: 10,
+  //     smoothing: 0.5,
+  //     // ...options,
+  //     // size: p[0]?.[3] || 10,
+  //   });
+  //   return stroke;
+  // });
+
   const [history, setHistory] = useState<HistoryItem[]>(initHistory);
 
   useEffect(() => {

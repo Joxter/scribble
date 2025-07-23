@@ -4,6 +4,7 @@ import { getStroke } from "perfect-freehand";
 import { DEMO_ID } from "./config";
 import { db } from "./DB";
 import { ColorSelector } from "./drawing/ColorSelector";
+import { historyToLines } from "./utils";
 
 const scale = window.devicePixelRatio;
 
@@ -117,7 +118,7 @@ export function CanvasSmoth({ initHistory }: Props) {
 
   const storedSettings = loadSettingsFromStorage();
   const [color, setColor] = useState(storedSettings.color || "#000000");
-  const [size, setSize] = useState(storedSettings.size || 20);
+  const [size, setSize] = useState(storedSettings.size || 10);
   const [smoothing, setSmoothing] = useState(storedSettings.smoothing || 0.9);
   const [thinning, setThinning] = useState(storedSettings.thinning || 0.1);
   const [streamline, setStreamline] = useState(
@@ -151,9 +152,23 @@ export function CanvasSmoth({ initHistory }: Props) {
     easingType,
   ]);
 
-  useEffect(() => {
-    return;
+  // {
+  //   size: 8,
+  //   smoothing: 0.5,
+  //   thinning: -0.56,
+  //   streamline: 0.01,
+  //   easing: (t) => t,
+  //   start: {
+  //     taper: 0,
+  //     cap: true,
+  //   },
+  //   end: {
+  //     taper: 0,
+  //     cap: true,
+  //   },
+  // }
 
+  useEffect(() => {
     const now = Date.now();
     const timeSinceLastExecution = now - lastExecutionRef.current;
 
@@ -196,27 +211,7 @@ export function CanvasSmoth({ initHistory }: Props) {
   }, [history]);
 
   useEffect(() => {
-    let rawLine: [number, number][] = [];
-    let allPoints: any[] = [];
-
-    history.forEach((ev, i, all) => {
-      const [event, x, y, color, width] = ev;
-      if (event === "start") {
-        rawLine = [[x, y, color, width]];
-      } else if (event === "move") {
-        rawLine.push([x, y, color, width]);
-      }
-
-      if (event === "end" || i === all.length - 1) {
-        allPoints.push(
-          rawLine.map(([x, y, color, width], i, all) => {
-            return [+x.toFixed(2), +y.toFixed(2), color, width];
-          }),
-        );
-      }
-    });
-
-    setPoints(allPoints);
+    setPoints(historyToLines(history));
   }, [history]);
 
   const getCoordinates = (e: React.MouseEvent | React.TouchEvent) => {
@@ -282,6 +277,22 @@ export function CanvasSmoth({ initHistory }: Props) {
     setIsDrawing(false);
   };
 
+  // {
+  //   size: 8,
+  //   smoothing: 0.5,
+  //   thinning: -0.56,
+  //   streamline: 0.01,
+  //   easing: (t) => t,
+  //   start: {
+  //     taper: 0,
+  //     cap: true,
+  //   },
+  //   end: {
+  //     taper: 0,
+  //     cap: true,
+  //   },
+  // }
+
   const options: DrawingOptions = {
     size,
     simulatePressure,
@@ -313,7 +324,7 @@ export function CanvasSmoth({ initHistory }: Props) {
             id="size"
             type="range"
             min="1"
-            max="50"
+            max="30"
             step="1"
             value={size}
             onChange={(e) => setSize(Number(e.target.value))}
@@ -342,9 +353,9 @@ export function CanvasSmoth({ initHistory }: Props) {
           <input
             id="thinning"
             type="range"
-            min="0"
+            min="-1"
             max="1"
-            step="0.01"
+            step="0.1"
             value={thinning}
             onChange={(e) => setThinning(Number(e.target.value))}
             style={{ marginLeft: "8px" }}
@@ -419,16 +430,19 @@ export function CanvasSmoth({ initHistory }: Props) {
           // height: "500px",
         }}
       >
-        {points.map((p, i) => {
-          const stroke = getStroke(p, {
-            ...options,
-            size: p[0]?.[3] || 10,
-          });
+        {points
+          // .slice(1, 2)
+          .map((p, i) => {
+            console.log(i, p);
+            const stroke = getStroke(p, {
+              ...options,
+              size: p[0]?.[3] || 10,
+            });
 
-          const pathData = getSvgPathFromStroke(stroke);
+            const pathData = getSvgPathFromStroke(stroke);
 
-          return <path key={i} d={pathData} fill={p[0]?.[2] || "#000"} />;
-        })}
+            return <path key={i} d={pathData} fill={p[0]?.[2] || "#000"} />;
+          })}
       </svg>
     </div>
   );

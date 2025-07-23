@@ -143,9 +143,16 @@ export function historyToLines(history: any[]) {
 
     if (event === "end" || i === all.length - 1) {
       allPoints.push(
-        rawLine.map(([x, y, color, width], i, all) => {
-          return [+x.toFixed(2), +y.toFixed(2), color, width];
-        }),
+        rawLine
+          .map(([x, y, color, width], i, all) => {
+            return [+x.toFixed(2), +y.toFixed(2), color, width];
+          })
+          .filter((it, i, all) => {
+            if (i > 0 && it[0] === all[i - 1][0] && it[1] === all[i - 1][1]) {
+              return false;
+            }
+            return true;
+          }),
       );
     }
   });
