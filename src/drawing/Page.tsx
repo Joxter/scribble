@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { DEMO_ID } from "../config";
 import { db } from "../DB";
 import { Canvas } from "../Canvas";
@@ -7,18 +7,23 @@ import { ColorSelector } from "./ColorSelector";
 import { CanvasSmoth } from "../CanvasSmoth";
 
 export function DrawingPage() {
-  const [lineWidth, setLineWidth] = useState(5);
-  const [color, setColor] = useState("#000000");
   const { isLoading, error, data } = db.useQuery({
     party: { $: { where: { id: DEMO_ID } } },
   });
   const id = db.useLocalId("guest");
+  const [show, setShow] = useState(false);
+
+  useEffect(() => {
+    setTimeout(() => {
+      setShow(true);
+    }, 1000);
+  }, []);
 
   if (isLoading) {
     return <p>loading</p>;
   }
 
-  if (!data || !data.party?.[0]?.canvas) {
+  if (!data || !data.party?.[0]?.canvas || !show) {
     return <p>no data</p>;
   }
 
@@ -27,8 +32,6 @@ export function DrawingPage() {
       <div style={{ display: "flex" }}>
         <div style={{ width: "500px" }}>
           <CanvasSmoth
-            color={color}
-            lineWidth={lineWidth}
             initHistory={data.party[0].canvas}
             onHistoryChange={() => {}}
           />
@@ -46,8 +49,6 @@ export function DrawingPage() {
             }}
           >
             <Canvas
-              color={color}
-              lineWidth={lineWidth}
               initHistory={data.party[0].canvas}
               onHistoryChange={(ev) => {
                 // "f259a402-be81-4806-ba5b-86a4814fb9b1"

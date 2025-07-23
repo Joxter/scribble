@@ -28,12 +28,13 @@ export function ColorSelector({
           onClick={() => onChange(color)}
           style={{
             width: "32px",
-            height: "32px",
-            border: value === color ? "3px solid #007bff" : "1px solid #ccc",
+            height: "37px",
+            border: "none",
+            borderTop: value === color ? "5px solid #007bff" : `5px solid #fff`,
             padding: "0",
             backgroundColor: color,
             cursor: "pointer",
-            borderRadius: "50%",
+            // borderRadius: "50%",
           }}
         />
       ))}

@@ -3,6 +3,7 @@ import { LazyBrush } from "lazy-brush";
 import { getStroke } from "perfect-freehand";
 import { DEMO_ID } from "./config";
 import { db } from "./DB";
+import { ColorSelector } from "./drawing/ColorSelector";
 
 const scale = window.devicePixelRatio;
 
@@ -24,8 +25,6 @@ type DrawingOptions = {
 type Props = {
   onHistoryChange: (event: any) => void;
   initHistory: HistoryItem[];
-  lineWidth?: number;
-  color?: string;
 };
 
 const lazy = new LazyBrush({
@@ -86,11 +85,7 @@ const easingFunctions = {
     t + 0.2 * Math.sin(t * 15) * Math.cos(t * 23) * Math.sin(t * 7),
 };
 
-export function CanvasSmoth({
-  initHistory,
-  lineWidth = 3,
-  color = "#000",
-}: Props) {
+export function CanvasSmoth({ initHistory }: Props) {
   const svgRef = useRef<any>(null);
   const [isDrawing, setIsDrawing] = useState(false);
   const throttleRef = useRef<NodeJS.Timeout | null>(null);
@@ -101,6 +96,7 @@ export function CanvasSmoth({
 
   const [history, setHistory] = useState<HistoryItem[]>(initHistory);
 
+  const [color, setColor] = useState("#000000");
   const [size, setSize] = useState(20);
   const [smoothing, setSmoothing] = useState(0.9);
   const [thinning, setThinning] = useState(0.1);
@@ -158,23 +154,21 @@ export function CanvasSmoth({
     let allPoints: any[] = [];
 
     history.forEach((ev, i, all) => {
-      const [event, x, y] = ev;
+      const [event, x, y, color, width] = ev;
       if (event === "start") {
-        rawLine = [[x, y]];
+        rawLine = [[x, y, color, width]];
       } else if (event === "move") {
-        rawLine.push([x, y]);
+        rawLine.push([x, y, color, width]);
       }
 
       if (event === "end" || i === all.length - 1) {
         allPoints.push(
-          rawLine.map(([x, y], i, all) => {
-            return [+x.toFixed(2), +y.toFixed(2)];
+          rawLine.map(([x, y, color, width], i, all) => {
+            return [+x.toFixed(2), +y.toFixed(2), color, width];
           }),
         );
       }
     });
-
-    console.log("--- allPoints", allPoints, Date.now());
 
     setPoints(allPoints);
   }, [history]);
@@ -209,7 +203,11 @@ export function CanvasSmoth({
 
     const { x, y } = coords;
 
-    const newHistory = [...history, ["start", x, y], ["move", x, y]];
+    const newHistory = [
+      ...history,
+      ["start", x, y, color, size],
+      ["move", x, y, color, size],
+    ];
     setHistory(newHistory);
     setIsDrawing(true);
   };
@@ -220,16 +218,19 @@ export function CanvasSmoth({
 
     const coords = getCoordinates(e);
     if (!coords) return;
-
     const { x, y } = coords;
 
-    const newHistory = [...history, ["move", x, y]];
+    const newHistory = [...history, ["move", x, y, color, size]];
     setHistory(newHistory);
   };
 
   const stopDrawing = (e?: React.TouchEvent) => {
     if (e) e.preventDefault();
-    const newHistory = [...history, ["end"]];
+    const coords = getCoordinates(e);
+    if (!coords) return;
+    const { x, y } = coords;
+
+    const newHistory = [...history, ["end", x, y, color, size]];
     setHistory(newHistory);
 
     setIsDrawing(false);
@@ -246,7 +247,7 @@ export function CanvasSmoth({
     end: { taper: 0, cap: true },
   };
 
-  console.log(points.length);
+  console.log(history, points);
 
   return (
     <div>
@@ -258,6 +259,8 @@ export function CanvasSmoth({
           flexWrap: "wrap",
         }}
       >
+        <ColorSelector value={color} onChange={setColor} />
+
         <div style={{ display: "flex" }}>
           <label htmlFor="size" style={{ width: "150px" }}>
             Size: {size}
@@ -372,11 +375,14 @@ export function CanvasSmoth({
           // height: "500px",
         }}
       >
-        {points.map((p, index) => {
-          const stroke = getStroke(p, options);
+        {points.map((p, i) => {
+          const stroke = getStroke(p, {
+            ...options,
+            size: p[0][3] || 10,
+          });
           const pathData = getSvgPathFromStroke(stroke);
 
-          return <path key={index} d={pathData} />;
+          return <path key={i} d={pathData} fill={p[0][2] || "#000"} />;
         })}
       </svg>
     </div>
