@@ -110,7 +110,7 @@ export function CanvasSmoth({
     useState<keyof typeof easingFunctions>("cubic");
 
   useEffect(() => {
-    return;
+    // return;
 
     const now = Date.now();
     const timeSinceLastExecution = now - lastExecutionRef.current;
@@ -157,13 +157,15 @@ export function CanvasSmoth({
     let rawLine: [number, number][] = [];
     let allPoints: any[] = [];
 
-    history.forEach((ev) => {
+    history.forEach((ev, i, all) => {
       const [event, x, y] = ev;
       if (event === "start") {
         rawLine = [[x, y]];
       } else if (event === "move") {
         rawLine.push([x, y]);
-      } else if (event === "end") {
+      }
+
+      if (event === "end" || i === all.length - 1) {
         allPoints.push(
           rawLine.map(([x, y], i, all) => {
             return [+x.toFixed(2), +y.toFixed(2)];
