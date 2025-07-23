@@ -85,6 +85,25 @@ const easingFunctions = {
     t + 0.2 * Math.sin(t * 15) * Math.cos(t * 23) * Math.sin(t * 7),
 };
 
+const STORAGE_KEY = "canvasSmooth-settings";
+
+const loadSettingsFromStorage = () => {
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    return stored ? JSON.parse(stored) : {};
+  } catch {
+    return {};
+  }
+};
+
+const saveSettingsToStorage = (settings: any) => {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
+  } catch {
+    // Silently fail if localStorage is not available
+  }
+};
+
 export function CanvasSmoth({ initHistory }: Props) {
   const svgRef = useRef<any>(null);
   const [isDrawing, setIsDrawing] = useState(false);
@@ -96,14 +115,41 @@ export function CanvasSmoth({ initHistory }: Props) {
 
   const [history, setHistory] = useState<HistoryItem[]>(initHistory);
 
-  const [color, setColor] = useState("#000000");
-  const [size, setSize] = useState(20);
-  const [smoothing, setSmoothing] = useState(0.9);
-  const [thinning, setThinning] = useState(0.1);
-  const [streamline, setStreamline] = useState(0.0);
-  const [simulatePressure, setSimulatePressure] = useState(false);
-  const [easingType, setEasingType] =
-    useState<keyof typeof easingFunctions>("cubic");
+  const storedSettings = loadSettingsFromStorage();
+  const [color, setColor] = useState(storedSettings.color || "#000000");
+  const [size, setSize] = useState(storedSettings.size || 20);
+  const [smoothing, setSmoothing] = useState(storedSettings.smoothing || 0.9);
+  const [thinning, setThinning] = useState(storedSettings.thinning || 0.1);
+  const [streamline, setStreamline] = useState(
+    storedSettings.streamline || 0.0,
+  );
+  const [simulatePressure, setSimulatePressure] = useState(
+    storedSettings.simulatePressure || false,
+  );
+  const [easingType, setEasingType] = useState<keyof typeof easingFunctions>(
+    storedSettings.easingType || "cubic",
+  );
+
+  useEffect(() => {
+    const settings = {
+      color,
+      size,
+      smoothing,
+      thinning,
+      streamline,
+      simulatePressure,
+      easingType,
+    };
+    saveSettingsToStorage(settings);
+  }, [
+    color,
+    size,
+    smoothing,
+    thinning,
+    streamline,
+    simulatePressure,
+    easingType,
+  ]);
 
   useEffect(() => {
     // return;
@@ -378,11 +424,11 @@ export function CanvasSmoth({ initHistory }: Props) {
         {points.map((p, i) => {
           const stroke = getStroke(p, {
             ...options,
-            size: p[0][3] || 10,
+            size: p[0]?.[3] || 10,
           });
           const pathData = getSvgPathFromStroke(stroke);
 
-          return <path key={i} d={pathData} fill={p[0][2] || "#000"} />;
+          return <path key={i} d={pathData} fill={p[0]?.[2] || "#000"} />;
         })}
       </svg>
     </div>

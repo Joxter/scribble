@@ -84,5 +84,7 @@ export function DrawingPage() {
 }
 
 function resetDEMO() {
-  db.transact(db.tx.party[DEMO_ID].update({ canvas: [""] }));
+  db.transact(db.tx.party[DEMO_ID].update({ canvas: [""] })).then(() => {
+    window.location.reload();
+  });
 }
