@@ -36,7 +36,7 @@ export function DrawingPage() {
             onHistoryChange={() => {}}
           />
         </div>
-        {false && (
+        {!false && (
           <div
             style={{
               // maxWidth: "calc(min(100vw, 100vh) - 50px)",

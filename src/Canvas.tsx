@@ -3,6 +3,7 @@ import { LazyBrush } from "lazy-brush";
 import { getStroke } from "perfect-freehand";
 import { DEMO_ID } from "./config";
 import { db } from "./DB";
+import { cSpline, historyToLinesNumbers, toPairs } from "./utils";
 
 const scale = window.devicePixelRatio;
 
@@ -29,6 +30,19 @@ export function Canvas({ initHistory, lineWidth = 3, color = "#000" }: Props) {
   const throttleRef = useRef<NodeJS.Timeout | null>(null);
   const lastCallRef = useRef<NodeJS.Timeout | null>(null);
   const lastExecutionRef = useRef<number>(0);
+
+  const smoth = historyToLinesNumbers(initHistory).map((line) => {
+    return toPairs(
+      Array.from(
+        cSpline(line.flat(), {
+          tension: 0.5,
+          // tension: 0.0,
+          numOfSeg: 10,
+          close: false,
+        }),
+      ),
+    );
+  });
 
   const [history, setHistory] = useState<HistoryItem[]>(initHistory);
 
@@ -76,7 +90,40 @@ export function Canvas({ initHistory, lineWidth = 3, color = "#000" }: Props) {
     };
   }, [history]);
 
+  // const renderMode = "old";
+  const renderMode = "new";
+
   useEffect(() => {
+    if (renderMode !== "new") return;
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    canvas.width = Math.floor(canvasSize * scale);
+    canvas.height = Math.floor(canvasSize * scale);
+
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    ctx.scale(scale, scale);
+    ctx.strokeStyle = color;
+    ctx.lineWidth = lineWidth;
+    ctx.lineCap = "round";
+
+    ctx.clearRect(0, 0, canvasSize, canvasSize);
+    ctx.beginPath();
+
+    smoth.forEach((line) => {
+      ctx.moveTo(line[0][0], line[0][1]);
+      line.forEach(([x, y]) => {
+        ctx.lineTo(x, y);
+      });
+    });
+
+    ctx.stroke();
+  }, []);
+
+  useEffect(() => {
+    if (renderMode !== "old") return;
     console.log("MOUNT", initHistory);
     const canvas = canvasRef.current;
     if (!canvas) return;

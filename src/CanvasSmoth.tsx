@@ -152,7 +152,7 @@ export function CanvasSmoth({ initHistory }: Props) {
   ]);
 
   useEffect(() => {
-    // return;
+    return;
 
     const now = Date.now();
     const timeSinceLastExecution = now - lastExecutionRef.current;
@@ -293,8 +293,6 @@ export function CanvasSmoth({ initHistory }: Props) {
     end: { taper: 0, cap: true },
   };
 
-  console.log(history, points);
-
   return (
     <div>
       <div
@@ -426,6 +424,7 @@ export function CanvasSmoth({ initHistory }: Props) {
             ...options,
             size: p[0]?.[3] || 10,
           });
+
           const pathData = getSvgPathFromStroke(stroke);
 
           return <path key={i} d={pathData} fill={p[0]?.[2] || "#000"} />;
