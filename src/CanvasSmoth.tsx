@@ -91,7 +91,7 @@ export function CanvasSmoth({
   lineWidth = 3,
   color = "#000",
 }: Props) {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const svgRef = useRef<any>(null);
   const [isDrawing, setIsDrawing] = useState(false);
   const throttleRef = useRef<NodeJS.Timeout | null>(null);
   const lastCallRef = useRef<NodeJS.Timeout | null>(null);
@@ -110,31 +110,128 @@ export function CanvasSmoth({
     useState<keyof typeof easingFunctions>("cubic");
 
   useEffect(() => {
+    return;
+
+    const now = Date.now();
+    const timeSinceLastExecution = now - lastExecutionRef.current;
+
+    const executeTransact = () => {
+      db.transact(
+        db.tx.party[DEMO_ID].update({
+          canvas: history,
+        }),
+      );
+      lastExecutionRef.current = Date.now();
+    };
+
+    if (timeSinceLastExecution >= 300) {
+      executeTransact();
+    } else {
+      if (throttleRef.current) {
+        clearTimeout(throttleRef.current);
+      }
+
+      throttleRef.current = setTimeout(
+        executeTransact,
+        300 - timeSinceLastExecution,
+      );
+    }
+
+    if (lastCallRef.current) {
+      clearTimeout(lastCallRef.current);
+    }
+
+    lastCallRef.current = setTimeout(executeTransact, 300);
+
+    return () => {
+      if (throttleRef.current) {
+        clearTimeout(throttleRef.current);
+      }
+      if (lastCallRef.current) {
+        clearTimeout(lastCallRef.current);
+      }
+    };
+  }, [history]);
+
+  useEffect(() => {
     let rawLine: [number, number][] = [];
-    let lineCnt = 0;
     let allPoints: any[] = [];
 
-    initHistory.forEach((ev) => {
+    history.forEach((ev) => {
       const [event, x, y] = ev;
       if (event === "start") {
-        // ctx.moveTo(x, y);
         rawLine = [[x, y]];
       } else if (event === "move") {
         rawLine.push([x, y]);
-        // ctx.lineTo(x, y);
       } else if (event === "end") {
         allPoints.push(
           rawLine.map(([x, y], i, all) => {
-            // return it;
-            // return [+x.toFixed(2), +y.toFixed(2), (i + 1) / all.length];
             return [+x.toFixed(2), +y.toFixed(2)];
           }),
         );
       }
     });
 
+    console.log("--- allPoints", allPoints, Date.now());
+
     setPoints(allPoints);
-  }, []);
+  }, [history]);
+
+  const getCoordinates = (e: React.MouseEvent | React.TouchEvent) => {
+    const canvas = svgRef.current;
+    if (!canvas) return null;
+
+    const k = canvasSize / canvas.getBoundingClientRect().width;
+
+    const rect = canvas.getBoundingClientRect();
+
+    if ("touches" in e) {
+      const touch = e.touches[0] || e.changedTouches[0];
+      return {
+        x: (touch.clientX - rect.left) * k,
+        y: (touch.clientY - rect.top) * k,
+      };
+    } else {
+      return {
+        x: (e.clientX - rect.left) * k,
+        y: (e.clientY - rect.top) * k,
+      };
+    }
+  };
+
+  const startDrawing = (e: React.MouseEvent | React.TouchEvent) => {
+    e.preventDefault();
+
+    const coords = getCoordinates(e);
+    if (!coords) return;
+
+    const { x, y } = coords;
+
+    const newHistory = [...history, ["start", x, y], ["move", x, y]];
+    setHistory(newHistory);
+    setIsDrawing(true);
+  };
+
+  const draw = (e: React.MouseEvent | React.TouchEvent) => {
+    if (!isDrawing) return;
+    e.preventDefault();
+
+    const coords = getCoordinates(e);
+    if (!coords) return;
+
+    const { x, y } = coords;
+
+    const newHistory = [...history, ["move", x, y]];
+    setHistory(newHistory);
+  };
+
+  const stopDrawing = (e?: React.TouchEvent) => {
+    if (e) e.preventDefault();
+    const newHistory = [...history, ["end"]];
+    setHistory(newHistory);
+
+    setIsDrawing(false);
+  };
 
   const options: DrawingOptions = {
     size,
@@ -147,7 +244,7 @@ export function CanvasSmoth({
     end: { taper: 0, cap: true },
   };
 
-  console.log(points);
+  console.log(points.length);
 
   return (
     <div>
@@ -252,6 +349,15 @@ export function CanvasSmoth({
         </div>
       </div>
       <svg
+        ref={svgRef}
+        onMouseDown={startDrawing}
+        onMouseMove={draw}
+        onMouseUp={stopDrawing}
+        onMouseLeave={stopDrawing}
+        onTouchStart={startDrawing}
+        onTouchMove={draw}
+        onTouchEnd={stopDrawing}
+        onTouchCancel={stopDrawing}
         // width={canvasSize + "px"}
         // height={canvasSize + "px"}
         viewBox={`0 0 ${canvasSize} ${canvasSize}`}
