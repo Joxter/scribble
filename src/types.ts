@@ -1,5 +1,5 @@
 export type Party = {
-  players: string[];
+  players: { id: string; name: string }[];
   id: string;
   link: string;
   gamestage: "wait-players" | "ongoing" | "done";
@@ -7,38 +7,52 @@ export type Party = {
     timer: number;
     suggestionsNumber: number;
     wordList: string;
+    //
+    smoothing: number; // 1
+    thinning: number; // 0.1
+    streamline: number; // 0
+    easing: string; // linear
   };
-  history: HistoryItem[];
-  canvas: {
-    size: number;
-    history: CanvasHistory[];
+  paintings: {
+    // тут уже завершенные рисунки
+    timestampStart: number;
     word: string;
+    history: CanvasAndChatHistory[]; // чат и линии
+    scores: {
+      time: string;
+      player: string;
+      addedScore: number;
+    }[];
+  }[];
+  currentCanvas: {
+    history: CanvasAndChatHistory[]; // чат и линии
+    word: string;
+    currentDrowing: JSON[]; // то что что рисует прям сейчас мышкой игрок
   };
 };
 
-type CanvasHistory =
+type JSON = any;
+
+type CanvasAndChatHistory =
   | {
       type: "line";
-      timestamp: number;
-      id: string;
-      dots: [number, number][]; // x, y
+      dots: [x: number, y: number, timestamp: number][];
       color: string;
       width: number;
     }
+  | { type: "undo-line" }
   | {
       type: "message";
       timestamp: number;
+      firstCharTimestamp: number;
       player: string;
       text: string;
-      status: null | "almost" | "done";
-    }
-  | { type: "notification"; timestamp: number; text: string; meta: any }
-  | { type: "change-siggestion"; timestamp: number; text: string }; // init or updated
+    };
 
 type HistoryItem =
   | {
       type: "painting";
-      history: CanvasHistory[];
+      history: CanvasAndChatHistory[];
       timestamp: number;
     }
   | {

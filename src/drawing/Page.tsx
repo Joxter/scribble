@@ -30,7 +30,7 @@ export function DrawingPage() {
   return (
     <div>
       <div style={{ display: "flex" }}>
-        <div style={{ width: "500px" }}>
+        <div style={{ width: "800px" }}>
           <CanvasSmoth
             initHistory={data.party[0].canvas}
             onHistoryChange={() => {}}
@@ -41,8 +41,8 @@ export function DrawingPage() {
             style={{
               // maxWidth: "calc(min(100vw, 100vh) - 50px)",
               // maxHeight: "calc(min(100vw, 100vh) - 50px)",
-              width: "500px",
-              height: "500px",
+              width: "800px",
+              height: "800px",
               // width: "100%",
               // aspectRatio: "1",
               margin: "0 auto",

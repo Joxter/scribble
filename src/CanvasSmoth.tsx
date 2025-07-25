@@ -433,7 +433,6 @@ export function CanvasSmoth({ initHistory }: Props) {
         {points
           // .slice(1, 2)
           .map((p, i) => {
-            console.log(i, p);
             const stroke = getStroke(p, {
               ...options,
               size: p[0]?.[3] || 10,
