@@ -4,6 +4,8 @@ import { db } from "../DB";
 import { Canvas } from "../Canvas";
 import { CanvasSmoth } from "../CanvasSmoth";
 import { canvasSize } from "../utils";
+import { ColorSelector } from "./ColorSelector";
+import { LineWidthSelector } from "./LineWidthSelector";
 
 export function DrawingPage() {
   const { isLoading, error, data } = db.useQuery({
@@ -11,6 +13,9 @@ export function DrawingPage() {
   });
   const id = db.useLocalId("guest");
   const [show, setShow] = useState(false);
+
+  const [size, setSize] = useState(8);
+  const [color, setColor] = useState("#000000");
 
   useEffect(() => {
     setTimeout(() => {
@@ -29,10 +34,20 @@ export function DrawingPage() {
   return (
     <div>
       <div style={{ display: "flex" }}>
-        <div style={{ width: canvasSize + "px" }}>
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: "12px",
+            width: canvasSize + "px",
+          }}
+        >
+          <ColorSelector value={color} onChange={setColor} />
+          <LineWidthSelector value={size} onChange={setSize} />
           <CanvasSmoth
             initHistory={data.party[0].canvas}
-            onHistoryChange={() => {}}
+            color={color}
+            size={size}
           />
         </div>
         {false && (
