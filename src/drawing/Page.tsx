@@ -2,9 +2,8 @@ import React, { useEffect, useState } from "react";
 import { DEMO_ID } from "../config";
 import { db } from "../DB";
 import { Canvas } from "../Canvas";
-import { LineWidthSelector } from "./LineWidthSelector";
-import { ColorSelector } from "./ColorSelector";
 import { CanvasSmoth } from "../CanvasSmoth";
+import { canvasSize } from "../utils";
 
 export function DrawingPage() {
   const { isLoading, error, data } = db.useQuery({
@@ -30,7 +29,7 @@ export function DrawingPage() {
   return (
     <div>
       <div style={{ display: "flex" }}>
-        <div style={{ width: "800px" }}>
+        <div style={{ width: canvasSize + "px" }}>
           <CanvasSmoth
             initHistory={data.party[0].canvas}
             onHistoryChange={() => {}}
@@ -39,27 +38,14 @@ export function DrawingPage() {
         {false && (
           <div
             style={{
-              // maxWidth: "calc(min(100vw, 100vh) - 50px)",
-              // maxHeight: "calc(min(100vw, 100vh) - 50px)",
-              width: "800px",
-              height: "800px",
-              // width: "100%",
-              // aspectRatio: "1",
+              width: canvasSize + "px",
+              height: canvasSize + "px",
               margin: "0 auto",
             }}
           >
             <Canvas
               initHistory={data.party[0].canvas}
-              onHistoryChange={(ev) => {
-                // "f259a402-be81-4806-ba5b-86a4814fb9b1"
-                // db.transact(
-                //   db.tx.history[id()].update({
-                //     event: ev[0],
-                //     x: ev[1] || 0,
-                //     y: ev[2] || 0,
-                //   }),
-                // );
-              }}
+              onHistoryChange={(ev) => {}}
             />
           </div>
         )}
@@ -69,15 +55,6 @@ export function DrawingPage() {
         <p>players</p>
         <p>id: {id}</p>
         <button onClick={resetDEMO}>reset</button>
-        {false && (
-          <>
-            <br />
-            <p>line width: </p>
-            <LineWidthSelector value={lineWidth} onChange={setLineWidth} />
-            <p>color: </p>
-            <ColorSelector value={color} onChange={setColor} />
-          </>
-        )}
       </div>
     </div>
   );

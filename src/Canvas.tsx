@@ -7,8 +7,6 @@ import { cSpline, historyToLinesNumbers, toPairs } from "./utils";
 
 const scale = window.devicePixelRatio;
 
-const canvasSize = 800;
-
 type HistoryItem = [event: string, x?: number, y?: number];
 
 type Props = {

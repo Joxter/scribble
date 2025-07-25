@@ -10,6 +10,8 @@
  * @returns {Float32Array} - the spline points.
  */
 
+export const canvasSize = 600;
+
 export function cSpline(
   points: number[],
   {

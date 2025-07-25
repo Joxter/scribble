@@ -4,11 +4,7 @@ import { getStroke } from "perfect-freehand";
 import { DEMO_ID } from "./config";
 import { db } from "./DB";
 import { ColorSelector } from "./drawing/ColorSelector";
-import { historyToLines } from "./utils";
-
-const scale = window.devicePixelRatio;
-
-const canvasSize = 800;
+import { canvasSize, historyToLines } from "./utils";
 
 type HistoryItem = [event: string, x?: number, y?: number];
 
@@ -418,8 +414,6 @@ export function CanvasSmoth({ initHistory }: Props) {
         onTouchMove={draw}
         onTouchEnd={stopDrawing}
         onTouchCancel={stopDrawing}
-        // width={canvasSize + "px"}
-        // height={canvasSize + "px"}
         viewBox={`0 0 ${canvasSize} ${canvasSize}`}
         style={{
           touchAction: "none",
@@ -430,6 +424,26 @@ export function CanvasSmoth({ initHistory }: Props) {
           // height: "500px",
         }}
       >
+        {false && (
+          <>
+            <defs>
+              <pattern
+                id="grid"
+                width="10"
+                height="10"
+                patternUnits="userSpaceOnUse"
+              >
+                <path
+                  d="M 10 0 L 0 0 0 10"
+                  fill="none"
+                  stroke="#ccc"
+                  strokeWidth="1"
+                />
+              </pattern>
+            </defs>
+            <rect width="100%" height="100%" fill="url(#grid)" />
+          </>
+        )}
         {points
           // .slice(1, 2)
           .map((p, i) => {
@@ -464,6 +478,6 @@ function getSvgPathFromStroke(stroke) {
 }
 
 function fix2(n: number) {
-  // if (typeof n === "number") return +n.toFixed(2);
+  if (typeof n === "number") return +n.toFixed(1);
   return n;
 }
