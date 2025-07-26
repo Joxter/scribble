@@ -36,9 +36,6 @@ $currentLine
 export const $svgPaths = $currentCanvas.map((lines) => {
   const paths: { d: string; color: string }[] = [];
 
-  console.log("------ lines");
-  console.log(lines);
-
   historyToLines(lines as any)
     .map((it) => {
       return {
@@ -69,15 +66,11 @@ export const $svgPaths = $currentCanvas.map((lines) => {
   return paths;
 });
 
-$svgPaths.watch(console.log);
-
-// const { isLoading, error, data } =
 db.subscribeQuery({ party: { $: { where: { id: DEMO_ID } } } }, (resp) => {
   if (resp.error) {
     console.error(resp.error);
   }
   if (resp.data) {
-    console.log("---- canvasAndChatHistoryLoaded", resp.data.party[0].canvas);
     canvasAndChatHistoryLoaded(resp.data.party[0].canvas);
   }
 });
@@ -96,7 +89,43 @@ db.subscribeQuery({ party: { $: { where: { id: DEMO_ID } } } }, (resp) => {
 // );
 
 export function resetDEMO() {
-  db.transact(db.tx.party[DEMO_ID].update({ canvas: [] })).then(() => {
+  db.transact(
+    db.tx.party[DEMO_ID].update({
+      canvas: [
+        ["start", 123, 84, "#000000", 8],
+        ["move", 123, 84, "#000000", 8],
+        ["move", 128, 81, "#000000", 8],
+        ["move", 130, 79, "#000000", 8],
+        ["move", 138, 75, "#000000", 8],
+        ["move", 145, 71, "#000000", 8],
+        ["move", 149, 70, "#000000", 8],
+        ["move", 155, 68, "#000000", 8],
+        ["move", 160, 67, "#000000", 8],
+        ["move", 166, 66, "#000000", 8],
+        ["move", 176, 66, "#000000", 8],
+        ["move", 180, 68, "#000000", 8],
+        ["move", 184, 70, "#000000", 8],
+        ["move", 188, 73, "#000000", 8],
+        ["move", 191, 77, "#000000", 8],
+        ["move", 194, 80, "#000000", 8],
+        ["move", 197, 84, "#000000", 8],
+        ["move", 199, 88, "#000000", 8],
+        ["move", 201, 91, "#000000", 8],
+        ["move", 203, 94, "#000000", 8],
+        ["move", 205, 96, "#000000", 8],
+        ["move", 207, 98, "#000000", 8],
+        ["move", 210, 100, "#000000", 8],
+        ["move", 212, 101, "#000000", 8],
+        ["move", 215, 102, "#000000", 8],
+        ["move", 217, 104, "#000000", 8],
+        ["move", 219, 105, "#000000", 8],
+        ["move", 221, 105, "#000000", 8],
+        ["move", 222, 106, "#000000", 8],
+        ["move", 224, 105, "#000000", 8],
+        ["end", 224, 105, "#000000", 8],
+      ],
+    }),
+  ).then(() => {
     window.location.reload();
   });
 }
