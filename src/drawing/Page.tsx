@@ -1,17 +1,13 @@
 import React, { useEffect, useState } from "react";
-import { DEMO_ID } from "../config";
-import { db } from "../DB";
 import { Canvas } from "../Canvas";
 import { CanvasSmoth } from "../CanvasSmoth";
 import { canvasSize } from "../utils";
 import { ColorSelector } from "./ColorSelector";
 import { LineWidthSelector } from "./LineWidthSelector";
+import { resetDEMO } from "../game.model";
 
 export function DrawingPage() {
-  const { isLoading, error, data } = db.useQuery({
-    party: { $: { where: { id: DEMO_ID } } },
-  });
-  const id = db.useLocalId("guest");
+  // const id = db.useLocalId("guest");
   const [show, setShow] = useState(false);
 
   const [size, setSize] = useState(8);
@@ -20,16 +16,16 @@ export function DrawingPage() {
   useEffect(() => {
     setTimeout(() => {
       setShow(true);
-    }, 1000);
+    }, 500);
   }, []);
 
-  if (isLoading) {
-    return <p>loading</p>;
+  if (!show) {
+    return <p>no show</p>;
   }
 
-  if (!data || !data.party?.[0]?.canvas || !show) {
-    return <p>no data</p>;
-  }
+  // if (!data || !data.party?.[0]?.canvas || !show) {
+  //   return <p>no data</p>;
+  // }
 
   return (
     <div>
@@ -44,11 +40,7 @@ export function DrawingPage() {
         >
           <ColorSelector value={color} onChange={setColor} />
           <LineWidthSelector value={size} onChange={setSize} />
-          <CanvasSmoth
-            initHistory={data.party[0].canvas}
-            color={color}
-            size={size}
-          />
+          <CanvasSmoth color={color} size={size} />
         </div>
         {false && (
           <div
@@ -68,15 +60,8 @@ export function DrawingPage() {
 
       <div>
         <p>players</p>
-        <p>id: {id}</p>
         <button onClick={resetDEMO}>reset</button>
       </div>
     </div>
   );
-}
-
-function resetDEMO() {
-  db.transact(db.tx.party[DEMO_ID].update({ canvas: [""] })).then(() => {
-    window.location.reload();
-  });
 }

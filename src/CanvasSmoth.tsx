@@ -4,6 +4,8 @@ import { getStroke } from "perfect-freehand";
 import { DEMO_ID } from "./config";
 import { db } from "./DB";
 import { canvasSize, historyToLines } from "./utils";
+import { useUnit } from "effector-react";
+import { $svgPaths } from "./game.model";
 
 type HistoryItem = [event: string, x?: number, y?: number];
 
@@ -19,16 +21,10 @@ type DrawingOptions = {
 };
 
 type Props = {
-  initHistory: HistoryItem[];
+  // initHistory: HistoryItem[];
   color: string;
   size: number;
 };
-
-const lazy = new LazyBrush({
-  radius: 3,
-  enabled: true,
-  initialPoint: { x: 0, y: 0 },
-});
 
 const easingFunctions = {
   linear: (t: number) => t,
@@ -36,17 +32,19 @@ const easingFunctions = {
 
 let cnt = 0;
 
-export function CanvasSmoth({ initHistory, color, size }: Props) {
+export function CanvasSmoth({ color, size }: Props) {
   const svgRef = useRef<any>(null);
   const throttleRef = useRef<NodeJS.Timeout | null>(null);
   const lastCallRef = useRef<NodeJS.Timeout | null>(null);
   const lastExecutionRef = useRef<number>(0);
 
   const [isDrawing, setIsDrawing] = useState(false);
-  const [points, setPoints] = React.useState<any[]>([]);
-  const [history, setHistory] = useState<HistoryItem[]>(initHistory);
+
+  const lines = useUnit($svgPaths);
 
   useEffect(() => {
+    return;
+
     const now = Date.now();
     const timeSinceLastExecution = now - lastExecutionRef.current;
 
@@ -86,10 +84,6 @@ export function CanvasSmoth({ initHistory, color, size }: Props) {
         clearTimeout(lastCallRef.current);
       }
     };
-  }, [history]);
-
-  useEffect(() => {
-    setPoints(historyToLines(history));
   }, [history]);
 
   const getCoordinates = (e: React.MouseEvent | React.TouchEvent) => {
@@ -198,42 +192,10 @@ export function CanvasSmoth({ initHistory, color, size }: Props) {
             <rect width="100%" height="100%" fill="url(#grid)" />
           </>
         )}
-        {points.map((p, i) => {
-          const stroke = getStroke(p, {
-            size: p[0]?.[3] || 10,
-            simulatePressure: false,
-            smoothing: 1,
-            thinning: 0.1,
-            streamline: 0,
-            easing: easingFunctions.linear,
-          });
-
-          const pathData = getSvgPathFromStroke(stroke);
-
-          return <path key={i} d={pathData} fill={p[0]?.[2] || "#000"} />;
+        {lines.map((line, i) => {
+          return <path key={i} d={line.d} fill={line.color} />;
         })}
       </svg>
     </div>
   );
-}
-
-function getSvgPathFromStroke(stroke: number[][]) {
-  if (!stroke.length) return "";
-
-  const d = stroke.reduce(
-    (acc, [x0, y0], i, arr) => {
-      const [x1, y1] = arr[(i + 1) % arr.length];
-      acc.push(x0, y0, (x0 + x1) / 2, (y0 + y1) / 2);
-      return acc;
-    },
-    ["M", ...stroke[0], "Q"],
-  );
-
-  d.push("Z");
-  return d.map(fix2).join(" ");
-}
-
-function fix2(n: number) {
-  if (typeof n === "number") return +n.toFixed(1);
-  return n;
 }

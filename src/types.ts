@@ -33,7 +33,7 @@ export type Party = {
 
 type JSON = any;
 
-type CanvasAndChatHistory =
+export type CanvasAndChatHistory =
   | {
       type: "line";
       dots: [x: number, y: number, timestamp: number][];
@@ -49,7 +49,7 @@ type CanvasAndChatHistory =
       text: string;
     };
 
-type HistoryItem =
+export type HistoryItem =
   | {
       type: "painting";
       history: CanvasAndChatHistory[];

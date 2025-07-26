@@ -144,18 +144,21 @@ export function historyToLines(history: any[]) {
     }
 
     if (event === "end" || i === all.length - 1) {
-      allPoints.push(
-        rawLine
-          .map(([x, y, color, width], i, all) => {
-            return [+x.toFixed(2), +y.toFixed(2), color, width];
-          })
-          .filter((it, i, all) => {
-            if (i > 0 && it[0] === all[i - 1][0] && it[1] === all[i - 1][1]) {
-              return false;
-            }
-            return true;
-          }),
-      );
+      if (rawLine.length > 0) {
+        allPoints.push(
+          rawLine
+            .map(([x, y, color, width], i, all) => {
+              return [+x.toFixed(2), +y.toFixed(2), color, width];
+            })
+            .filter((it, i, all) => {
+              if (i > 0 && it[0] === all[i - 1][0] && it[1] === all[i - 1][1]) {
+                return false;
+              }
+              return true;
+            }),
+        );
+      }
+      rawLine = [];
     }
   });
 
@@ -170,4 +173,25 @@ export function toPairs(arr: number[]): Array<[number, number]> {
   }
 
   return pairs;
+}
+
+export function getSvgPathFromStroke(stroke: number[][]) {
+  if (!stroke.length) return "";
+
+  const d = stroke.reduce(
+    (acc, [x0, y0], i, arr) => {
+      const [x1, y1] = arr[(i + 1) % arr.length];
+      acc.push(x0, y0, (x0 + x1) / 2, (y0 + y1) / 2);
+      return acc;
+    },
+    ["M", ...stroke[0], "Q"],
+  );
+
+  d.push("Z");
+  return d.map(fix2).join(" ");
+}
+
+function fix2(n: number) {
+  if (typeof n === "number") return +n.toFixed(1);
+  return n;
 }

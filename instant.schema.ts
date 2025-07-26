@@ -1,11 +1,11 @@
-import { id, i, init, InstaQLEntity } from "@instantdb/react";
+import { id, i, init, InstaQLEntity } from "@instantdb/core";
 
 const APP_ID = "59599101-16e7-493b-8644-ccb75b6cb032";
 
 const _schema = i.schema({
   entities: {
     party: i.entity({
-      canvas: i.json(),
+      canvas: i.json(), // CanvasAndChatHistory
     }),
   },
 });
