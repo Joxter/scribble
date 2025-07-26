@@ -3,7 +3,6 @@ import { LazyBrush } from "lazy-brush";
 import { getStroke } from "perfect-freehand";
 import { DEMO_ID } from "./config";
 import { db } from "./DB";
-import { ColorSelector } from "./drawing/ColorSelector";
 import { canvasSize, historyToLines } from "./utils";
 
 type HistoryItem = [event: string, x?: number, y?: number];
@@ -35,8 +34,9 @@ const easingFunctions = {
   linear: (t: number) => t,
 };
 
+let cnt = 0;
+
 export function CanvasSmoth({ initHistory, color, size }: Props) {
-  console.log({ color, size });
   const svgRef = useRef<any>(null);
   const throttleRef = useRef<NodeJS.Timeout | null>(null);
   const lastCallRef = useRef<NodeJS.Timeout | null>(null);
@@ -144,6 +144,7 @@ export function CanvasSmoth({ initHistory, color, size }: Props) {
   };
 
   const stopDrawing = (e?: React.TouchEvent) => {
+    if (!isDrawing) return;
     if (e) e.preventDefault();
     const coords = getCoordinates(e);
     if (!coords) return;
@@ -156,48 +157,48 @@ export function CanvasSmoth({ initHistory, color, size }: Props) {
   };
 
   return (
-    <svg
-      ref={svgRef}
-      onMouseDown={startDrawing}
-      onMouseMove={draw}
-      onMouseUp={stopDrawing}
-      onMouseLeave={stopDrawing}
-      onTouchStart={startDrawing}
-      onTouchMove={draw}
-      onTouchEnd={stopDrawing}
-      onTouchCancel={stopDrawing}
-      viewBox={`0 0 ${canvasSize} ${canvasSize}`}
-      style={{
-        touchAction: "none",
-        border: "1px solid #ccc",
-        cursor: "crosshair",
-        width: "100%",
-        aspectRatio: "1",
-      }}
-    >
-      {false && (
-        <>
-          <defs>
-            <pattern
-              id="grid"
-              width="10"
-              height="10"
-              patternUnits="userSpaceOnUse"
-            >
-              <path
-                d="M 10 0 L 0 0 0 10"
-                fill="none"
-                stroke="#ccc"
-                strokeWidth="1"
-              />
-            </pattern>
-          </defs>
-          <rect width="100%" height="100%" fill="url(#grid)" />
-        </>
-      )}
-      {points
-        // .slice(1, 2)
-        .map((p, i) => {
+    <div>
+      <p>cnt: {cnt++}</p>
+      <svg
+        ref={svgRef}
+        onMouseDown={startDrawing}
+        onMouseMove={draw}
+        onMouseUp={stopDrawing}
+        onMouseLeave={stopDrawing}
+        onTouchStart={startDrawing}
+        onTouchMove={draw}
+        onTouchEnd={stopDrawing}
+        onTouchCancel={stopDrawing}
+        viewBox={`0 0 ${canvasSize} ${canvasSize}`}
+        style={{
+          touchAction: "none",
+          border: "1px solid #ccc",
+          cursor: "crosshair",
+          width: "100%",
+          aspectRatio: "1",
+        }}
+      >
+        {false && (
+          <>
+            <defs>
+              <pattern
+                id="grid"
+                width="10"
+                height="10"
+                patternUnits="userSpaceOnUse"
+              >
+                <path
+                  d="M 10 0 L 0 0 0 10"
+                  fill="none"
+                  stroke="#ccc"
+                  strokeWidth="1"
+                />
+              </pattern>
+            </defs>
+            <rect width="100%" height="100%" fill="url(#grid)" />
+          </>
+        )}
+        {points.map((p, i) => {
           const stroke = getStroke(p, {
             size: p[0]?.[3] || 10,
             simulatePressure: false,
@@ -211,7 +212,8 @@ export function CanvasSmoth({ initHistory, color, size }: Props) {
 
           return <path key={i} d={pathData} fill={p[0]?.[2] || "#000"} />;
         })}
-    </svg>
+      </svg>
+    </div>
   );
 }
 
