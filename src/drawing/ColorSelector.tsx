@@ -1,12 +1,8 @@
+import { useUnit } from "effector-react";
 import React from "react";
+import { $currentLine, currentLineChanged } from "../game.model";
 
-export function ColorSelector({
-  value,
-  onChange,
-}: {
-  value: string;
-  onChange: (color: string) => void;
-}) {
+export function ColorSelector() {
   const colors = [
     "#000000", // Black
     "#FF0000", // Red
@@ -20,12 +16,14 @@ export function ColorSelector({
     "#A52A2A", // Brown
   ];
 
+  const { color: value } = useUnit($currentLine);
+
   return (
     <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
       {colors.map((color) => (
         <button
           key={color}
-          onClick={() => onChange(color)}
+          onClick={() => currentLineChanged({ color })}
           style={{
             width: "32px",
             height: "37px",

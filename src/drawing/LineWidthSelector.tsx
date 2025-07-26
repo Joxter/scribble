@@ -1,12 +1,10 @@
 import React from "react";
+import { $currentLine, currentLineChanged } from "../game.model";
+import { useUnit } from "effector-react";
 
-export function LineWidthSelector({
-  value,
-  onChange,
-}: {
-  value: number;
-  onChange: (width: number) => void;
-}) {
+export function LineWidthSelector() {
+  const { size: value } = useUnit($currentLine);
+
   const widths = [3, 5, 8, 12, 18, 25];
 
   return (
@@ -14,7 +12,7 @@ export function LineWidthSelector({
       {widths.map((width) => (
         <button
           key={width}
-          onClick={() => onChange(width)}
+          onClick={() => currentLineChanged({ size: width })}
           style={{
             width: "32px",
             height: "32px",

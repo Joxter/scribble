@@ -1,30 +1,10 @@
-import React, { useRef, useEffect, useState } from "react";
-import { LazyBrush } from "lazy-brush";
-import { getStroke } from "perfect-freehand";
-import { DEMO_ID } from "./config";
-import { db } from "./DB";
-import { canvasSize, historyToLines } from "./utils";
+import React, { useRef, useEffect, useState, memo } from "react";
+import { canvasSize, getSvgPathFromStroke, historyToLines } from "./utils";
 import { useUnit } from "effector-react";
-import { $svgPaths } from "./game.model";
+import { $currentLine, $svgPaths, currentLineChanged } from "./game.model";
+import getStroke from "perfect-freehand";
 
 type HistoryItem = [event: string, x?: number, y?: number];
-
-type DrawingOptions = {
-  size: number;
-  simulatePressure: boolean;
-  smoothing: number;
-  thinning: number;
-  streamline: number;
-  easing: (t: number) => number;
-  start: { taper: number; cap: boolean };
-  end: { taper: number; cap: boolean };
-};
-
-type Props = {
-  // initHistory: HistoryItem[];
-  color: string;
-  size: number;
-};
 
 const easingFunctions = {
   linear: (t: number) => t,
@@ -32,96 +12,39 @@ const easingFunctions = {
 
 let cnt = 0;
 
-export function CanvasSmoth({ color, size }: Props) {
-  const svgRef = useRef<any>(null);
-  const throttleRef = useRef<NodeJS.Timeout | null>(null);
-  const lastCallRef = useRef<NodeJS.Timeout | null>(null);
-  const lastExecutionRef = useRef<number>(0);
+function getCoordinates(e: React.MouseEvent | React.TouchEvent) {
+  const svgEl = document.querySelector("#player-canvas")!;
+  const rect = svgEl.getBoundingClientRect();
 
+  const k = canvasSize / rect.width;
+
+  if ("touches" in e) {
+    const touch = e.touches[0] || e.changedTouches[0];
+    return {
+      x: (touch.clientX - rect.left) * k,
+      y: (touch.clientY - rect.top) * k,
+    };
+  } else {
+    return {
+      x: (e.clientX - rect.left) * k,
+      y: (e.clientY - rect.top) * k,
+    };
+  }
+}
+
+export function CanvasSmoth() {
   const [isDrawing, setIsDrawing] = useState(false);
 
-  const lines = useUnit($svgPaths);
-
-  useEffect(() => {
-    return;
-
-    const now = Date.now();
-    const timeSinceLastExecution = now - lastExecutionRef.current;
-
-    const executeTransact = () => {
-      db.transact(
-        db.tx.party[DEMO_ID].update({
-          canvas: history,
-        }),
-      );
-      lastExecutionRef.current = Date.now();
-    };
-
-    if (timeSinceLastExecution >= 300) {
-      executeTransact();
-    } else {
-      if (throttleRef.current) {
-        clearTimeout(throttleRef.current);
-      }
-
-      throttleRef.current = setTimeout(
-        executeTransact,
-        300 - timeSinceLastExecution,
-      );
-    }
-
-    if (lastCallRef.current) {
-      clearTimeout(lastCallRef.current);
-    }
-
-    lastCallRef.current = setTimeout(executeTransact, 300);
-
-    return () => {
-      if (throttleRef.current) {
-        clearTimeout(throttleRef.current);
-      }
-      if (lastCallRef.current) {
-        clearTimeout(lastCallRef.current);
-      }
-    };
-  }, [history]);
-
-  const getCoordinates = (e: React.MouseEvent | React.TouchEvent) => {
-    const canvas = svgRef.current;
-    if (!canvas) return null;
-
-    const k = canvasSize / canvas.getBoundingClientRect().width;
-
-    const rect = canvas.getBoundingClientRect();
-
-    if ("touches" in e) {
-      const touch = e.touches[0] || e.changedTouches[0];
-      return {
-        x: (touch.clientX - rect.left) * k,
-        y: (touch.clientY - rect.top) * k,
-      };
-    } else {
-      return {
-        x: (e.clientX - rect.left) * k,
-        y: (e.clientY - rect.top) * k,
-      };
-    }
-  };
+  const currentLine = useUnit($currentLine);
 
   const startDrawing = (e: React.MouseEvent | React.TouchEvent) => {
     e.preventDefault();
 
-    const coords = getCoordinates(e);
-    if (!coords) return;
+    const { x, y } = getCoordinates(e);
 
-    const { x, y } = coords;
-
-    const newHistory = [
-      ...history,
-      ["start", x, y, color, size],
-      ["move", x, y, color, size],
-    ];
-    setHistory(newHistory);
+    currentLineChanged({
+      points: [[x, y]],
+    });
     setIsDrawing(true);
   };
 
@@ -129,24 +52,22 @@ export function CanvasSmoth({ color, size }: Props) {
     if (!isDrawing) return;
     e.preventDefault();
 
-    const coords = getCoordinates(e);
-    if (!coords) return;
-    const { x, y } = coords;
+    const { x, y } = getCoordinates(e);
 
-    const newHistory = [...history, ["move", x, y, color, size]];
-    setHistory(newHistory);
+    currentLineChanged({
+      points: [...currentLine.points, [x, y]],
+    });
   };
 
   const stopDrawing = (e?: React.TouchEvent) => {
     if (!isDrawing) return;
     if (e) e.preventDefault();
-    const coords = getCoordinates(e);
-    if (!coords) return;
-    const { x, y } = coords;
 
-    const newHistory = [...history, ["end", x, y, color, size]];
-    setHistory(newHistory);
+    const { x, y } = getCoordinates(e);
 
+    currentLineChanged({
+      points: [...currentLine.points, [x, y]],
+    });
     setIsDrawing(false);
   };
 
@@ -154,7 +75,7 @@ export function CanvasSmoth({ color, size }: Props) {
     <div>
       <p>cnt: {cnt++}</p>
       <svg
-        ref={svgRef}
+        id="player-canvas"
         onMouseDown={startDrawing}
         onMouseMove={draw}
         onMouseUp={stopDrawing}
@@ -192,10 +113,30 @@ export function CanvasSmoth({ color, size }: Props) {
             <rect width="100%" height="100%" fill="url(#grid)" />
           </>
         )}
-        {lines.map((line, i) => {
-          return <path key={i} d={line.d} fill={line.color} />;
-        })}
+        <ExistingLines />
+        <path
+          d={getSvgPathFromStroke(
+            getStroke(currentLine.points, {
+              size: currentLine.size,
+              simulatePressure: false,
+              smoothing: 1,
+              thinning: 0.1,
+              streamline: 0,
+              easing: easingFunctions.linear,
+            }),
+          )}
+          fill={currentLine.color}
+        />{" "}
       </svg>
     </div>
   );
 }
+
+const ExistingLines = memo(() => {
+  const lines = useUnit($svgPaths);
+  console.log("ExistingLines");
+
+  return lines.map((line, i) => {
+    return <path key={i} d={line.d} fill={line.color} />;
+  });
+});

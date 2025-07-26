@@ -10,9 +10,6 @@ export function DrawingPage() {
   // const id = db.useLocalId("guest");
   const [show, setShow] = useState(false);
 
-  const [size, setSize] = useState(8);
-  const [color, setColor] = useState("#000000");
-
   useEffect(() => {
     setTimeout(() => {
       setShow(true);
@@ -38,9 +35,9 @@ export function DrawingPage() {
             width: canvasSize + "px",
           }}
         >
-          <ColorSelector value={color} onChange={setColor} />
-          <LineWidthSelector value={size} onChange={setSize} />
-          <CanvasSmoth color={color} size={size} />
+          <ColorSelector />
+          <LineWidthSelector />
+          <CanvasSmoth />
         </div>
         {false && (
           <div
