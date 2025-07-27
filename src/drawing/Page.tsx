@@ -6,7 +6,6 @@ import { LineWidthSelector } from "./LineWidthSelector";
 import { resetDEMO } from "../game.model";
 
 export function DrawingPage() {
-  // const id = db.useLocalId("guest");
   const [show, setShow] = useState(false);
 
   useEffect(() => {
@@ -19,10 +18,6 @@ export function DrawingPage() {
     return <p>no show</p>;
   }
 
-  // if (!data || !data.party?.[0]?.canvas || !show) {
-  //   return <p>no data</p>;
-  // }
-
   return (
     <div>
       <div style={{ display: "flex" }}>
@@ -32,11 +27,13 @@ export function DrawingPage() {
             flexDirection: "column",
             gap: "12px",
             width: canvasSize + "px",
+            // width: 400 + "px",
           }}
         >
           <ColorSelector />
           <LineWidthSelector />
           <CanvasSmoth />
+          <CanvasSmoth debugMode />
         </div>
       </div>
 
