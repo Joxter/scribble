@@ -1,7 +1,7 @@
-import React, { useRef, useEffect, useState, memo } from "react";
-import { canvasSize, getSvgPathFromStroke, historyToLines } from "./utils";
+import React, { useState, memo } from "react";
 import { useUnit } from "effector-react";
-import { $currentLine, $svgPaths, currentLineChanged } from "./game.model";
+import { canvasSize, getSvgPathFromStroke } from "../utils";
+import { $currentLine, $svgPaths, currentLineChanged } from "../game.model";
 import getStroke from "perfect-freehand";
 
 type HistoryItem = [event: string, x?: number, y?: number];

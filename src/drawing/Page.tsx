@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Canvas } from "../Canvas";
-import { CanvasSmoth } from "../CanvasSmoth";
+import { CanvasSmoth } from "./Canvas";
 import { canvasSize } from "../utils";
 import { ColorSelector } from "./ColorSelector";
 import { LineWidthSelector } from "./LineWidthSelector";
@@ -39,20 +38,6 @@ export function DrawingPage() {
           <LineWidthSelector />
           <CanvasSmoth />
         </div>
-        {false && (
-          <div
-            style={{
-              width: canvasSize + "px",
-              height: canvasSize + "px",
-              margin: "0 auto",
-            }}
-          >
-            <Canvas
-              initHistory={data.party[0].canvas}
-              onHistoryChange={(ev) => {}}
-            />
-          </div>
-        )}
       </div>
 
       <div>
