@@ -25,15 +25,24 @@ export function DrawingPage() {
           style={{
             display: "flex",
             flexDirection: "column",
-            gap: "12px",
+            gap: "0px",
             width: canvasSize + "px",
             // width: 400 + "px",
           }}
         >
-          <ColorSelector />
-          <LineWidthSelector />
           <CanvasSmoth />
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+            }}
+          >
+            <LineWidthSelector />
+            <ColorSelector />
+          </div>
+          {/*
           <CanvasSmoth debugMode />
+            */}
         </div>
       </div>
 

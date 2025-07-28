@@ -142,6 +142,7 @@ export function CanvasSmoth({
         viewBox={`0 0 ${canvasSize} ${canvasSize}`}
         style={{
           touchAction: "none",
+          display: "block",
           border: "1px solid #ccc",
           cursor: "crosshair",
           width: "100%",
