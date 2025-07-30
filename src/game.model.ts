@@ -27,6 +27,7 @@ export const currentLineChanged = createEvent<{
   size?: number;
 }>();
 
+export const undoClicked = createEvent<any>();
 export const addLine = createEvent<CurrentLine>();
 
 export const canvasAndChatHistoryLoaded = createEvent<{
@@ -63,10 +64,9 @@ export const $svgPaths = $currentCanvas.map((lines) => {
         easing: easingFunctions.linear,
       });
 
-      paths.push({
-        d: getSvgPathFromStroke(stroke),
-        color: it.color,
-      });
+      paths.push({ d: getSvgPathFromStroke(stroke), color: it.color });
+    } else if (it.type === "undo") {
+      paths.pop();
     }
   });
 
@@ -84,13 +84,13 @@ db.subscribeQuery({ party: { $: { where: { id: DEMO_ID } } } }, (resp) => {
   }
 });
 
-const aa = sample({
+const addLineeee = sample({
   source: [$currentCanvas, $currentLine] as const,
   clock: addLine,
   fn: (a, b) => [a, b] as const,
 });
 
-aa.watch(([[currentCanvas, currentLine], newLine]) => {
+addLineeee.watch(([[currentCanvas, currentLine], newLine]) => {
   db.transact(
     db.tx.party[DEMO_ID].update({
       canvas: {
@@ -114,6 +114,28 @@ aa.watch(([[currentCanvas, currentLine], newLine]) => {
   );
 });
 
+const undoClickedddd = sample({
+  source: [$currentCanvas, $currentLine] as const,
+  clock: undoClicked,
+  fn: (a, b) => [a, b] as const,
+});
+
+undoClickedddd.watch(([[currentCanvas, currentLine], newLine]) => {
+  db.transact(
+    db.tx.party[DEMO_ID].update({
+      canvas: {
+        currentLine: {
+          points: [],
+          color: currentLine.color,
+          size: currentLine.size,
+        },
+        word: "fake word",
+        history: [...currentCanvas, { type: "undo" }],
+      },
+    }),
+  );
+});
+
 export function resetDEMO() {
   db.transact(
     db.tx.party[DEMO_ID].update({
@@ -122,19 +144,19 @@ export function resetDEMO() {
           {
             type: "line",
             dots: [
-              [123, 84],
-              [128, 81],
-              [130, 79],
-              [138, 75],
-              [145, 71],
-              [149, 70],
-              [155, 68],
-              [160, 67],
-              [166, 66],
-              [176, 66],
-              [180, 68],
-              [184, 70],
-              [188, 73],
+              // [123, 84],
+              // [128, 81],
+              // [130, 79],
+              // [138, 75],
+              // [145, 71],
+              // [149, 70],
+              // [155, 68],
+              // [160, 67],
+              // [166, 66],
+              // [176, 66],
+              // [180, 68],
+              // [184, 70],
+              // [188, 73],
             ],
             color: "#000000",
             width: 8,

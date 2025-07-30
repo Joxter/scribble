@@ -40,7 +40,7 @@ export type CanvasAndChatHistory =
       color: string;
       width: number;
     }
-  | { type: "undo-line" }
+  | { type: "undo" }
   | {
       type: "message";
       timestamp: number;
