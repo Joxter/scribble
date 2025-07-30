@@ -5,7 +5,7 @@ import { DrawingPage } from "./drawing/Page";
 export function Router() {
   return (
     <div>
-      <Link href="/scribble/">рисовать</Link>
+      <Link href="/scribble/">главная</Link>
       <Switch>
         <Route path="/scribble/" component={DrawingPage} />
         <Route>404: No such page!</Route>

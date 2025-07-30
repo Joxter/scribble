@@ -31,6 +31,9 @@ export function DrawingPage() {
             // width: 400 + "px",
           }}
         >
+          <a href="https://joxter.github.io/scribble/" target="_blank">
+            https://joxter.github.io/scribble/
+          </a>
           <CanvasSmoth />
           <div
             style={{
