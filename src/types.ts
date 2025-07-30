@@ -27,7 +27,7 @@ export type Party = {
   currentCanvas: {
     history: CanvasAndChatHistory[]; // чат и линии
     word: string;
-    currentDrowing: JSON[]; // то что что рисует прям сейчас мышкой игрок
+    currentLine: JSON[]; // то что что рисует прям сейчас мышкой игрок
   };
 };
 

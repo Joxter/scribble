@@ -5,13 +5,19 @@ import { getSvgPathFromStroke, historyToLines } from "./utils";
 import { DEMO_ID } from "./config";
 import { db } from "./DB";
 
-const easingFunctions = { linear: (t: number) => t };
-
-export const $currentLine = createStore<{
+type CurrentLine = {
   points: [x: number, y: number][];
   color: string;
   size: number;
-}>({ points: [], color: "#000000", size: 8 });
+};
+
+const easingFunctions = { linear: (t: number) => t };
+
+export const $currentLine = createStore<CurrentLine>({
+  points: [],
+  color: "#000000",
+  size: 8,
+});
 
 export const $currentCanvas = createStore<CanvasAndChatHistory[]>([]);
 
@@ -21,17 +27,21 @@ export const currentLineChanged = createEvent<{
   size?: number;
 }>();
 
-export const addLine = createEvent<{
-  points?: [x: number, y: number][];
-  color?: string;
-  size?: number;
+export const addLine = createEvent<CurrentLine>();
+
+export const canvasAndChatHistoryLoaded = createEvent<{
+  history: CanvasAndChatHistory[];
+  word: string;
+  currentLine: CurrentLine;
 }>();
 
-export const canvasAndChatHistoryLoaded = createEvent<CanvasAndChatHistory[]>();
-
-$currentCanvas.on(canvasAndChatHistoryLoaded, (_, v) => v);
+$currentCanvas.on(canvasAndChatHistoryLoaded, (_, { history }) => history);
 
 $currentLine
+  .on(canvasAndChatHistoryLoaded, (s, { currentLine }) => {
+    console.log("currentLine", currentLine);
+    return currentLine;
+  })
   .on(currentLineChanged, (s, v) => {
     return { ...s, ...v };
   })
@@ -64,132 +74,79 @@ export const $svgPaths = $currentCanvas.map((lines) => {
 });
 
 db.subscribeQuery({ party: { $: { where: { id: DEMO_ID } } } }, (resp) => {
+  // console.log(resp);
   if (resp.error) {
     console.error(resp.error);
   }
   if (resp.data) {
+    // console.log(resp.data.party[0].canvas);
     canvasAndChatHistoryLoaded(resp.data.party[0].canvas);
   }
 });
 
 const aa = sample({
-  source: $currentCanvas,
+  source: [$currentCanvas, $currentLine] as const,
   clock: addLine,
   fn: (a, b) => [a, b] as const,
 });
 
-aa.watch(([currentCanvas, newLine]) => {
-  // console.log({ currentCanvas, newLine });
+aa.watch(([[currentCanvas, currentLine], newLine]) => {
   db.transact(
     db.tx.party[DEMO_ID].update({
-      canvas: [
-        ...currentCanvas,
-        {
-          type: "line",
-          dots: newLine.points,
-          color: newLine.color,
-          width: newLine.size,
+      canvas: {
+        currentLine: {
+          points: [],
+          color: currentLine.color,
+          size: currentLine.size,
         },
-      ],
+        word: "fake word",
+        history: [
+          ...currentCanvas,
+          {
+            type: "line",
+            dots: newLine.points,
+            color: newLine.color,
+            width: newLine.size,
+          },
+        ],
+      },
     }),
   );
 });
 
-// const throttleRef = useRef<NodeJS.Timeout | null>(null);
-// const lastCallRef = useRef<NodeJS.Timeout | null>(null);
-// const lastExecutionRef = useRef<number>(0);
-// useEffect(() => {
-//   return;
-
-//   const now = Date.now();
-//   const timeSinceLastExecution = now - lastExecutionRef.current;
-
-//   const executeTransact = () => {
-//     db.transact(
-//       db.tx.party[DEMO_ID].update({
-//         canvas: history,
-//       }),
-//     );
-//     lastExecutionRef.current = Date.now();
-//   };
-
-//   if (timeSinceLastExecution >= 300) {
-//     executeTransact();
-//   } else {
-//     if (throttleRef.current) {
-//       clearTimeout(throttleRef.current);
-//     }
-
-//     throttleRef.current = setTimeout(
-//       executeTransact,
-//       300 - timeSinceLastExecution,
-//     );
-//   }
-
-//   if (lastCallRef.current) {
-//     clearTimeout(lastCallRef.current);
-//   }
-
-//   lastCallRef.current = setTimeout(executeTransact, 300);
-
-//   return () => {
-//     if (throttleRef.current) {
-//       clearTimeout(throttleRef.current);
-//     }
-//     if (lastCallRef.current) {
-//       clearTimeout(lastCallRef.current);
-//     }
-//   };
-// }, [history]);
-
-// current canvas
-// db.transact(
-//   db.tx.party[DEMO_ID].update({
-//     canvas: history,
-//   }),
-// );
-
 export function resetDEMO() {
   db.transact(
     db.tx.party[DEMO_ID].update({
-      canvas: [
-        {
-          type: "line",
-          dots: [
-            [123, 84],
-            [128, 81],
-            [130, 79],
-            [138, 75],
-            [145, 71],
-            [149, 70],
-            [155, 68],
-            [160, 67],
-            [166, 66],
-            [176, 66],
-            [180, 68],
-            [184, 70],
-            [188, 73],
-            [191, 77],
-            [194, 80],
-            [197, 84],
-            [199, 88],
-            [201, 91],
-            [203, 94],
-            [205, 96],
-            [207, 98],
-            [210, 100],
-            [212, 101],
-            [215, 102],
-            [217, 104],
-            [219, 105],
-            [221, 105],
-            [222, 106],
-            [224, 105],
-          ],
+      canvas: {
+        history: [
+          {
+            type: "line",
+            dots: [
+              [123, 84],
+              [128, 81],
+              [130, 79],
+              [138, 75],
+              [145, 71],
+              [149, 70],
+              [155, 68],
+              [160, 67],
+              [166, 66],
+              [176, 66],
+              [180, 68],
+              [184, 70],
+              [188, 73],
+            ],
+            color: "#000000",
+            width: 8,
+          },
+        ],
+        word: "fake word",
+        currentLine: {
+          points: [],
           color: "#000000",
-          width: 8,
+          size: 8,
         },
-      ],
+      },
     }),
   ).then(() => {
     window.location.reload();
