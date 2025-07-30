@@ -1,4 +1,4 @@
-import { createEvent, createStore } from "effector";
+import { createEvent, createStore, sample } from "effector";
 import { CanvasAndChatHistory } from "./types";
 import getStroke from "perfect-freehand";
 import { getSvgPathFromStroke, historyToLines } from "./utils";
@@ -21,13 +21,23 @@ export const currentLineChanged = createEvent<{
   size?: number;
 }>();
 
+export const addLine = createEvent<{
+  points?: [x: number, y: number][];
+  color?: string;
+  size?: number;
+}>();
+
 export const canvasAndChatHistoryLoaded = createEvent<CanvasAndChatHistory[]>();
 
 $currentCanvas.on(canvasAndChatHistoryLoaded, (_, v) => v);
 
-$currentLine.on(currentLineChanged, (s, v) => {
-  return { ...s, ...v };
-});
+$currentLine
+  .on(currentLineChanged, (s, v) => {
+    return { ...s, ...v };
+  })
+  .on(addLine, (s) => {
+    return { ...s, points: [] };
+  });
 
 export const $svgPaths = $currentCanvas.map((lines) => {
   const paths: { d: string; color: string }[] = [];
@@ -60,6 +70,29 @@ db.subscribeQuery({ party: { $: { where: { id: DEMO_ID } } } }, (resp) => {
   if (resp.data) {
     canvasAndChatHistoryLoaded(resp.data.party[0].canvas);
   }
+});
+
+const aa = sample({
+  source: $currentCanvas,
+  clock: addLine,
+  fn: (a, b) => [a, b] as const,
+});
+
+aa.watch(([currentCanvas, newLine]) => {
+  // console.log({ currentCanvas, newLine });
+  db.transact(
+    db.tx.party[DEMO_ID].update({
+      canvas: [
+        ...currentCanvas,
+        {
+          type: "line",
+          dots: newLine.points,
+          color: newLine.color,
+          width: newLine.size,
+        },
+      ],
+    }),
+  );
 });
 
 // const throttleRef = useRef<NodeJS.Timeout | null>(null);

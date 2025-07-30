@@ -5,6 +5,7 @@ import {
   $currentCanvas,
   $currentLine,
   $svgPaths,
+  addLine,
   currentLineChanged,
 } from "../game.model";
 import getStroke from "perfect-freehand";
@@ -120,9 +121,13 @@ export function CanvasSmoth({
 
     const { x, y } = getCoordinates(e);
 
-    currentLineChanged({
+    addLine({
       points: [...currentLine.points, [x, y]],
+      color: currentLine.color,
+      size: currentLine.size,
     });
+    // currentLineChanged({
+    // });
     setIsDrawing(false);
   };
 
