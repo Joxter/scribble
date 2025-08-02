@@ -130,71 +130,87 @@ export function CanvasSmoth({
   };
 
   return (
-      <svg
-        id="player-canvas"
-        onMouseDown={startDrawing}
-        onMouseMove={draw}
-        onMouseUp={stopDrawing}
-        onMouseLeave={stopDrawing}
-        onTouchStart={startDrawing}
-        onTouchMove={draw}
-        onTouchEnd={stopDrawing}
-        onTouchCancel={stopDrawing}
-        viewBox={`0 0 ${canvasSize} ${canvasSize}`}
-        style={{
-          touchAction: "none",
-          display: "block",
-          border: "1px solid #ccc",
-          cursor: "crosshair",
-          width: "100%",
-          height: "100%",
-        }}
-      >
-        {false && (
-          <>
-            <defs>
-              <pattern
-                id="grid"
-                width="10"
-                height="10"
-                patternUnits="userSpaceOnUse"
-              >
-                <path
-                  d="M 10 0 L 0 0 0 10"
-                  fill="none"
-                  stroke="#ccc"
-                  strokeWidth="1"
-                />
-              </pattern>
-            </defs>
-            <rect width="100%" height="100%" fill="url(#grid)" />
-          </>
-        )}
-        <ExistingLines debugMode={debugMode} />
-        {debugMode ? (
-          <polyline
-            points={currentLine.points.map(([x, y]) => `${x},${y}`).join(" ")}
-            stroke={currentLine.color}
-            strokeWidth={20}
-            strokeLinecap="round"
-            fill="none"
-          />
-        ) : (
-          <path
-            d={getSvgPathFromStroke(
-              getStroke(currentLine.points, {
-                size: currentLine.size,
-                simulatePressure: false,
-                smoothing: 1,
-                thinning: 0.1,
-                streamline: 0,
-                easing: easingFunctions.linear,
-              }),
-            )}
-            fill={currentLine.color}
-          />
-        )}
-      </svg>
+    <div
+      style={{
+        margin: "0 auto",
+        maxWidth: "500px",
+        // width: "100%",
+        maxHeight: "100%",
+        height: "auto",
+        aspectRatio: "1 / 1",
+        display: "flex",
+        justifyContent: "center",
+        backgroundColor: "#555",
+      }}
+    >
+      {!false && (
+        <svg
+          id="player-canvas"
+          onMouseDown={startDrawing}
+          onMouseMove={draw}
+          onMouseUp={stopDrawing}
+          onMouseLeave={stopDrawing}
+          onTouchStart={startDrawing}
+          onTouchMove={draw}
+          onTouchEnd={stopDrawing}
+          onTouchCancel={stopDrawing}
+          viewBox={`0 0 ${canvasSize} ${canvasSize}`}
+          style={{
+            touchAction: "none",
+            display: "block",
+            border: "1px solid #ccc",
+            cursor: "crosshair",
+            // width: "100%",
+            aspectRatio: "1 / 1",
+          }}
+        >
+          {false && (
+            <>
+              <defs>
+                <pattern
+                  id="grid"
+                  width="10"
+                  height="10"
+                  patternUnits="userSpaceOnUse"
+                >
+                  <path
+                    d="M 10 0 L 0 0 0 10"
+                    fill="none"
+                    stroke="#ccc"
+                    strokeWidth="1"
+                  />
+                </pattern>
+              </defs>
+              <rect width="100%" height="100%" fill="url(#grid)" />
+            </>
+          )}
+          <ExistingLines debugMode={debugMode} />
+          {debugMode ? (
+            <polyline
+              points={currentLine.points.map(([x, y]) => `${x},${y}`).join(" ")}
+              stroke={currentLine.color}
+              strokeWidth={20}
+              strokeLinecap="round"
+              fill="none"
+            />
+          ) : (
+            <path
+              d={getSvgPathFromStroke(
+                getStroke(currentLine.points, {
+                  size: currentLine.size,
+                  simulatePressure: false,
+                  smoothing: 1,
+                  thinning: 0.1,
+                  streamline: 0,
+                  easing: easingFunctions.linear,
+                }),
+              )}
+              fill={currentLine.color}
+            />
+          )}
+        </svg>
+      )}
+    </div>
   );
 }
 

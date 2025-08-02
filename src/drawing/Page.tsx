@@ -3,6 +3,9 @@ import { CanvasSmoth } from "./Canvas";
 import { canvasSize } from "../utils";
 import { ColorSelector } from "./ColorSelector";
 import { LineWidthSelector } from "./LineWidthSelector";
+import { Link } from "wouter";
+import { resetDEMO, undoClicked } from "../game.model";
+import arrowArcLeftSrc from "./ArrowArcLeft.svg";
 
 export function DrawingPage() {
   const [show, setShow] = useState(false);
@@ -20,50 +23,62 @@ export function DrawingPage() {
   return (
     <div
       style={{
-        height: "100vh",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        boxSizing: "border-box",
+        height: "100%",
+        display: "grid",
+        gridTemplateRows: "min-content 1fr min-content",
+        gap: "16px",
+        padding: "16px",
+        // justify-items: start
+        justifyItems: "center",
       }}
     >
-      <div
-        style={{
-          display: "flex",
-          gap: "20px",
-          flexWrap: "wrap",
-          alignItems: "center",
-          padding: "0 20px",
-          marginBottom: "10px",
-        }}
-      >
-        <LineWidthSelector />
-        <ColorSelector />
+      <div>
+        <div style={{ display: "flex", gap: "32px" }}>
+          <Link href="/scribble/">главная</Link>
+          <div>
+            <button onClick={resetDEMO}>reset</button>
+          </div>
+          <a href="https://joxter.github.io/scribble/" target="_blank">
+            website
+          </a>
+          <button onClick={undoClicked}>
+            <img style={{ width: "20px" }} src={arrowArcLeftSrc} />
+          </button>
+        </div>
+        <div
+          style={{
+            display: "flex",
+            gap: "20px",
+            flexWrap: "wrap",
+            alignItems: "center",
+            padding: "0 20px",
+            marginBottom: "10px",
+          }}
+        >
+          <LineWidthSelector />
+          <ColorSelector />
+        </div>
       </div>
 
-      {/* Canvas - square, responsive, max 500px */}
       <div
         style={{
-          width: "min(calc(100vh - 120px), calc(100vw - 40px), 500px)",
-          height: "min(calc(100vh - 120px), calc(100vw - 40px), 500px)",
-          flex: "0 0 auto",
+          overflow: "hidden",
+          width: "100%",
+          // display: "flex",
+          //
         }}
       >
         <CanvasSmoth />
       </div>
-
-      {/* Bottom row - reserved for future controls */}
       <div
         style={{
           display: "flex",
           justifyContent: "center",
           alignItems: "center",
           width: "500px",
-          height: "40px",
-          marginTop: "20px",
         }}
       >
-        {/* Future controls can go here */}
+        footer
       </div>
     </div>
   );
