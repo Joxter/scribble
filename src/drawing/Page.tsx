@@ -34,7 +34,7 @@ export function DrawingPage() {
           <a href="https://joxter.github.io/scribble/" target="_blank">
             https://joxter.github.io/scribble/
           </a>
-          <CanvasSmoth />
+          <CanvasSmoth debugMode />
           <div
             style={{
               display: "grid",

@@ -212,14 +212,24 @@ const ExistingLines = memo(({ debugMode }: { debugMode?: boolean }) => {
     return linesRaw.map((line, i) => {
       if (line.type === "line") {
         return (
-          <polyline
-            key={i}
-            points={line.dots.map(([x, y]) => `${x},${y}`).join(" ") || ""}
-            stroke={line.color}
-            strokeWidth={20}
-            strokeLinecap="round"
-            fill="none"
-          />
+          <g key={i}>
+            <polyline
+              points={line.dots.map(([x, y]) => `${x},${y}`).join(" ") || ""}
+              stroke={line.color}
+              strokeWidth={1}
+              strokeLinecap="round"
+              fill="none"
+            />
+            {line.dots.map(([x, y], pointIndex) => (
+              <circle
+                key={`${i}-${pointIndex}`}
+                cx={x}
+                cy={y}
+                r={2}
+                fill="red"
+              />
+            ))}
+          </g>
         );
       }
       return null;
