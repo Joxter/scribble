@@ -28,36 +28,34 @@ export function DrawingPage() {
             flexDirection: "column",
             gap: "0px",
             width: canvasSize + "px",
-            // width: 400 + "px",
           }}
         >
-          <a href="https://joxter.github.io/scribble/" target="_blank">
-            https://joxter.github.io/scribble/
-          </a>
-          <CanvasSmoth debugMode />
+          <div>
+            <button onClick={undoClicked}>
+              <img src={arrowArcLeftSrc} />
+            </button>
+          </div>
           <div
-            style={{
-              display: "grid",
-              gap: "8px",
-            }}
+            style={
+              {
+                //
+              }
+            }
           >
+            <CanvasSmoth />
+          </div>
+          <div style={{ display: "grid", gap: "8px" }}>
             <div>
-              <button onClick={undoClicked}>
-                <img src={arrowArcLeftSrc} />
-              </button>
+              <LineWidthSelector />
             </div>
-            <LineWidthSelector />
-            <ColorSelector />
+            <div>
+              <ColorSelector />
+            </div>
           </div>
           {/*
           <CanvasSmoth debugMode />
             */}
         </div>
-      </div>
-
-      <div>
-        <p>players</p>
-        <button onClick={resetDEMO}>reset</button>
       </div>
     </div>
   );

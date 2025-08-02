@@ -8,62 +8,16 @@ const widths = [3, 5, 8, 12, 18, 25];
 export function LineWidthSelector() {
   const { size: value } = useUnit($currentLine);
   const sliderRef = useRef<HTMLDivElement>(null);
-  const [isDragging, setIsDragging] = useState(false);
 
   const currentIndex = widths.indexOf(value);
   const isLast = currentIndex === widths.length - 1;
-
-  const getClosestWidth = (clientX: number) => {
-    if (!sliderRef.current) return value;
-
-    const rect = sliderRef.current.getBoundingClientRect();
-
-    const relativeX = clientX - rect.left;
-
-    const percentage = Math.max(0, Math.min(1, relativeX / rect.width));
-
-    const index = Math.round(percentage * (widths.length - 1));
-
-    return widths[index];
-  };
-
-  const handleMouseDown = (e: React.MouseEvent) => {
-    setIsDragging(true);
-
-    const newWidth = getClosestWidth(e.clientX);
-    currentLineChanged({ size: newWidth });
-  };
-
-  const handleMouseMove = (e: MouseEvent) => {
-    if (!isDragging) return;
-
-    const newWidth = getClosestWidth(e.clientX);
-    currentLineChanged({ size: newWidth });
-  };
-
-  const handleMouseUp = () => {
-    setIsDragging(false);
-  };
-
-  useEffect(() => {
-    if (isDragging) {
-      document.addEventListener("mousemove", handleMouseMove);
-      document.addEventListener("mouseup", handleMouseUp);
-
-      return () => {
-        document.removeEventListener("mousemove", handleMouseMove);
-        document.removeEventListener("mouseup", handleMouseUp);
-      };
-    }
-  }, [isDragging]);
 
   const valWidth = Math.max(...widths);
   const valGap = 4;
 
   const silderWidth = valWidth * widths.length + valGap * (widths.length - 1);
 
-  let pinLeft =
-    8 - 2 + valWidth + currentIndex * valWidth + valGap * currentIndex;
+  let pinLeft = currentIndex * valWidth + valGap * currentIndex;
 
   if (isLast) {
     pinLeft -= 2;
@@ -75,7 +29,6 @@ export function LineWidthSelector() {
         display: "inline-flex",
         gap: "4px",
         position: "relative",
-        width: 8 + 25 + 4 + silderWidth + "px",
         height: "32px",
         backgroundColor: "#eee",
         borderRadius: "16px",
@@ -85,11 +38,6 @@ export function LineWidthSelector() {
         overflow: "hidden",
       }}
     >
-      <img
-        src={pencilSrc}
-        style={{ width: valWidth + "px", height: valWidth + "px" }}
-      />
-
       <div
         style={{
           position: "absolute",
@@ -101,13 +49,10 @@ export function LineWidthSelector() {
               ? valWidth + 10 + "px"
               : valWidth + 4 + "px",
           height: "100%",
-          cursor: isDragging ? "grabbing" : "grab",
           backgroundColor: "#007bff",
         }}
       ></div>
       <div
-        ref={sliderRef}
-        onMouseDown={handleMouseDown}
         style={{
           display: "flex",
           gap: valGap + "px",
@@ -118,6 +63,9 @@ export function LineWidthSelector() {
         {widths.map((width, index) => {
           return (
             <div
+              onClick={() => {
+                currentLineChanged({ size: width });
+              }}
               key={width}
               style={{
                 display: "flex",

@@ -64,8 +64,6 @@ const easingFunctions = {
     t + 0.2 * Math.sin(t * 15) * Math.cos(t * 23) * Math.sin(t * 7),
 };
 
-let cnt = 0;
-
 function getCoordinates(e: React.MouseEvent | React.TouchEvent) {
   const svgEl = document.querySelector("#player-canvas")!;
   const rect = svgEl.getBoundingClientRect();
@@ -133,7 +131,6 @@ export function CanvasSmoth({
 
   return (
     <div>
-      <p>cnt: {cnt++}</p>
       <svg
         id="player-canvas"
         onMouseDown={startDrawing}
