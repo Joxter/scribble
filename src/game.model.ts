@@ -2,7 +2,7 @@ import { createEvent, createStore, sample } from "effector";
 import { CanvasAndChatHistory } from "./types";
 import getStroke from "perfect-freehand";
 import { getSvgPathFromStroke, historyToLines } from "./utils";
-import { DEMO_ID } from "./config";
+import { DEMO_ID, smoothConf } from "./config";
 import { db } from "./DB";
 
 type CurrentLine = {
@@ -10,8 +10,6 @@ type CurrentLine = {
   color: string;
   size: number;
 };
-
-const easingFunctions = { linear: (t: number) => t };
 
 export const $currentLine = createStore<CurrentLine>({
   points: [],
@@ -56,12 +54,8 @@ export const $svgPaths = $currentCanvas.map((lines) => {
   lines.forEach((it, i) => {
     if (it.type === "line") {
       const stroke = getStroke(it.dots, {
+        ...smoothConf,
         size: it.width,
-        simulatePressure: false,
-        smoothing: 1,
-        thinning: 0.1,
-        streamline: 0,
-        easing: easingFunctions.linear,
       });
 
       paths.push({ d: getSvgPathFromStroke(stroke), color: it.color });

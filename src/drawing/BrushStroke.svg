@@ -1,0 +1,30 @@
+<svg width="120" height="80" viewBox="0 0 120 80" xmlns="http://www.w3.org/2000/svg">
+  <!-- Определяем переменную для толщины -->
+  <defs>
+    <style>
+      .brush-stroke {
+        stroke: #2c3e50;
+        stroke-width: 6;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        fill: none;
+      }
+      
+      /* Варианты толщины - просто раскомментируйте нужную */
+      /* .brush-stroke { stroke-width: 2; } /* Тонкая */
+      /* .brush-stroke { stroke-width: 4; } /* Средняя */
+      /* .brush-stroke { stroke-width: 6; } /* Обычная (текущая) */
+      /* .brush-stroke { stroke-width: 10; } /* Толстая */
+      /* .brush-stroke { stroke-width: 14; } /* Очень толстая */
+    </style>
+  </defs>
+  
+  <!-- Красивый штрих в виде росчерка -->
+  <path 
+    class="brush-stroke"
+    d="M 15 45 
+       Q 25 25, 40 35
+       Q 55 45, 70 30
+       Q 85 15, 105 40"
+  />
+</svg>

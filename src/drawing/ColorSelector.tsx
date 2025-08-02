@@ -15,7 +15,8 @@ export function ColorSelector() {
     "#3498db",
     "#9b59b6",
     "#ff69b4",
-    "#ecf0f1",
+    "#faf9f5",
+    // "#ecf0f1",
     "#ffffff",
   ];
 
