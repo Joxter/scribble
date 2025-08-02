@@ -130,7 +130,6 @@ export function CanvasSmoth({
   };
 
   return (
-    <div>
       <svg
         id="player-canvas"
         onMouseDown={startDrawing}
@@ -148,7 +147,7 @@ export function CanvasSmoth({
           border: "1px solid #ccc",
           cursor: "crosshair",
           width: "100%",
-          aspectRatio: "1",
+          height: "100%",
         }}
       >
         {false && (
@@ -196,7 +195,6 @@ export function CanvasSmoth({
           />
         )}
       </svg>
-    </div>
   );
 }
 

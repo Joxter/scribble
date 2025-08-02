@@ -13,7 +13,7 @@ export function Router() {
           <button onClick={resetDEMO}>reset</button>
         </div>
         <a href="https://joxter.github.io/scribble/" target="_blank">
-          https://joxter.github.io/scribble/
+          website
         </a>
         <button onClick={undoClicked}>
           <img style={{ width: "20px" }} src={arrowArcLeftSrc} />

@@ -18,34 +18,52 @@ export function DrawingPage() {
   }
 
   return (
-    <div>
-      <div style={{ display: "flex" }}>
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            gap: "12px",
-            width: canvasSize + "px",
-          }}
-        >
-          <div
-            style={{
-              // fit to page - 30px
-              "--a": "min(100vw, 100vh)",
-              width: "calc(var(--a) - 100px)",
-              margin: "0 auto",
-            }}
-          >
-            <CanvasSmoth />
-          </div>
-          <div style={{ display: "flex", justifyContent: "space-between" }}>
-            <LineWidthSelector />
-            <ColorSelector />
-          </div>
-          {/*
-          <CanvasSmoth debugMode />
-            */}
-        </div>
+    <div
+      style={{
+        height: "100vh",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        boxSizing: "border-box",
+      }}
+    >
+      <div
+        style={{
+          display: "flex",
+          gap: "20px",
+          flexWrap: "wrap",
+          alignItems: "center",
+          padding: "0 20px",
+          marginBottom: "10px",
+        }}
+      >
+        <LineWidthSelector />
+        <ColorSelector />
+      </div>
+
+      {/* Canvas - square, responsive, max 500px */}
+      <div
+        style={{
+          width: "min(calc(100vh - 120px), calc(100vw - 40px), 500px)",
+          height: "min(calc(100vh - 120px), calc(100vw - 40px), 500px)",
+          flex: "0 0 auto",
+        }}
+      >
+        <CanvasSmoth />
+      </div>
+
+      {/* Bottom row - reserved for future controls */}
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          width: "500px",
+          height: "40px",
+          marginTop: "20px",
+        }}
+      >
+        {/* Future controls can go here */}
       </div>
     </div>
   );
