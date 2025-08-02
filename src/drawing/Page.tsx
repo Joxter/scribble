@@ -3,8 +3,6 @@ import { CanvasSmoth } from "./Canvas";
 import { canvasSize } from "../utils";
 import { ColorSelector } from "./ColorSelector";
 import { LineWidthSelector } from "./LineWidthSelector";
-import arrowArcLeftSrc from "./ArrowArcLeft.svg";
-import { resetDEMO, undoClicked } from "../game.model";
 
 export function DrawingPage() {
   const [show, setShow] = useState(false);
@@ -26,31 +24,23 @@ export function DrawingPage() {
           style={{
             display: "flex",
             flexDirection: "column",
-            gap: "0px",
+            gap: "12px",
             width: canvasSize + "px",
           }}
         >
-          <div>
-            <button onClick={undoClicked}>
-              <img src={arrowArcLeftSrc} />
-            </button>
-          </div>
           <div
-            style={
-              {
-                //
-              }
-            }
+            style={{
+              // fit to page - 30px
+              "--a": "min(100vw, 100vh)",
+              width: "calc(var(--a) - 100px)",
+              margin: "0 auto",
+            }}
           >
             <CanvasSmoth />
           </div>
-          <div style={{ display: "grid", gap: "8px" }}>
-            <div>
-              <LineWidthSelector />
-            </div>
-            <div>
-              <ColorSelector />
-            </div>
+          <div style={{ display: "flex", justifyContent: "space-between" }}>
+            <LineWidthSelector />
+            <ColorSelector />
           </div>
           {/*
           <CanvasSmoth debugMode />
