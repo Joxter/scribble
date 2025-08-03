@@ -6,6 +6,7 @@ import { LineWidthSelector } from "./LineWidthSelector";
 import { Link } from "wouter";
 import { resetDEMO, undoClicked } from "../game.model";
 import arrowArcLeftSrc from "./ArrowArcLeft.svg";
+import { ColorSelectorOld } from "./ColorSelectorOld";
 
 export function DrawingPage() {
   const [show, setShow] = useState(false);
@@ -56,7 +57,7 @@ export function DrawingPage() {
           }}
         >
           <LineWidthSelector />
-          <ColorSelector />
+          <ColorSelectorOld />
         </div>
       </div>
 
@@ -78,7 +79,7 @@ export function DrawingPage() {
           width: "500px",
         }}
       >
-        footer
+        <ColorSelector />
       </div>
     </div>
   );
