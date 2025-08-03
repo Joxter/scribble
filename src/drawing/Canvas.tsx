@@ -91,6 +91,7 @@ export function CanvasSmoth({
         justifyContent: "center",
         // backgroundColor: "rgb(236, 240, 241)",
         backgroundColor: "#faf9f5",
+        // backgroundColor: "rgb(247, 242, 225)",
       }}
     >
       {!false && (

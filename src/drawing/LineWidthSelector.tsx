@@ -3,7 +3,7 @@ import { $currentLine, currentLineChanged } from "../game.model";
 import { useUnit } from "effector-react";
 import pencilSrc from "./Pencil.svg";
 
-const widths = [3, 5, 8, 12, 18, 25];
+const widths = [3, 8, 12, 16, 25];
 
 export function LineWidthSelector() {
   const { size: value } = useUnit($currentLine);
