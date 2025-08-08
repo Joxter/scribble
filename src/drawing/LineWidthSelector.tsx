@@ -1,12 +1,11 @@
 import React, { useRef, useState, useEffect } from "react";
 import { $currentLine, currentLineChanged } from "../game.model";
 import { useUnit } from "effector-react";
-import pencilSrc from "./Pencil.svg";
 
-const widths = [3, 8, 12, 16, 25];
+const widths = [3, 8, 15, 20, 25];
 
 export function LineWidthSelector() {
-  const { size: value } = useUnit($currentLine);
+  const { size: value, isBucket } = useUnit($currentLine);
   const sliderRef = useRef<HTMLDivElement>(null);
 
   const currentIndex = widths.indexOf(value);
@@ -64,7 +63,7 @@ export function LineWidthSelector() {
           return (
             <div
               onClick={() => {
-                currentLineChanged({ size: width });
+                currentLineChanged({ size: width, isBucket: false });
               }}
               key={width}
               style={{
@@ -86,6 +85,13 @@ export function LineWidthSelector() {
           );
         })}
       </div>
+      <input
+        type="checkbox"
+        checked={isBucket}
+        onChange={() => {
+          currentLineChanged({ isBucket: !isBucket, size: 0 });
+        }}
+      />
     </div>
   );
 }

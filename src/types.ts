@@ -41,6 +41,7 @@ export type CanvasAndChatHistory =
       width: number;
     }
   | { type: "undo" }
+  | { type: "bucket"; x: number; y: number; color: string }
   | {
       type: "message";
       timestamp: number;

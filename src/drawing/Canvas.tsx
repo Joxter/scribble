@@ -5,6 +5,7 @@ import {
   $currentCanvas,
   $currentLine,
   $svgPaths,
+  addBucket,
   addLine,
   currentLineChanged,
 } from "../game.model";
@@ -72,10 +73,21 @@ export function CanvasSmoth({
       points: [...currentLine.points, [x, y]],
       color: currentLine.color,
       size: currentLine.size,
+      isBucket: false,
     });
     // currentLineChanged({
     // });
     setIsDrawing(false);
+  };
+
+  const onBucket = (e?: React.TouchEvent) => {
+    console.log("onBucket", currentLine);
+    if (!currentLine.isBucket) return;
+    if (e) e.preventDefault();
+
+    const { x, y } = getCoordinates(e);
+
+    addBucket({ x, y, color: currentLine.color });
   };
 
   return (
@@ -97,6 +109,7 @@ export function CanvasSmoth({
       {!false && (
         <svg
           id="player-canvas"
+          onClick={onBucket}
           onMouseDown={startDrawing}
           onMouseMove={draw}
           onMouseUp={stopDrawing}

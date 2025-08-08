@@ -9,26 +9,29 @@ type CurrentLine = {
   points: [x: number, y: number][];
   color: string;
   size: number;
+  isBucket: boolean;
 };
 
 export const $currentLine = createStore<CurrentLine>({
   points: [],
   color: "#000000",
   size: 8,
+  isBucket: false,
 });
 
 // $currentLine.watch(console.log);
 
 export const $currentCanvas = createStore<CanvasAndChatHistory[]>([]);
 
-export const currentLineChanged = createEvent<{
-  points?: [x: number, y: number][];
-  color?: string;
-  size?: number;
-}>();
+export const currentLineChanged = createEvent<Partial<CurrentLine>>();
 
 export const undoClicked = createEvent<any>();
 export const addLine = createEvent<CurrentLine>();
+export const addBucket = createEvent<{
+  x: number;
+  y: number;
+  color: string;
+}>();
 
 export const canvasAndChatHistoryLoaded = createEvent<{
   history: CanvasAndChatHistory[];
@@ -52,6 +55,7 @@ $currentLine
 
 export const $svgPaths = $currentCanvas.map((lines) => {
   const paths: { d: string; color: string }[] = [];
+  console.log(lines);
 
   lines.forEach((it, i) => {
     if (it.type === "line") {
@@ -61,6 +65,8 @@ export const $svgPaths = $currentCanvas.map((lines) => {
       });
 
       paths.push({ d: getSvgPathFromStroke(stroke), color: it.color });
+    } else if (it.type === "bucket") {
+      // todo: calculate area by current "paths" and generate proper "d"
     } else if (it.type === "undo") {
       paths.pop();
     }
@@ -90,11 +96,7 @@ addLineeee.watch(([[currentCanvas, currentLine], newLine]) => {
   db.transact(
     db.tx.party[DEMO_ID].update({
       canvas: {
-        currentLine: {
-          points: [],
-          color: currentLine.color,
-          size: currentLine.size,
-        },
+        currentLine: { ...currentLine },
         word: "fake word",
         history: [
           ...currentCanvas,
@@ -103,6 +105,41 @@ addLineeee.watch(([[currentCanvas, currentLine], newLine]) => {
             dots: newLine.points,
             color: newLine.color,
             width: newLine.size,
+          },
+        ],
+      },
+    }),
+  );
+});
+
+const addBucketttt = sample({
+  source: [$currentCanvas, $currentLine] as const,
+  clock: addBucket,
+  fn: (a, b) => [a, b] as const,
+});
+
+addBucketttt.watch(([[currentCanvas, currentLine], newBucket]) => {
+  console.log([
+    ...currentCanvas,
+    {
+      type: "bucket",
+      x: newBucket.x,
+      y: newBucket.y,
+      color: newBucket.color,
+    },
+  ]);
+  db.transact(
+    db.tx.party[DEMO_ID].update({
+      canvas: {
+        currentLine: { ...currentLine },
+        word: "fake word",
+        history: [
+          ...currentCanvas,
+          {
+            type: "bucket",
+            x: newBucket.x,
+            y: newBucket.y,
+            color: newBucket.color,
           },
         ],
       },
@@ -120,11 +157,7 @@ undoClickedddd.watch(([[currentCanvas, currentLine], newLine]) => {
   db.transact(
     db.tx.party[DEMO_ID].update({
       canvas: {
-        currentLine: {
-          points: [],
-          color: currentLine.color,
-          size: currentLine.size,
-        },
+        currentLine: { ...currentLine },
         word: "fake word",
         history: [...currentCanvas, { type: "undo" }],
       },
@@ -137,32 +170,34 @@ export function resetDEMO() {
     db.tx.party[DEMO_ID].update({
       canvas: {
         history: [
-          {
-            type: "line",
-            dots: [
-              // [123, 84],
-              // [128, 81],
-              // [130, 79],
-              // [138, 75],
-              // [145, 71],
-              // [149, 70],
-              // [155, 68],
-              // [160, 67],
-              // [166, 66],
-              // [176, 66],
-              // [180, 68],
-              // [184, 70],
-              // [188, 73],
-            ],
-            color: "#34495e",
-            width: 8,
-          },
+          // {
+          //   type: "line",
+          //   dots: [
+          //     // [123, 84],
+          //     // [128, 81],
+          //     // [130, 79],
+          //     // [138, 75],
+          //     // [145, 71],
+          //     // [149, 70],
+          //     // [155, 68],
+          //     // [160, 67],
+          //     // [166, 66],
+          //     // [176, 66],
+          //     // [180, 68],
+          //     // [184, 70],
+          //     // [188, 73],
+          //   ],
+          //   color: "#34495e",
+          //   width: 8,
+          //   isBucket: false,
+          // },
         ],
         word: "fake word",
         currentLine: {
           points: [],
           color: "#34495e",
           size: 8,
+          isBucket: false,
         },
       },
     }),

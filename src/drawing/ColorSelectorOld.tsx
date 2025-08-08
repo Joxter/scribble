@@ -2,6 +2,9 @@ import { useUnit } from "effector-react";
 import React from "react";
 import { $currentLine, currentLineChanged } from "../game.model";
 
+const size = 28;
+const gap = 8;
+
 export function ColorSelectorOld() {
   const colors = [
     "#111111",
@@ -25,7 +28,7 @@ export function ColorSelectorOld() {
       style={{
         flexWrap: "wrap",
         display: "flex",
-        gap: "8px",
+        gap: gap + "px",
         justifyContent: "space-between",
       }}
     >
@@ -48,8 +51,8 @@ export function ColorSelectorOld() {
           key={color}
           onClick={() => currentLineChanged({ color })}
           style={{
-            width: "32px",
-            height: "32px",
+            width: size + "px",
+            height: size + "px",
             // border: color === "#ffffff" ? `1px solid #333` : `none`,
             // border: false ? `1px solid #333` : `none`,
             border: i === 2 || i === 3 ? `1px solid #333` : `none`,
