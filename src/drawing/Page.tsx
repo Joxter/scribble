@@ -31,6 +31,8 @@ export function DrawingPage() {
         padding: "16px",
         // justify-items: start
         justifyItems: "center",
+        width: "100%",
+        maxWidth: "500px",
       }}
     >
       <div>
@@ -58,7 +60,7 @@ export function DrawingPage() {
       </div>
       <div
         style={{
-          width: "500px",
+          width: "100%",
           display: "flex",
           gap: "20px",
           flexWrap: "wrap",
@@ -75,7 +77,7 @@ export function DrawingPage() {
       </div>
       <div
         style={{
-          width: "500px",
+          width: "100%",
           //
         }}
       >

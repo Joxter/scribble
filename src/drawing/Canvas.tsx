@@ -164,7 +164,7 @@ export function CanvasSmoth({
 const ExistingLines = memo(({ debugMode }: { debugMode?: boolean }) => {
   const lines = useUnit($svgPaths);
   const linesRaw = useUnit($currentCanvas);
-  console.log("ExistingLines");
+  // console.log("ExistingLines");
 
   if (debugMode) {
     return linesRaw.map((line, i) => {

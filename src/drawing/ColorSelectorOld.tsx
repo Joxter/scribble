@@ -21,7 +21,14 @@ export function ColorSelectorOld() {
   const { color: value } = useUnit($currentLine);
 
   return (
-    <div style={{ display: "flex", justifyContent: "space-between" }}>
+    <div
+      style={{
+        flexWrap: "wrap",
+        display: "flex",
+        gap: "8px",
+        justifyContent: "space-between",
+      }}
+    >
       {/*
       <div
         style={{
