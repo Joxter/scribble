@@ -42,22 +42,6 @@ export function DrawingPage() {
           <a href="https://joxter.github.io/scribble/" target="_blank">
             website
           </a>
-          <button onClick={undoClicked}>
-            <img style={{ width: "20px" }} src={arrowArcLeftSrc} />
-          </button>
-        </div>
-        <div
-          style={{
-            display: "flex",
-            gap: "20px",
-            flexWrap: "wrap",
-            alignItems: "center",
-            padding: "0 20px",
-            marginBottom: "10px",
-          }}
-        >
-          <LineWidthSelector />
-          <ColorSelectorOld />
         </div>
       </div>
 
@@ -65,6 +49,7 @@ export function DrawingPage() {
         style={{
           overflow: "hidden",
           width: "100%",
+          // backgroundColor: "red",
           // display: "flex",
           //
         }}
@@ -73,13 +58,28 @@ export function DrawingPage() {
       </div>
       <div
         style={{
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
           width: "500px",
+          display: "flex",
+          gap: "20px",
+          flexWrap: "wrap",
+          alignItems: "center",
+          justifyContent: "space-between",
+          // padding: "0 20px",
+          marginBottom: "10px",
         }}
       >
-        <ColorSelector />
+        <button onClick={undoClicked}>
+          <img style={{ width: "20px" }} src={arrowArcLeftSrc} />
+        </button>
+        <LineWidthSelector />
+      </div>
+      <div
+        style={{
+          width: "500px",
+          //
+        }}
+      >
+        <ColorSelectorOld />
       </div>
     </div>
   );

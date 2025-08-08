@@ -6,8 +6,9 @@ export function ColorSelectorOld() {
   const colors = [
     "#111111",
     "#34495e",
+    "#faf9f5",
+    "#ffffff",
     "#8b4513",
-    //
     "#fa3224",
     "#ffa729",
     "#ffd129",
@@ -15,15 +16,13 @@ export function ColorSelectorOld() {
     "#3498db",
     "#9b59b6",
     "#ff69b4",
-    "#faf9f5",
-    // "#ecf0f1",
-    "#ffffff",
   ];
 
   const { color: value } = useUnit($currentLine);
 
   return (
-    <div style={{ display: "flex", gap: "4px", alignItems: "center" }}>
+    <div style={{ display: "flex", justifyContent: "space-between" }}>
+      {/*
       <div
         style={{
           width: "26px",
@@ -34,23 +33,29 @@ export function ColorSelectorOld() {
           backgroundColor: value,
         }}
       >
-        {/* {value} */}
+        {/* {value} * /}
       </div>
-      {colors.map((color) => (
+      */}
+      {colors.map((color, i) => (
         <button
           key={color}
           onClick={() => currentLineChanged({ color })}
           style={{
-            width: "24px",
-            height: "24px",
+            width: "32px",
+            height: "32px",
             // border: color === "#ffffff" ? `1px solid #333` : `none`,
-            border: 1 ? `1px solid #333` : `none`,
-            // borderRadius: "100%",
-            borderRadius: "8px",
+            // border: false ? `1px solid #333` : `none`,
+            border: i === 2 || i === 3 ? `1px solid #333` : `none`,
+            borderRadius: "100%",
+            // borderRadius: "8px",
             padding: "0",
             // backgroundColor: color === value ? color : "#ffffff",
             backgroundColor: color,
             cursor: "pointer",
+            boxShadow:
+              color === value
+                ? "0 0 0 2px #fff, 0 0 0 5px rgb(0, 123, 255)"
+                : "none",
           }}
         />
       ))}

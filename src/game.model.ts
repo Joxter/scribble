@@ -17,6 +17,8 @@ export const $currentLine = createStore<CurrentLine>({
   size: 8,
 });
 
+// $currentLine.watch(console.log);
+
 export const $currentCanvas = createStore<CanvasAndChatHistory[]>([]);
 
 export const currentLineChanged = createEvent<{
@@ -152,14 +154,14 @@ export function resetDEMO() {
               // [184, 70],
               // [188, 73],
             ],
-            color: "#000000",
+            color: "#34495e",
             width: 8,
           },
         ],
         word: "fake word",
         currentLine: {
           points: [],
-          color: "#000000",
+          color: "#34495e",
           size: 8,
         },
       },
