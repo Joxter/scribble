@@ -1,16 +1,19 @@
 import React, { useEffect, useState } from "react";
-import { CanvasSmoth } from "./Canvas";
+import { Canvas } from "./Canvas";
+import { Canvas as CanvasOld } from "./CanvasOld";
 import { canvasSize } from "../utils";
 import { ColorSelector } from "./ColorSelector";
 import { LineWidthSelector } from "./LineWidthSelector";
 import { Link } from "wouter";
-import { resetDEMO, undoClicked } from "../game.model";
+import { resetDEMO, undoClicked, $renderMode } from "../game.model";
 import arrowArcLeftSrc from "./ArrowArcLeft.svg";
 import { ColorSelectorOld } from "./ColorSelectorOld";
 import { RenderModeSelector } from "./RenderModeSelector";
+import { useUnit } from "effector-react";
 
 export function DrawingPage() {
   const [show, setShow] = useState(false);
+  const renderMode = useUnit($renderMode);
 
   useEffect(() => {
     setTimeout(() => {
@@ -37,7 +40,14 @@ export function DrawingPage() {
       }}
     >
       <div>
-        <div style={{ display: "flex", gap: "32px", alignItems: "center", flexWrap: "wrap" }}>
+        <div
+          style={{
+            display: "flex",
+            gap: "32px",
+            alignItems: "center",
+            flexWrap: "wrap",
+          }}
+        >
           <Link href="/scribble/">главная</Link>
           <div>
             <button onClick={resetDEMO}>reset</button>
@@ -58,7 +68,7 @@ export function DrawingPage() {
           //
         }}
       >
-        <CanvasSmoth />
+        {renderMode === "old" ? <CanvasOld /> : <Canvas />}
       </div>
       <div
         style={{

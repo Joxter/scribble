@@ -1,40 +1,50 @@
 import React, { useRef, useEffect, useState } from "react";
-import { LazyBrush } from "lazy-brush";
-import { getStroke } from "perfect-freehand";
-import { DEMO_ID } from "./config";
-import { db } from "./DB";
-import { cSpline, historyToLinesNumbers, toPairs } from "./utils";
+import { useUnit } from "effector-react";
+import { canvasSize, cSpline, historyToLinesNumbers, toPairs } from "../utils";
+import {
+  $currentCanvas,
+  $currentLine,
+  $renderMode,
+  addLine,
+  currentLineChanged,
+} from "../game.model";
 
 const scale = window.devicePixelRatio;
 
 type HistoryItem = [event: string, x?: number, y?: number];
 
-type Props = {
-  onHistoryChange: (event: any) => void;
-  initHistory: HistoryItem[];
-  lineWidth?: number;
-  color?: string;
-};
+type Props = {};
 
-const lazy = new LazyBrush({
-  radius: 3,
-  enabled: true,
-  initialPoint: { x: 0, y: 0 },
-});
-
-export function Canvas({ initHistory, lineWidth = 3, color = "#000" }: Props) {
+export function Canvas({}: Props = {}) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isDrawing, setIsDrawing] = useState(false);
-  const throttleRef = useRef<NodeJS.Timeout | null>(null);
-  const lastCallRef = useRef<NodeJS.Timeout | null>(null);
-  const lastExecutionRef = useRef<number>(0);
 
-  const smoth = historyToLinesNumbers(initHistory).map((line) => {
+  // Get current state from Effector stores
+  const currentCanvas = useUnit($currentCanvas);
+  const currentLine = useUnit($currentLine);
+  const renderMode = useUnit($renderMode);
+
+  const { color, size: lineWidth } = currentLine;
+
+  // Convert current canvas data to old format for rendering
+  const convertedHistory: HistoryItem[] = [];
+  currentCanvas.forEach((item) => {
+    if (item.type === "line") {
+      item.dots.forEach((dot, index) => {
+        if (index === 0) {
+          convertedHistory.push(["start", dot[0], dot[1]]);
+        }
+        convertedHistory.push(["move", dot[0], dot[1]]);
+      });
+      convertedHistory.push(["end"]);
+    }
+  });
+
+  const smoth = historyToLinesNumbers(convertedHistory).map((line) => {
     return toPairs(
       Array.from(
         cSpline(line.flat(), {
           tension: 0.5,
-          // tension: 0.0,
           numOfSeg: 10,
           close: false,
         }),
@@ -42,67 +52,11 @@ export function Canvas({ initHistory, lineWidth = 3, color = "#000" }: Props) {
     );
   });
 
-  // const smoth = historyToLinesNumbers(initHistory).map((line) => {
-  //   const stroke = getStroke(line, {
-  //     size: 10,
-  //     smoothing: 0.5,
-  //     // ...options,
-  //     // size: p[0]?.[3] || 10,
-  //   });
-  //   return stroke;
-  // });
-
-  const [history, setHistory] = useState<HistoryItem[]>(initHistory);
+  // Use render mode from global state
+  const canvasRenderMode = renderMode === "debug" ? "old" : "new";
 
   useEffect(() => {
-    return;
-
-    const now = Date.now();
-    const timeSinceLastExecution = now - lastExecutionRef.current;
-
-    const executeTransact = () => {
-      db.transact(
-        db.tx.party[DEMO_ID].update({
-          canvas: history,
-        }),
-      );
-      lastExecutionRef.current = Date.now();
-    };
-
-    if (timeSinceLastExecution >= 300) {
-      executeTransact();
-    } else {
-      if (throttleRef.current) {
-        clearTimeout(throttleRef.current);
-      }
-
-      throttleRef.current = setTimeout(
-        executeTransact,
-        300 - timeSinceLastExecution,
-      );
-    }
-
-    if (lastCallRef.current) {
-      clearTimeout(lastCallRef.current);
-    }
-
-    lastCallRef.current = setTimeout(executeTransact, 300);
-
-    return () => {
-      if (throttleRef.current) {
-        clearTimeout(throttleRef.current);
-      }
-      if (lastCallRef.current) {
-        clearTimeout(lastCallRef.current);
-      }
-    };
-  }, [history]);
-
-  // const renderMode = "old";
-  const renderMode = "new";
-
-  useEffect(() => {
-    if (renderMode !== "new") return;
+    if (canvasRenderMode !== "new") return;
     const canvas = canvasRef.current;
     if (!canvas) return;
 
@@ -128,11 +82,10 @@ export function Canvas({ initHistory, lineWidth = 3, color = "#000" }: Props) {
     });
 
     ctx.stroke();
-  }, []);
+  }, [currentCanvas, canvasRenderMode, color, lineWidth]);
 
   useEffect(() => {
-    if (renderMode !== "old") return;
-    console.log("MOUNT", initHistory);
+    if (canvasRenderMode !== "old") return;
     const canvas = canvasRef.current;
     if (!canvas) return;
 
@@ -150,7 +103,7 @@ export function Canvas({ initHistory, lineWidth = 3, color = "#000" }: Props) {
     ctx.clearRect(0, 0, canvasSize, canvasSize);
     ctx.beginPath();
 
-    initHistory.forEach((ev) => {
+    convertedHistory.forEach((ev) => {
       const [event, x, y] = ev;
       if (event === "start") {
         ctx.moveTo(x, y);
@@ -163,7 +116,7 @@ export function Canvas({ initHistory, lineWidth = 3, color = "#000" }: Props) {
       }
     });
     ctx.stroke();
-  }, []);
+  }, [currentCanvas, canvasRenderMode, color, lineWidth]);
 
   const getCoordinates = (e: React.MouseEvent | React.TouchEvent) => {
     const canvas = canvasRef.current;
@@ -203,8 +156,10 @@ export function Canvas({ initHistory, lineWidth = 3, color = "#000" }: Props) {
     ctx.beginPath();
     ctx.moveTo(x, y);
 
-    const newHistory = [...history, ["start", x, y], ["move", x, y]];
-    setHistory(newHistory);
+    // Update current line in global state
+    currentLineChanged({
+      points: [[x, y]],
+    });
     setIsDrawing(true);
   };
 
@@ -225,36 +180,64 @@ export function Canvas({ initHistory, lineWidth = 3, color = "#000" }: Props) {
 
     ctx.lineTo(x, y);
     ctx.stroke();
-    const newHistory = [...history, ["move", x, y]];
-    setHistory(newHistory);
+
+    // Update current line in global state
+    currentLineChanged({
+      points: [...currentLine.points, [x, y]],
+    });
   };
 
   const stopDrawing = (e?: React.TouchEvent) => {
+    if (!isDrawing) return;
     if (e) e.preventDefault();
-    const newHistory = [...history, ["end"]];
-    setHistory(newHistory);
+
+    const coords = e ? getCoordinates(e) : null;
+    const finalPoints = coords
+      ? [...currentLine.points, [coords.x, coords.y]]
+      : currentLine.points;
+
+    // Add line to global state
+    addLine({
+      points: finalPoints,
+      color: currentLine.color,
+      size: currentLine.size,
+      isBucket: false,
+    });
 
     setIsDrawing(false);
   };
 
   return (
-    <canvas
-      ref={canvasRef}
+    <div
       style={{
-        border: "1px solid #ccc",
-        cursor: "crosshair",
-        width: "100%",
-        aspectRatio: "1",
-        touchAction: "none",
+        margin: "0 auto",
+        maxWidth: "500px",
+        maxHeight: "100%",
+        height: "auto",
+        aspectRatio: "1 / 1",
+        display: "flex",
+        justifyContent: "center",
+        backgroundColor: "#faf9f5",
       }}
-      onMouseDown={startDrawing}
-      onMouseMove={draw}
-      onMouseUp={stopDrawing}
-      onMouseLeave={stopDrawing}
-      onTouchStart={startDrawing}
-      onTouchMove={draw}
-      onTouchEnd={stopDrawing}
-      onTouchCancel={stopDrawing}
-    />
+    >
+      <canvas
+        ref={canvasRef}
+        style={{
+          border: "2px dashed #ccc",
+          cursor: "crosshair",
+          width: "100%",
+          aspectRatio: "1",
+          touchAction: "none",
+        }}
+        onMouseDown={startDrawing}
+        onMouseMove={draw}
+        onMouseUp={stopDrawing}
+        onMouseLeave={stopDrawing}
+        onTouchStart={startDrawing}
+        onTouchMove={draw}
+        onTouchEnd={stopDrawing}
+        onTouchCancel={stopDrawing}
+      />
+    </div>
   );
 }

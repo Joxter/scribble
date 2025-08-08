@@ -23,10 +23,10 @@ export const $currentLine = createStore<CurrentLine>({
 
 export const $currentCanvas = createStore<CanvasAndChatHistory[]>([]);
 
-export const $renderMode = createStore<"normal" | "debug">("normal");
+export const $renderMode = createStore<"normal" | "debug" | "old">("normal");
 
 export const currentLineChanged = createEvent<Partial<CurrentLine>>();
-export const renderModeChanged = createEvent<"normal" | "debug">();
+export const renderModeChanged = createEvent<"normal" | "debug" | "old">();
 
 export const undoClicked = createEvent<any>();
 export const addLine = createEvent<CurrentLine>();

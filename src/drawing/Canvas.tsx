@@ -35,7 +35,7 @@ function getCoordinates(e: React.MouseEvent | React.TouchEvent) {
   }
 }
 
-export function CanvasSmoth() {
+export function Canvas() {
   const [isDrawing, setIsDrawing] = useState(false);
 
   const currentLine = useUnit($currentLine);

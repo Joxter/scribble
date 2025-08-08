@@ -6,7 +6,7 @@ export function RenderModeSelector() {
   const renderMode = useUnit($renderMode);
 
   const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    renderModeChanged(e.target.value as "normal" | "debug");
+    renderModeChanged(e.target.value as "normal" | "debug" | "old");
   };
 
   return (
@@ -32,6 +32,7 @@ export function RenderModeSelector() {
       >
         <option value="normal">Normal</option>
         <option value="debug">Debug</option>
+        <option value="old">Canvas Old</option>
       </select>
     </div>
   );
