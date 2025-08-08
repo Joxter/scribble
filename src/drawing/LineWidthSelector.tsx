@@ -85,13 +85,13 @@ export function LineWidthSelector() {
           );
         })}
       </div>
-      <input
+      {/*<input
         type="checkbox"
         checked={isBucket}
         onChange={() => {
           currentLineChanged({ isBucket: !isBucket, size: 0 });
         }}
-      />
+      />*/}
     </div>
   );
 }
