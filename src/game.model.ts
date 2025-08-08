@@ -23,7 +23,10 @@ export const $currentLine = createStore<CurrentLine>({
 
 export const $currentCanvas = createStore<CanvasAndChatHistory[]>([]);
 
+export const $renderMode = createStore<"normal" | "debug">("normal");
+
 export const currentLineChanged = createEvent<Partial<CurrentLine>>();
+export const renderModeChanged = createEvent<"normal" | "debug">();
 
 export const undoClicked = createEvent<any>();
 export const addLine = createEvent<CurrentLine>();
@@ -52,6 +55,8 @@ $currentLine
   .on(addLine, (s) => {
     return { ...s, points: [] };
   });
+
+$renderMode.on(renderModeChanged, (_, mode) => mode);
 
 export const $svgPaths = $currentCanvas.map((lines) => {
   const paths: { d: string; color: string }[] = [];

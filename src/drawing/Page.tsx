@@ -7,6 +7,7 @@ import { Link } from "wouter";
 import { resetDEMO, undoClicked } from "../game.model";
 import arrowArcLeftSrc from "./ArrowArcLeft.svg";
 import { ColorSelectorOld } from "./ColorSelectorOld";
+import { RenderModeSelector } from "./RenderModeSelector";
 
 export function DrawingPage() {
   const [show, setShow] = useState(false);
@@ -36,7 +37,7 @@ export function DrawingPage() {
       }}
     >
       <div>
-        <div style={{ display: "flex", gap: "32px" }}>
+        <div style={{ display: "flex", gap: "32px", alignItems: "center", flexWrap: "wrap" }}>
           <Link href="/scribble/">главная</Link>
           <div>
             <button onClick={resetDEMO}>reset</button>
@@ -44,6 +45,7 @@ export function DrawingPage() {
           <a href="https://joxter.github.io/scribble/" target="_blank">
             website
           </a>
+          <RenderModeSelector />
         </div>
       </div>
 

@@ -4,6 +4,7 @@ import { canvasSize, getSvgPathFromStroke } from "../utils";
 import {
   $currentCanvas,
   $currentLine,
+  $renderMode,
   $svgPaths,
   addBucket,
   addLine,
@@ -34,12 +35,12 @@ function getCoordinates(e: React.MouseEvent | React.TouchEvent) {
   }
 }
 
-export function CanvasSmoth({
-  debugMode = false,
-}: { debugMode?: boolean } = {}) {
+export function CanvasSmoth() {
   const [isDrawing, setIsDrawing] = useState(false);
 
   const currentLine = useUnit($currentLine);
+  const renderMode = useUnit($renderMode);
+  const debugMode = renderMode === "debug";
 
   const startDrawing = (e: React.MouseEvent | React.TouchEvent) => {
     e.preventDefault();
