@@ -1,0 +1,120 @@
+# Scribble
+
+A real-time collaborative drawing application built with React and InstantDB. Create drawings together with others in real-time with smooth brush strokes and intuitive controls.
+
+## Features
+
+- **Real-time Collaboration**: Multiple users can draw simultaneously with instant synchronization
+- **Smooth Drawing**: Powered by `perfect-freehand` for natural, pressure-sensitive strokes
+- **Touch Support**: Works on both desktop and mobile devices
+- **Drawing Tools**:
+  - Color picker
+  - Adjustable brush sizes
+  - Undo functionality
+  - Bucket fill (in development)
+- **Responsive Design**: Optimized for various screen sizes
+
+## Tech Stack
+
+- **Frontend**: React 19 with TypeScript
+- **State Management**: Effector
+- **Real-time Database**: InstantDB
+- **Drawing Engine**: perfect-freehand, lazy-brush
+- **Routing**: Wouter
+- **Build Tool**: Vite
+- **Styling**: CSS
+
+## Prerequisites
+
+- Node.js (version 16 or higher)
+- npm or yarn package manager
+
+## Installation
+
+1. Clone the repository:
+
+```bash
+git clone <repository-url>
+cd scribble
+```
+
+2. Install dependencies:
+
+```bash
+npm install
+```
+
+3. Configure InstantDB:
+   - The app uses InstantDB for real-time synchronization
+   - Current configuration uses a demo ID in `src/config.ts`
+   - For production, you'll need to set up your own InstantDB instance
+
+## Development
+
+Start the development server:
+
+```bash
+npm run dev
+```
+
+The application will be available at `http://localhost:5173` (or the port shown in your terminal).
+
+## Available Scripts
+
+- `npm run dev` - Start development server
+- `npm run build` - Build for production
+- `npm run check-types` - Run TypeScript type checking
+- `npm run deploy` - Build and deploy to GitHub Pages
+
+## Key Components
+
+### Canvas (src/drawing/Canvas.tsx)
+
+The main drawing component that handles:
+
+- Mouse and touch events for drawing
+- Coordinate transformation for responsive design
+- Real-time stroke rendering
+- Integration with the drawing state
+
+### Game Model (src/game.model.ts)
+
+Effector-based state management for:
+
+- Current drawing line and properties
+- Canvas history and synchronization
+- Undo/redo functionality
+- Real-time database updates
+
+### Database (src/DB.ts & instant.schema.ts)
+
+InstantDB integration for:
+
+- Real-time data synchronization
+- Canvas state persistence
+- Multi-user collaboration
+
+## Configuration
+
+The app includes configuration options in `src/config.ts`:
+
+- Canvas size settings
+- Brush smoothing parameters
+- Demo/party ID for database operations
+
+## Deployment
+
+The project is configured for GitHub Pages deployment:
+
+```bash
+npm run deploy
+```
+
+This will build the project and deploy it to the `gh-pages` branch.
+
+## Development Notes
+
+- The app uses a demo configuration with a hardcoded party ID
+- Bucket fill functionality is implemented but not fully integrated
+- The drawing engine uses SVG paths for smooth, scalable strokes
+- Touch events are handled for mobile compatibility
