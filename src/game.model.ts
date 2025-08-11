@@ -99,8 +99,18 @@ db.subscribeQuery(
   (resp) => {
     if (resp.error) console.error(resp.error);
     if (resp.data) {
-      console.log("setCurrentLineID", resp.data.party[0]);
-      setCurrentLineID(resp.data.party[0].currentLine!.id);
+      if (resp.data.party[0]?.currentLine) {
+        console.log("setCurrentLineID", resp.data.party[0]);
+
+        setCurrentLineID(resp.data.party[0].currentLine.id);
+
+        currentLineChanged({
+          size: resp.data.party[0].currentLine.width,
+          color: resp.data.party[0].currentLine.color,
+        });
+      } else {
+        console.log("no party or currentLine", resp.data.party[0]);
+      }
     }
   },
 );
@@ -222,9 +232,3 @@ export async function resetDEMO() {
       window.location.reload();
     });
 }
-
-// штучка
-// [[181,174],[183,174],[186,174],[191,173],[195,173],[200,171],[205,170],[210,168],[214,167],[218,166],[221,166],[226,165],[230,164],[237,163],[245,161],[253,160],[260,160],[267,159],[271,159],[275,159],[277,159],[278,159],[278,159],[279,159],[279,159],[279,158],[279,158]]
-
-// не штучка
-// [[375,189],[375,187],[375,180],[376,172],[377,163],[378,155],[378,148],[378,143],[378,139],[378,135],[378,131],[378,128],[378,127],[378,126],[378,125],[378,124],[378,124],[378,124],[378,123],[378,122],[378,121],[378,121],[378,120],[378,120],[378,120],[378,120]]

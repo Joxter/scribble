@@ -82,8 +82,8 @@ export function Canvas() {
   };
 
   const onBucket = (e?: React.TouchEvent) => {
-    console.log("onBucket", currentLine);
     if (!currentLine.isBucket) return;
+    console.log("onBucket", currentLine);
     if (e) e.preventDefault();
 
     const { x, y } = getCoordinates(e);
