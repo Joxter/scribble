@@ -31,6 +31,16 @@ export type Party = {
   };
 };
 
+type ChatAndLines = {
+  history: CanvasAndChatHistory[]; // чат и линии
+};
+
+type CurrentLine = {
+  currentLine: JSON[]; // то что что рисует прям сейчас мышкой игрок
+  width: number;
+  color: string;
+};
+
 type JSON = any;
 
 export type CanvasAndChatHistory =
@@ -48,21 +58,4 @@ export type CanvasAndChatHistory =
       firstCharTimestamp: number;
       player: string;
       text: string;
-    };
-
-export type HistoryItem =
-  | {
-      type: "painting";
-      history: CanvasAndChatHistory[];
-      timestamp: number;
-    }
-  | {
-      type: "score";
-      data: { player: string; addedScores: number }[];
-      timestamp: number;
-    }
-  | {
-      type: "suggestions";
-      words: string[];
-      timestamp: number;
     };

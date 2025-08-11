@@ -4,6 +4,7 @@ import getStroke from "perfect-freehand";
 import { getSvgPathFromStroke, historyToLines } from "./utils";
 import { DEMO_ID, smoothConf } from "./config";
 import { db } from "./DB";
+import { id, lookup } from "@instantdb/core";
 
 type CurrentLine = {
   points: [x: number, y: number][];
@@ -18,7 +19,6 @@ export const $currentLine = createStore<CurrentLine>({
   size: 8,
   isBucket: false,
 });
-
 // $currentLine.watch(console.log);
 
 export const $currentCanvas = createStore<CanvasAndChatHistory[]>([]);
@@ -42,11 +42,14 @@ export const canvasAndChatHistoryLoaded = createEvent<{
   currentLine: CurrentLine;
 }>();
 
+export const historyUpdated = createEvent<{
+  history: CanvasAndChatHistory[];
+}>();
+
 $currentCanvas.on(canvasAndChatHistoryLoaded, (_, { history }) => history);
 
 $currentLine
   .on(canvasAndChatHistoryLoaded, (s, { currentLine }) => {
-    console.log("currentLine", currentLine);
     return currentLine;
   })
   .on(currentLineChanged, (s, v) => {
@@ -81,134 +84,81 @@ export const $svgPaths = $currentCanvas.map((lines) => {
 });
 
 db.subscribeQuery({ party: { $: { where: { id: DEMO_ID } } } }, (resp) => {
-  // console.log(resp);
-  if (resp.error) {
-    console.error(resp.error);
-  }
+  if (resp.error) console.error(resp.error);
   if (resp.data) {
-    // console.log(resp.data.party[0].canvas);
-    canvasAndChatHistoryLoaded(resp.data.party[0].canvas);
+    // canvasAndChatHistoryLoaded(resp.data.party[0].name);
   }
 });
 
-const addLineeee = sample({
-  source: [$currentCanvas, $currentLine] as const,
-  clock: addLine,
-  fn: (a, b) => [a, b] as const,
-});
-
-addLineeee.watch(([[currentCanvas, currentLine], newLine]) => {
-  db.transact(
-    db.tx.party[DEMO_ID].update({
-      canvas: {
-        currentLine: { ...currentLine },
-        word: "fake word",
-        history: [
-          ...currentCanvas,
-          {
-            type: "line",
-            dots: newLine.points,
-            color: newLine.color,
-            width: newLine.size,
-          },
-        ],
+db.subscribeQuery(
+  {
+    roomEvent: {
+      $: {
+        where: { party: DEMO_ID },
+        order: { serverCreatedAt: "asc" },
       },
-    }),
-  );
-});
-
-const addBucketttt = sample({
-  source: [$currentCanvas, $currentLine] as const,
-  clock: addBucket,
-  fn: (a, b) => [a, b] as const,
-});
-
-addBucketttt.watch(([[currentCanvas, currentLine], newBucket]) => {
-  console.log([
-    ...currentCanvas,
-    {
-      type: "bucket",
-      x: newBucket.x,
-      y: newBucket.y,
-      color: newBucket.color,
     },
-  ]);
+  },
+  (resp) => {
+    if (resp.error) console.error(resp.error);
+    if (resp.data) {
+      console.log(
+        "roomEvents:",
+        resp.data.roomEvent.map((a) => a.it),
+      );
+      // historyUpdated(resp.data.roomEvent.map((a) => a.it));
+    }
+  },
+);
+
+$currentLine.watch((currentLine) => {
+  db.transact(db.tx.curretLine[lookup("party", DEMO_ID)].update(currentLine));
+});
+
+addLine.watch((newLine) => {
   db.transact(
-    db.tx.party[DEMO_ID].update({
-      canvas: {
-        currentLine: { ...currentLine },
-        word: "fake word",
-        history: [
-          ...currentCanvas,
-          {
-            type: "bucket",
-            x: newBucket.x,
-            y: newBucket.y,
-            color: newBucket.color,
-          },
-        ],
-      },
-    }),
+    db.tx.roomEvent[id()]
+      .create({
+        it: {
+          type: "line",
+          dots: newLine.points,
+          color: newLine.color,
+          width: newLine.size,
+        },
+        // timestamp: new Date(),
+      })
+      .link({ party: DEMO_ID }),
   );
 });
 
-const undoClickedddd = sample({
-  source: [$currentCanvas, $currentLine] as const,
-  clock: undoClicked,
-  fn: (a, b) => [a, b] as const,
-});
-
-undoClickedddd.watch(([[currentCanvas, currentLine], newLine]) => {
+undoClicked.watch(() => {
   db.transact(
-    db.tx.party[DEMO_ID].update({
-      canvas: {
-        currentLine: { ...currentLine },
-        word: "fake word",
-        history: [...currentCanvas, { type: "undo" }],
-      },
-    }),
+    db.tx.roomEvent[id()]
+      .create({
+        it: { type: "undo" },
+        // timestamp: new Date()
+      })
+      .link({ party: DEMO_ID }),
   );
 });
 
 export function resetDEMO() {
-  db.transact(
-    db.tx.party[DEMO_ID].update({
-      canvas: {
-        history: [
-          // {
-          //   type: "line",
-          //   dots: [
-          //     // [123, 84],
-          //     // [128, 81],
-          //     // [130, 79],
-          //     // [138, 75],
-          //     // [145, 71],
-          //     // [149, 70],
-          //     // [155, 68],
-          //     // [160, 67],
-          //     // [166, 66],
-          //     // [176, 66],
-          //     // [180, 68],
-          //     // [184, 70],
-          //     // [188, 73],
-          //   ],
-          //   color: "#34495e",
-          //   width: 8,
-          //   isBucket: false,
-          // },
-        ],
-        word: "fake word",
-        currentLine: {
-          points: [],
+  db.transact(db.tx.party[DEMO_ID].delete())
+    .then(() => {
+      return db.transact([
+        db.tx.party[DEMO_ID].create({
+          name: "demo party",
+        }),
+        db.tx.curretLine[lookup("party", DEMO_ID)].update({
+          dots: [],
+          width: 8,
           color: "#34495e",
-          size: 8,
-          isBucket: false,
-        },
-      },
-    }),
-  ).then(() => {
-    window.location.reload();
-  });
+        }),
+      ]);
+    })
+    .then(() => {
+      window.location.reload();
+    });
 }
 
 // штучка

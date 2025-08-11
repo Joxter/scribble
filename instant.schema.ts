@@ -5,27 +5,30 @@ const APP_ID = "59599101-16e7-493b-8644-ccb75b6cb032";
 const _schema = i.schema({
   entities: {
     party: i.entity({
-      canvas: i.json(), // currentCanvas
+      name: i.string().unique().indexed(),
+    }),
+    roomEvent: i.entity({
+      it: i.json(),
+      // timestamp: i.date(),
+    }),
+    curretLine: i.entity({
+      dots: i.json(),
+      width: i.number(),
+      color: i.string(),
     }),
   },
+  links: {
+    roomEvents: {
+      forward: { on: "party", has: "many", label: "roomEvents" },
+      reverse: { on: "roomEvent", has: "one", label: "party" },
+    },
+    roomCurrentLines: {
+      forward: { on: "party", has: "one", label: "currentLine" },
+      reverse: { on: "curretLine", has: "one", label: "party" },
+    },
+  },
 });
-// canvas: {
-//   currentLine: {
-//     points: [],
-//     color: currentLine.color,
-//     size: currentLine.size,
-//   },
-//   word: "fake word",
-//   history: [
-//     ...currentCanvas,
-//     {
-//       type: "line",
-//       dots: newLine.points,
-//       color: newLine.color,
-//       width: newLine.size,
-//     },
-//   ],
-// }
+
 type _AppSchema = typeof _schema;
 interface AppSchema extends _AppSchema {}
 const schema: AppSchema = _schema;
@@ -33,20 +36,3 @@ const schema: AppSchema = _schema;
 export type { AppSchema };
 
 export default schema;
-// {
-//   players: string[];
-//   id: string;
-//   link: string;
-//   gamestage: "wait-players" | "ongoing" | "done";
-//   settings: {
-//     timer: number;
-//     suggestionsNumber: number;
-//     wordList: string;
-//   };
-//   history: HistoryItem[];
-//   canvas: {
-//     size: number;
-//     history: CanvasHistory[];
-//     word: string;
-//   };
-// }
