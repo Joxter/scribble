@@ -1,39 +1,84 @@
-import React from "react";
+import React, { useState } from "react";
 import { useUnit } from "effector-react";
-import { $renderMode, renderModeChanged } from "../game.model";
+import {
+  $renderMode,
+  $debugMode,
+  renderModeChanged,
+  debugModeToggled,
+} from "../game.model";
 
-export function RenderModeSelector() {
+export function DeveloperTools() {
+  const [isCollapsed, setIsCollapsed] = useState(true);
   const renderMode = useUnit($renderMode);
+  const debugMode = useUnit($debugMode);
 
-  const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    renderModeChanged(e.target.value as "normal" | "debug" | "old");
+  const handleCanvasModeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    renderModeChanged(e.target.value as "normal" | "old");
   };
 
   return (
-    <div style={{ margin: "10px 0" }}>
-      <label
-        htmlFor="render-mode"
-        style={{ marginRight: "8px", fontSize: "14px" }}
-      >
-        Render:
-      </label>
-      <select
-        id="render-mode"
-        value={renderMode}
-        onChange={handleChange}
+    <div
+      style={{
+        position: "fixed",
+        top: "10px",
+        left: "10px",
+        fontSize: "14px",
+        zIndex: 1000,
+      }}
+    >
+      <button
+        onClick={() => setIsCollapsed(!isCollapsed)}
         style={{
-          padding: "4px 8px",
-          fontSize: "14px",
-          borderRadius: "4px",
+          padding: "6px 10px",
+          fontSize: "12px",
+          backgroundColor: "#f0f0f0",
           border: "1px solid #ccc",
-          backgroundColor: "white",
+          borderRadius: "4px",
           cursor: "pointer",
         }}
       >
-        <option value="normal">Normal</option>
-        <option value="debug">Debug</option>
-        <option value="old">Canvas Old</option>
-      </select>
+        Dev {isCollapsed ? "▼" : "▲"}
+      </button>
+
+      {!isCollapsed && (
+        <div
+          style={{
+            marginTop: "8px",
+            padding: "8px",
+            border: "1px solid #ddd",
+            borderRadius: "4px",
+            backgroundColor: "#f9f9f9",
+          }}
+        >
+          <div style={{ marginBottom: "8px" }}>
+            <select
+              value={renderMode}
+              onChange={handleCanvasModeChange}
+              style={{
+                padding: "2px 6px",
+                fontSize: "12px",
+                border: "1px solid #ccc",
+                borderRadius: "3px",
+              }}
+            >
+              <option value="normal">Normal</option>
+              <option value="old">Canvas Old</option>
+            </select>
+          </div>
+
+          <div>
+            <label style={{ fontSize: "12px" }}>
+              <input
+                type="checkbox"
+                checked={debugMode}
+                onChange={(e) => debugModeToggled(e.target.checked)}
+                style={{ marginRight: "6px" }}
+              />
+              Debug overlay
+            </label>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

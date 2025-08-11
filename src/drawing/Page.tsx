@@ -8,7 +8,7 @@ import { Link } from "wouter";
 import { resetDEMO, undoClicked, $renderMode } from "../game.model";
 import arrowArcLeftSrc from "./ArrowArcLeft.svg";
 import { ColorSelectorOld } from "./ColorSelectorOld";
-import { RenderModeSelector } from "./RenderModeSelector";
+import { DeveloperTools } from "./RenderModeSelector";
 import { useUnit } from "effector-react";
 
 export function DrawingPage() {
@@ -39,6 +39,7 @@ export function DrawingPage() {
         maxWidth: "500px",
       }}
     >
+      <DeveloperTools />
       <div>
         <div
           style={{
@@ -55,7 +56,6 @@ export function DrawingPage() {
           <a href="https://joxter.github.io/scribble/" target="_blank">
             website
           </a>
-          <RenderModeSelector />
         </div>
       </div>
 

@@ -4,6 +4,7 @@ import { canvasSize, getSvgPathFromStroke } from "../utils";
 import {
   $currentCanvas,
   $currentLine,
+  $debugMode,
   $renderMode,
   $svgPaths,
   addBucket,
@@ -39,8 +40,7 @@ export function Canvas() {
   const [isDrawing, setIsDrawing] = useState(false);
 
   const currentLine = useUnit($currentLine);
-  const renderMode = useUnit($renderMode);
-  const debugMode = renderMode === "debug";
+  const debugMode = useUnit($debugMode);
 
   const startDrawing = (e: React.MouseEvent | React.TouchEvent) => {
     e.preventDefault();
@@ -149,66 +149,59 @@ export function Canvas() {
               <rect width="100%" height="100%" fill="url(#grid)" />
             </>
           )}
-          <ExistingLines debugMode={debugMode} />
-          {debugMode ? (
-            <polyline
-              points={currentLine.points.map(([x, y]) => `${x},${y}`).join(" ")}
-              stroke={currentLine.color}
-              strokeWidth={20}
-              strokeLinecap="round"
-              fill="none"
-            />
-          ) : (
-            <path
-              d={getSvgPathFromStroke(
-                getStroke(currentLine.points, {
-                  ...smoothConf,
-                  size: currentLine.size,
-                }),
-              )}
-              fill={currentLine.color}
-            />
-          )}
+          <ExistingLines />
+          <path
+            d={getSvgPathFromStroke(
+              getStroke(currentLine.points, {
+                ...smoothConf,
+                size: currentLine.size,
+              }),
+            )}
+            fill={currentLine.color}
+          />
+          {debugMode && <DebugOverlay />}
         </svg>
       )}
     </div>
   );
 }
 
-const ExistingLines = memo(({ debugMode }: { debugMode?: boolean }) => {
+const ExistingLines = memo(() => {
   const lines = useUnit($svgPaths);
-  const linesRaw = useUnit($currentCanvas);
-  // console.log("ExistingLines");
 
-  if (debugMode) {
-    return linesRaw.map((line, i) => {
-      if (line.type === "line") {
-        return (
-          <g key={i}>
-            <polyline
-              points={line.dots.map(([x, y]) => `${x},${y}`).join(" ") || ""}
-              stroke={line.color}
-              strokeWidth={1}
-              strokeLinecap="round"
-              fill="none"
-            />
-            {line.dots.map(([x, y], pointIndex) => (
+  return lines.map((line, i) => {
+    return <path key={"ExistingLines" + i} d={line.d} fill={line.color} />;
+  });
+});
+
+const DebugOverlay = memo(() => {
+  const linesRaw = useUnit($currentCanvas);
+
+  return linesRaw.map((line, i) => {
+    if (line.type === "line") {
+      return (
+        <g key={"debug" + i}>
+          <polyline
+            points={line.dots.map(([x, y]) => `${x},${y}`).join(" ") || ""}
+            stroke={"white"}
+            strokeWidth={2}
+            strokeDasharray="2,5"
+            fill="none"
+          />
+          {line.dots.map(([x, y], pointIndex) => {
+            return (
               <circle
                 key={`${i}-${pointIndex}`}
                 cx={x}
                 cy={y}
-                r={2}
-                fill="red"
+                r={1}
+                fill={`hsl(0, 70%, ${(pointIndex % 5) * 10 + 30}%)`}
               />
-            ))}
-          </g>
-        );
-      }
-      return null;
-    });
-  }
-
-  return lines.map((line, i) => {
-    return <path key={i} d={line.d} fill={line.color} />;
+            );
+          })}
+        </g>
+      );
+    }
+    return null;
   });
 });

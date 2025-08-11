@@ -25,11 +25,13 @@ export const $currentLine = createStore<CurrentLine>({
 export const $currentCanvas = createStore<CanvasAndChatHistory[]>([]);
 export const $imDrawing = createStore(true);
 
-export const $renderMode = createStore<"normal" | "debug" | "old">("normal");
+export const $renderMode = createStore<"normal" | "old">("normal");
+export const $debugMode = createStore(false);
 
 export const currentLineChanged = createEvent<Partial<CurrentLine>>();
 export const setCurrentLineID = createEvent<string>();
-export const renderModeChanged = createEvent<"normal" | "debug" | "old">();
+export const renderModeChanged = createEvent<"normal" | "old">();
+export const debugModeToggled = createEvent<boolean>();
 
 export const undoClicked = createEvent<any>();
 export const addLine = createEvent<CurrentLine>();
@@ -67,6 +69,7 @@ $currentLine
   });
 
 $renderMode.on(renderModeChanged, (_, mode) => mode);
+$debugMode.on(debugModeToggled, (_, enabled) => enabled);
 
 export const $svgPaths = $currentCanvas.map((lines) => {
   const paths: { d: string; color: string }[] = [];
