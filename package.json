@@ -14,7 +14,6 @@
   "description": "",
   "dependencies": {
     "@instantdb/core": "^0.20.12",
-    "@instantdb/react": "^0.20.6",
     "@preact/preset-vite": "^2.10.2",
     "@types/react-dom": "^19.1.6",
     "@vitejs/plugin-react": "^4.6.0",

@@ -143,18 +143,26 @@ undoClicked.watch(() => {
 });
 
 export function resetDEMO() {
-  db.transact(db.tx.party[DEMO_ID].delete())
+  db.transact(
+    [],
+    //
+    // db.tx.party[DEMO_ID].delete(),
+  )
     .then(() => {
       return db.transact([
         db.tx.party[DEMO_ID].create({
           name: "demo party",
         }),
-        db.tx.curretLine[lookup("party", DEMO_ID)].update({
-          dots: [],
-          width: 8,
-          color: "#34495e",
-        }),
       ]);
+    })
+    .then(() => {
+      // return db.transact([
+      //   db.tx.curretLine[lookup("party", DEMO_ID)].update({
+      //     dots: [],
+      //     width: 8,
+      //     color: "#34495e",
+      //   }),
+      // ]);
     })
     .then(() => {
       window.location.reload();

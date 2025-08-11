@@ -1,6 +1,6 @@
-import { id, i, init, InstaQLEntity } from "@instantdb/core";
+// Docs: https://www.instantdb.com/docs/modeling-data
 
-const APP_ID = "59599101-16e7-493b-8644-ccb75b6cb032";
+import { i } from "@instantdb/core";
 
 const _schema = i.schema({
   entities: {
@@ -8,31 +8,31 @@ const _schema = i.schema({
       name: i.string().unique().indexed(),
     }),
     roomEvent: i.entity({
-      it: i.json(),
-      // timestamp: i.date(),
+      it: i.any(),
     }),
     curretLine: i.entity({
-      dots: i.json(),
-      width: i.number(),
       color: i.string(),
+      dots: i.any(),
+      width: i.number(),
     }),
   },
   links: {
-    roomEvents: {
+    partyRoomEvents: {
       forward: { on: "party", has: "many", label: "roomEvents" },
       reverse: { on: "roomEvent", has: "one", label: "party" },
     },
-    roomCurrentLines: {
+    partyCurrentLine: {
       forward: { on: "party", has: "one", label: "currentLine" },
       reverse: { on: "curretLine", has: "one", label: "party" },
     },
   },
+  rooms: {},
 });
 
+// This helps Typescript display nicer intellisense
 type _AppSchema = typeof _schema;
 interface AppSchema extends _AppSchema {}
 const schema: AppSchema = _schema;
 
 export type { AppSchema };
-
 export default schema;
