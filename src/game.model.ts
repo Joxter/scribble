@@ -142,13 +142,25 @@ undoClicked.watch(() => {
   );
 });
 
-export function resetDEMO() {
-  db.transact(
-    [],
-    //
-    // db.tx.party[DEMO_ID].delete(),
-  )
+export async function resetDEMO() {
+  console.log("------- RESET All -------");
+
+  let allParties = await db
+    .queryOnce({ party: {} })
+    .then((it) => it.data.party);
+  console.log(`allParties.len`, allParties.length);
+
+  let curretLines = await db
+    .queryOnce({ curretLine: {} })
+    .then((it) => it.data.curretLine);
+  console.log(`curretLines.len`, curretLines.length);
+
+  db.transact([
+    ...allParties.map((it) => db.tx.party[it.id].delete()),
+    ...curretLines.map((it) => db.tx.curretLine[it.id].delete()),
+  ])
     .then(() => {
+      console.log(`DELETED`);
       return db.transact([
         db.tx.party[DEMO_ID].create({
           name: "demo party",
@@ -156,13 +168,16 @@ export function resetDEMO() {
       ]);
     })
     .then(() => {
-      // return db.transact([
-      //   db.tx.curretLine[lookup("party", DEMO_ID)].update({
-      //     dots: [],
-      //     width: 8,
-      //     color: "#34495e",
-      //   }),
-      // ]);
+      console.log(`Created party`, DEMO_ID);
+      return db.transact([
+        db.tx.curretLine[id()]
+          .create({
+            dots: [],
+            width: 8,
+            color: "#34495e",
+          })
+          .link({ party: DEMO_ID }),
+      ]);
     })
     .then(() => {
       window.location.reload();
