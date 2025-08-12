@@ -8,7 +8,7 @@ import { Link } from "wouter";
 import { resetDEMO, undoClicked, $renderMode } from "../game.model";
 import arrowArcLeftSrc from "./ArrowArcLeft.svg";
 import { ColorSelectorOld } from "./ColorSelectorOld";
-import { DeveloperTools } from "./RenderModeSelector";
+import { DeveloperTools } from "./DeveloperTools";
 import { useUnit } from "effector-react";
 
 export function DrawingPage() {

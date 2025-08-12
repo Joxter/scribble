@@ -5,12 +5,14 @@ import {
   $debugMode,
   renderModeChanged,
   debugModeToggled,
+  $localId,
 } from "../game.model";
 
 export function DeveloperTools() {
   const [isCollapsed, setIsCollapsed] = useState(true);
   const renderMode = useUnit($renderMode);
   const debugMode = useUnit($debugMode);
+  const localId = useUnit($localId);
 
   const handleCanvasModeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     renderModeChanged(e.target.value as "normal" | "old");
@@ -50,6 +52,7 @@ export function DeveloperTools() {
             backgroundColor: "#f9f9f9",
           }}
         >
+          <p>{localId}</p>
           <div style={{ marginBottom: "8px" }}>
             <select
               value={renderMode}

@@ -1,4 +1,4 @@
-import { combine, createEvent, createStore, sample } from "effector";
+import { combine, createEvent, createStore, restore, sample } from "effector";
 import { CanvasAndChatHistory } from "./types";
 import getStroke from "perfect-freehand";
 import { getSvgPathFromStroke, historyToLines } from "./utils";
@@ -13,6 +13,10 @@ type CurrentLine = {
   isBucket: boolean;
 };
 
+const setLocalId = createEvent<string>();
+export const $localId = restore(setLocalId, "");
+db.getLocalId("guest").then((a) => setLocalId(a));
+
 const $currentLineID = createStore("");
 export const $currentLine = createStore<CurrentLine>({
   points: [],
@@ -20,6 +24,7 @@ export const $currentLine = createStore<CurrentLine>({
   size: 8,
   isBucket: false,
 });
+$localId.watch(console.log);
 // $currentLine.watch(console.log);
 
 export const $currentCanvas = createStore<CanvasAndChatHistory[]>([]);
@@ -108,6 +113,7 @@ db.subscribeQuery(
         setCurrentLineID(resp.data.party[0].currentLine.id);
 
         currentLineChanged({
+          // points: resp.data.party[0].currentLine.dots,
           size: resp.data.party[0].currentLine.width,
           color: resp.data.party[0].currentLine.color,
         });
@@ -154,8 +160,9 @@ db.subscribeQuery(
 combine([$currentLine, $imDrawing, $currentLineID]).watch(
   ([currentLine, imDrawing, lineId]) => {
     // console.log([lineId], currentLine);
-    if (lineId) {
+    if (imDrawing && lineId) {
       // console.log("db.transact", currentLine);
+
       db.transact(
         db.tx.curretLine[lineId].update({
           width: currentLine.size,
