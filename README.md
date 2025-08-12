@@ -65,6 +65,7 @@ The application will be available at `http://localhost:5173` (or the port shown 
 - `npm run build` - Build for production
 - `npm run check-types` - Run TypeScript type checking
 - `npm run deploy` - Build and deploy to GitHub Pages
+- `npx instant-cli@latest push` - Push new schema for Instand DB
 
 ## Key Components
 

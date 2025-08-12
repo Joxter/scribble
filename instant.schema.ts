@@ -6,6 +6,7 @@ const _schema = i.schema({
   entities: {
     party: i.entity({
       name: i.string().unique().indexed(),
+      players: i.any().optional(),
     }),
     roomEvent: i.entity({
       it: i.any(),

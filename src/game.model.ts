@@ -1,10 +1,11 @@
 import { combine, createEvent, createStore, restore, sample } from "effector";
-import { CanvasAndChatHistory } from "./types";
+import { CanvasAndChatHistory, Party } from "./types";
 import getStroke from "perfect-freehand";
 import { getSvgPathFromStroke, historyToLines } from "./utils";
 import { DEMO_ID, smoothConf } from "./config";
 import { db } from "./DB";
 import { id, lookup } from "@instantdb/core";
+import { getUsername } from "./code-worlds";
 
 type CurrentLine = {
   points: [x: number, y: number][];
@@ -18,14 +19,31 @@ export const $localId = restore(setLocalId, "");
 db.getLocalId("guest").then((a) => setLocalId(a));
 
 const $currentLineID = createStore("");
+
+const setParty = createEvent<Party>();
+export const $party = restore(setParty, { players: [], name: "" });
 export const $currentLine = createStore<CurrentLine>({
   points: [],
   color: "#000000",
   size: 8,
   isBucket: false,
 });
-$localId.watch(console.log);
-// $currentLine.watch(console.log);
+// $localId.watch(console.log);
+
+combine([$localId, $party]).watch(([localId, party]) => {
+  if (localId && party.name && party.players) {
+    const ps = party.players.map((it) => it.id);
+
+    if (!ps.includes(localId)) {
+      db.transact(
+        db.tx.party[DEMO_ID].update({
+          name: "Алиска",
+          players: [...party.players, { id: localId, name: getUsername() }],
+        }),
+      );
+    }
+  }
+});
 
 export const $currentCanvas = createStore<CanvasAndChatHistory[]>([]);
 export const $imDrawing = createStore(true);
@@ -107,18 +125,20 @@ db.subscribeQuery(
   (resp) => {
     if (resp.error) console.error(resp.error);
     if (resp.data) {
-      if (resp.data.party[0]?.currentLine) {
-        console.log("setCurrentLineID", resp.data.party[0]);
+      const party = resp.data.party[0];
 
-        setCurrentLineID(resp.data.party[0].currentLine.id);
+      if (party?.currentLine) {
+        console.log(party);
+        setParty({ name: party.name, players: party.players || [] });
+        setCurrentLineID(party.currentLine.id);
 
         currentLineChanged({
-          // points: resp.data.party[0].currentLine.dots,
-          size: resp.data.party[0].currentLine.width,
-          color: resp.data.party[0].currentLine.color,
+          // points: party.currentLine.dots,
+          size: party.currentLine.width,
+          color: party.currentLine.color,
         });
       } else {
-        console.log("no party or currentLine", resp.data.party[0]);
+        console.log("no party or currentLine", party);
       }
     }
   },
@@ -141,21 +161,6 @@ db.subscribeQuery(
     }
   },
 );
-
-// db.subscribeQuery(
-//   {
-//     curretLine: {
-//       party: { $: { where: { party: DEMO_ID } } },
-//     },
-//   },
-//   (resp) => {
-//     if (resp.error) console.error(resp.error);
-//     if (resp.data) {
-//       console.log("curretLine:", resp.data.curretLine[0]);
-//       currentLineChanged(resp.data.curretLine[0]);
-//     }
-//   },
-// );
 
 combine([$currentLine, $imDrawing, $currentLineID]).watch(
   ([currentLine, imDrawing, lineId]) => {
@@ -222,7 +227,8 @@ export async function resetDEMO() {
       console.log(`DELETED`);
       return db.transact([
         db.tx.party[DEMO_ID].create({
-          name: "demo party",
+          name: "Алиска",
+          players: [],
         }),
       ]);
     })

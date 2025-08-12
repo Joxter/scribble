@@ -1,4 +1,4 @@
-export type Party = {
+export type PartyOLD = {
   players: { id: string; name: string }[];
   id: string;
   link: string;
@@ -29,6 +29,11 @@ export type Party = {
     word: string;
     currentLine: JSON[]; // то что что рисует прям сейчас мышкой игрок
   };
+};
+
+export type Party = {
+  players: { id: string; name: string }[];
+  name: string;
 };
 
 type ChatAndLines = {

@@ -6,6 +6,8 @@ import {
   renderModeChanged,
   debugModeToggled,
   $localId,
+  $party,
+  resetDEMO,
 } from "../game.model";
 
 export function DeveloperTools() {
@@ -13,6 +15,7 @@ export function DeveloperTools() {
   const renderMode = useUnit($renderMode);
   const debugMode = useUnit($debugMode);
   const localId = useUnit($localId);
+  const party = useUnit($party);
 
   const handleCanvasModeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     renderModeChanged(e.target.value as "normal" | "old");
@@ -52,6 +55,7 @@ export function DeveloperTools() {
             backgroundColor: "#f9f9f9",
           }}
         >
+          <pre>{JSON.stringify(party.players, null, 2)}</pre>
           <p>{localId}</p>
           <div style={{ marginBottom: "8px" }}>
             <select
@@ -79,6 +83,14 @@ export function DeveloperTools() {
               />
               Debug overlay
             </label>
+          </div>
+          <div>
+            <a href="https://joxter.github.io/scribble/" target="_blank">
+              website
+            </a>
+          </div>
+          <div>
+            <button onClick={resetDEMO}>reset</button>
           </div>
         </div>
       )}

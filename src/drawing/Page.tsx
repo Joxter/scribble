@@ -5,7 +5,7 @@ import { canvasSize } from "../utils";
 import { ColorSelector } from "./ColorSelector";
 import { LineWidthSelector } from "./LineWidthSelector";
 import { Link } from "wouter";
-import { resetDEMO, undoClicked, $renderMode } from "../game.model";
+import { resetDEMO, undoClicked, $renderMode, $party } from "../game.model";
 import arrowArcLeftSrc from "./ArrowArcLeft.svg";
 import { ColorSelectorOld } from "./ColorSelectorOld";
 import { DeveloperTools } from "./DeveloperTools";
@@ -14,6 +14,7 @@ import { useUnit } from "effector-react";
 export function DrawingPage() {
   const [show, setShow] = useState(false);
   const renderMode = useUnit($renderMode);
+  const party = useUnit($party);
 
   useEffect(() => {
     setTimeout(() => {
@@ -49,13 +50,8 @@ export function DrawingPage() {
             flexWrap: "wrap",
           }}
         >
-          <Link href="/scribble/">главная</Link>
-          <div>
-            <button onClick={resetDEMO}>reset</button>
-          </div>
-          <a href="https://joxter.github.io/scribble/" target="_blank">
-            website
-          </a>
+          <Link href="/scribble/">ЛОГО</Link>
+          <p>Комната: {party.name}</p>
         </div>
       </div>
 
