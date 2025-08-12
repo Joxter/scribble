@@ -34,6 +34,9 @@ export type PartyOLD = {
 export type Party = {
   players: { id: string; name: string }[];
   name: string;
+  gameState: {
+    drawing: string;
+  };
 };
 
 type ChatAndLines = {

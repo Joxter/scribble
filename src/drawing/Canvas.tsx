@@ -5,6 +5,7 @@ import {
   $currentCanvas,
   $currentLine,
   $debugMode,
+  $imDrawing,
   $renderMode,
   $svgPaths,
   addBucket,
@@ -39,10 +40,13 @@ function getCoordinates(e: React.MouseEvent | React.TouchEvent) {
 export function Canvas() {
   const [isDrawing, setIsDrawing] = useState(false);
 
+  const imDrawing = useUnit($imDrawing);
   const currentLine = useUnit($currentLine);
   const debugMode = useUnit($debugMode);
 
   const startDrawing = (e: React.MouseEvent | React.TouchEvent) => {
+    if (!imDrawing) return;
+
     e.preventDefault();
 
     const { x, y } = getCoordinates(e);
@@ -54,6 +58,7 @@ export function Canvas() {
   };
 
   const draw = (e: React.MouseEvent | React.TouchEvent) => {
+    if (!imDrawing) return;
     if (!isDrawing) return;
     e.preventDefault();
 
@@ -65,6 +70,7 @@ export function Canvas() {
   };
 
   const stopDrawing = (e?: React.TouchEvent) => {
+    if (!imDrawing) return;
     if (!isDrawing) return;
     if (e) e.preventDefault();
 
@@ -82,6 +88,7 @@ export function Canvas() {
   };
 
   const onBucket = (e?: React.TouchEvent) => {
+    if (!imDrawing) return;
     if (!currentLine.isBucket) return;
     console.log("onBucket", currentLine);
     if (e) e.preventDefault();

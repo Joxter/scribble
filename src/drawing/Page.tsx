@@ -5,7 +5,15 @@ import { canvasSize } from "../utils";
 import { ColorSelector } from "./ColorSelector";
 import { LineWidthSelector } from "./LineWidthSelector";
 import { Link } from "wouter";
-import { resetDEMO, undoClicked, $renderMode, $party } from "../game.model";
+import {
+  resetDEMO,
+  undoClicked,
+  $renderMode,
+  $party,
+  $imDrawing,
+  $artistName,
+  $myName,
+} from "../game.model";
 import arrowArcLeftSrc from "./ArrowArcLeft.svg";
 import { ColorSelectorOld } from "./ColorSelectorOld";
 import { DeveloperTools } from "./DeveloperTools";
@@ -15,6 +23,9 @@ export function DrawingPage() {
   const [show, setShow] = useState(false);
   const renderMode = useUnit($renderMode);
   const party = useUnit($party);
+  const imDrawing = useUnit($imDrawing);
+  const myName = useUnit($myName);
+  const artistName = useUnit($artistName);
 
   useEffect(() => {
     setTimeout(() => {
@@ -51,7 +62,14 @@ export function DrawingPage() {
           }}
         >
           <Link href="/scribble/">ЛОГО</Link>
-          <p>Комната: {party.name}</p>
+          <p>я {myName}</p>
+          {imDrawing ? (
+            <b>я рисую!</b>
+          ) : artistName ? (
+            <b>{artistName} рисует</b>
+          ) : (
+            <b>никто не рисует</b>
+          )}
         </div>
       </div>
 

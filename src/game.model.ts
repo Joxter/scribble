@@ -21,15 +21,16 @@ db.getLocalId("guest").then((a) => setLocalId(a));
 const $currentLineID = createStore("");
 
 const setParty = createEvent<Party>();
-export const $party = restore(setParty, { players: [], name: "" });
+export const $party = restore(setParty, emptyParty());
+
 export const $currentLine = createStore<CurrentLine>({
   points: [],
   color: "#000000",
   size: 8,
   isBucket: false,
 });
-// $localId.watch(console.log);
 
+// Add current user
 combine([$localId, $party]).watch(([localId, party]) => {
   if (localId && party.name && party.players) {
     const ps = party.players.map((it) => it.id);
@@ -37,7 +38,7 @@ combine([$localId, $party]).watch(([localId, party]) => {
     if (!ps.includes(localId)) {
       db.transact(
         db.tx.party[DEMO_ID].update({
-          name: "Алиска",
+          ...party,
           players: [...party.players, { id: localId, name: getUsername() }],
         }),
       );
@@ -46,7 +47,19 @@ combine([$localId, $party]).watch(([localId, party]) => {
 });
 
 export const $currentCanvas = createStore<CanvasAndChatHistory[]>([]);
-export const $imDrawing = createStore(true);
+export const $imDrawing = combine($party, $localId, (party, localId) => {
+  return party.gameState.drawing === localId;
+});
+export const $artistName = $party.map((party) => {
+  const drawingPlayer = party.players.find(
+    (player) => player.id === party.gameState.drawing,
+  );
+  return drawingPlayer ? drawingPlayer.name : "";
+});
+export const $myName = combine($party, $localId, (party, localId) => {
+  const myPlayer = party.players.find((player) => player.id === localId);
+  return myPlayer ? myPlayer.name : "";
+});
 
 export const $renderMode = createStore<"normal" | "old">("normal");
 export const $debugMode = createStore(false);
@@ -55,6 +68,7 @@ export const currentLineChanged = createEvent<Partial<CurrentLine>>();
 export const setCurrentLineID = createEvent<string>();
 export const renderModeChanged = createEvent<"normal" | "old">();
 export const debugModeToggled = createEvent<boolean>();
+export const makeWeDraw = createEvent<any>();
 
 export const undoClicked = createEvent<any>();
 export const addLine = createEvent<CurrentLine>();
@@ -73,6 +87,21 @@ export const addBucket = createEvent<{
 export const historyUpdated = createEvent<{
   history: CanvasAndChatHistory[];
 }>();
+
+sample({
+  source: [$localId, $party] as const,
+  clock: makeWeDraw,
+  fn: ([id, party]) => {
+    return {
+      ...party,
+      gameState: {
+        ...party.gameState,
+        drawing: id,
+      },
+    };
+  },
+  target: $party,
+});
 
 $currentCanvas.on(historyUpdated, (currentHistory, { history }) => {
   return currentHistory.length < history.length ? history : currentHistory;
@@ -128,15 +157,27 @@ db.subscribeQuery(
       const party = resp.data.party[0];
 
       if (party?.currentLine) {
-        console.log(party);
-        setParty({ name: party.name, players: party.players || [] });
+        // console.log(party);
+        setParty({
+          name: party.name,
+          players: party.players || [],
+          gameState: party.gameState || {},
+        });
         setCurrentLineID(party.currentLine.id);
 
-        currentLineChanged({
+        if ($imDrawing.getState()) {
+          // currentLineChanged({
           // points: party.currentLine.dots,
-          size: party.currentLine.width,
-          color: party.currentLine.color,
-        });
+          // size: party.currentLine.width,
+          // color: party.currentLine.color,
+          // });
+        } else {
+          currentLineChanged({
+            points: party.currentLine.dots,
+            size: party.currentLine.width,
+            color: party.currentLine.color,
+          });
+        }
       } else {
         console.log("no party or currentLine", party);
       }
@@ -206,6 +247,10 @@ undoClicked.watch(() => {
   );
 });
 
+sample({ source: $party, clock: makeWeDraw }).watch((party) => {
+  db.transact(db.tx.party[DEMO_ID].update(party));
+});
+
 export async function resetDEMO() {
   console.log("------- RESET All -------");
 
@@ -225,12 +270,7 @@ export async function resetDEMO() {
   ])
     .then(() => {
       console.log(`DELETED`);
-      return db.transact([
-        db.tx.party[DEMO_ID].create({
-          name: "Алиска",
-          players: [],
-        }),
-      ]);
+      return db.transact([db.tx.party[DEMO_ID].create(emptyParty())]);
     })
     .then(() => {
       console.log(`Created party`, DEMO_ID);
@@ -245,6 +285,17 @@ export async function resetDEMO() {
       ]);
     })
     .then(() => {
-      window.location.reload();
+      console.log("OK, will reload in 3 sec");
+      setTimeout(() => {
+        window.location.reload();
+      }, 3000);
     });
+}
+
+function emptyParty(): Party {
+  return {
+    name: "Алиска",
+    players: [],
+    gameState: { drawing: "" },
+  };
 }

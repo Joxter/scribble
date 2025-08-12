@@ -80,7 +80,7 @@ const saveSettingsToStorage = (settings: any) => {
   }
 };
 
-export function DevControls() {
+export function DrawParams() {
   const storedSettings = loadSettingsFromStorage();
   const [color, setColor] = useState(storedSettings.color || "#000000");
   const [size, setSize] = useState(storedSettings.size || 10);

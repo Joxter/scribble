@@ -8,6 +8,7 @@ import {
   $localId,
   $party,
   resetDEMO,
+  makeWeDraw,
 } from "../game.model";
 
 export function DeveloperTools() {
@@ -55,7 +56,10 @@ export function DeveloperTools() {
             backgroundColor: "#f9f9f9",
           }}
         >
-          <pre>{JSON.stringify(party.players, null, 2)}</pre>
+          <div>
+            <button onClick={makeWeDraw}>я рисую!</button>
+          </div>
+          <p style={{ maxWidth: "300px" }}>{JSON.stringify(party)}</p>
           <p>{localId}</p>
           <div style={{ marginBottom: "8px" }}>
             <select

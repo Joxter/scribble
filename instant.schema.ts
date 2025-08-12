@@ -7,6 +7,7 @@ const _schema = i.schema({
     party: i.entity({
       name: i.string().unique().indexed(),
       players: i.any().optional(),
+      gameState: i.any().optional(),
     }),
     roomEvent: i.entity({
       it: i.any(),
