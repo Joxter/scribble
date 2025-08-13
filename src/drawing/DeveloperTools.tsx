@@ -56,9 +56,6 @@ export function DeveloperTools() {
             backgroundColor: "#f9f9f9",
           }}
         >
-          <div>
-            <button onClick={makeWeDraw}>я рисую!</button>
-          </div>
           <p style={{ maxWidth: "300px" }}>{JSON.stringify(party)}</p>
           <p>{localId}</p>
           <div style={{ marginBottom: "8px" }}>

@@ -1,28 +1,57 @@
-.page {
-  height: 100%;
-  display: grid;
-  grid-template-rows: min-content 1fr min-content;
-  gap: 16px;
-  width: 100%;
-  max-width: 500px;
+@media (708px >= width) {
+    .page {
+        display: grid;
+        gap: 8px;
+        width: 100%;
+        max-width: 500px;
+        grid-template-areas:
+            "header"
+            "canvas"
+            "footer"
+            "players";
+        grid-template-rows: min-content 1fr min-content min-content;
+        margin: 0 auto;
+    }
+}
+
+@media (708px < width) {
+    .page {
+        display: grid;
+        gap: 8px;
+        grid-template-areas:
+            "header ."
+            "canvas players"
+            "footer .";
+        grid-template-columns: 500px 200px;
+        margin: 0 auto;
+    }
 }
 
 .header {
-  /* Header section styles */
+    grid-area: header;
 }
 
 .headerContent {
-  display: flex;
-  gap: 32px;
-  align-items: center;
-  flex-wrap: wrap;
+    display: flex;
+    gap: 32px;
+    align-items: center;
+    flex-wrap: wrap;
 }
 
 .canvasSection {
-  overflow: hidden;
-  width: 100%;
+    grid-area: canvas;
+    overflow: hidden;
+    width: 100%;
 }
 
 .footer {
-  /* Footer section styles */
+    grid-area: footer;
+}
+
+.tools {
+    /* Tools section styles */
+}
+
+.players {
+    grid-area: players;
 }

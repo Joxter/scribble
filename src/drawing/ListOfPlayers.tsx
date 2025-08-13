@@ -1,5 +1,5 @@
 import { useUnit } from "effector-react";
-import { $party, $localId } from "../game.model";
+import { $party, $localId, makeWeDraw } from "../game.model";
 
 export function ListOfPlayers() {
   const party = useUnit($party);
@@ -21,11 +21,12 @@ export function ListOfPlayers() {
       }
     >
       <div
-        style={
-          {
-            //
-          }
-        }
+        style={{
+          display: "grid",
+          alignContent: "start",
+          gap: "4px",
+          //
+        }}
       >
         {party.players.map((player) => {
           const isCurrentPlayer = player.id === localId;
@@ -36,7 +37,6 @@ export function ListOfPlayers() {
               key={player.id}
               style={{
                 padding: "8px 12px",
-                margin: "4px 0",
                 borderRadius: "4px",
                 backgroundColor: "#fff",
                 color: "#333",
@@ -49,6 +49,9 @@ export function ListOfPlayers() {
             </div>
           );
         })}
+        <div>
+          <button onClick={makeWeDraw}>я рисую</button>
+        </div>
       </div>
     </div>
   );

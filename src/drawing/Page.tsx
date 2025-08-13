@@ -46,14 +46,6 @@ export function DrawingPage() {
       <div className={css.header}>
         <div className={css.headerContent}>
           <Link href="/scribble/">ЛОГО</Link>
-          <p>я {myName}</p>
-          {imDrawing ? (
-            <b>я рисую!</b>
-          ) : artistName ? (
-            <b>{artistName} рисует</b>
-          ) : (
-            <b>никто не рисует</b>
-          )}
         </div>
       </div>
 
@@ -62,6 +54,8 @@ export function DrawingPage() {
       </div>
       <div className={css.footer}>
         <Tools />
+      </div>
+      <div className={css.players}>
         <ListOfPlayers />
       </div>
     </div>
