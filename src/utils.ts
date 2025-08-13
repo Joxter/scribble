@@ -195,3 +195,46 @@ function fix2(n: number) {
   if (typeof n === "number") return +n.toFixed(1);
   return n;
 }
+
+/**
+ * Optimizes a line by removing points that are closer than the specified threshold
+ * to the previous point, reducing the number of points while maintaining the line shape.
+ *
+ * @param points - Array of points in format [x, y, ...other] where x,y are coordinates
+ * @param threshold - Minimum distance in pixels between consecutive points (default: 2)
+ * @returns Optimized array with redundant points removed
+ */
+export function optimizeLine<T extends [number, number, ...any[]]>(
+  points: T[],
+  threshold: number = 0,
+): T[] {
+  if (points.length <= 1) {
+    return points;
+  }
+
+  const optimized: T[] = [points[0]]; // Always keep the first point
+
+  for (let i = 1; i < points.length; i++) {
+    const currentPoint = points[i];
+    const lastKeptPoint = optimized[optimized.length - 1];
+
+    // Calculate Euclidean distance between points
+    const dx = currentPoint[0] - lastKeptPoint[0];
+    const dy = currentPoint[1] - lastKeptPoint[1];
+    const distance = Math.sqrt(dx * dx + dy * dy);
+
+    // Keep the point if it's far enough from the last kept point
+    if (distance >= threshold) {
+      optimized.push(currentPoint);
+    }
+  }
+
+  // Always keep the last point if it wasn't already kept
+  const lastPoint = points[points.length - 1];
+  const lastOptimizedPoint = optimized[optimized.length - 1];
+  if (lastPoint !== lastOptimizedPoint) {
+    optimized.push(lastPoint);
+  }
+
+  return optimized;
+}

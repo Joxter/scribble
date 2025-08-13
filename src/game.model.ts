@@ -1,7 +1,7 @@
 import { combine, createEvent, createStore, restore, sample } from "effector";
 import { CanvasAndChatHistory, Party } from "./types";
 import getStroke from "perfect-freehand";
-import { getSvgPathFromStroke, historyToLines } from "./utils";
+import { getSvgPathFromStroke, historyToLines, optimizeLine } from "./utils";
 import { DEMO_ID, smoothConf } from "./config";
 import { db } from "./DB";
 import { id, lookup } from "@instantdb/core";
@@ -139,7 +139,7 @@ export const $svgPaths = combine(
 
     lines.forEach((it, i) => {
       if (it.type === "line") {
-        const stroke = getStroke(it.dots, {
+        const stroke = getStroke(optimizeLine(it.dots), {
           ...currentSmoothConf,
           size: it.width,
         });
@@ -161,7 +161,7 @@ export const $rawPath = combine($currentCanvas, (lines) => {
 
   lines.forEach((it, i) => {
     if (it.type === "line") {
-      rawLines.push(it.dots);
+      rawLines.push(optimizeLine(it.dots));
     } else if (it.type === "bucket") {
       // todo: calculate area by current "paths" and generate proper "d"
     } else if (it.type === "undo") {
