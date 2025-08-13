@@ -64,6 +64,9 @@ export const $myName = combine($party, $localId, (party, localId) => {
 export const $renderMode = createStore<"normal" | "old">("normal");
 export const $debugMode = createStore(false);
 
+export const setSmoothConf = createEvent<Partial<typeof smoothConf>>();
+export const $smoothConf = restore(setSmoothConf, smoothConf);
+
 export const currentLineChanged = createEvent<Partial<CurrentLine>>();
 export const setCurrentLineID = createEvent<string>();
 export const renderModeChanged = createEvent<"normal" | "old">();
@@ -128,25 +131,45 @@ $currentLine
 $renderMode.on(renderModeChanged, (_, mode) => mode);
 $debugMode.on(debugModeToggled, (_, enabled) => enabled);
 
-export const $svgPaths = $currentCanvas.map((lines) => {
-  const paths: { d: string; color: string }[] = [];
+export const $svgPaths = combine(
+  $currentCanvas,
+  $smoothConf,
+  (lines, currentSmoothConf) => {
+    const paths: { d: string; color: string }[] = [];
+
+    lines.forEach((it, i) => {
+      if (it.type === "line") {
+        const stroke = getStroke(it.dots, {
+          ...currentSmoothConf,
+          size: it.width,
+        });
+
+        paths.push({ d: getSvgPathFromStroke(stroke), color: it.color });
+      } else if (it.type === "bucket") {
+        // todo: calculate area by current "paths" and generate proper "d"
+      } else if (it.type === "undo") {
+        paths.pop();
+      }
+    });
+
+    return paths;
+  },
+);
+
+export const $rawPath = combine($currentCanvas, (lines) => {
+  const rawLines: Array<[number, number, any][]> = [];
 
   lines.forEach((it, i) => {
     if (it.type === "line") {
-      const stroke = getStroke(it.dots, {
-        ...smoothConf,
-        size: it.width,
-      });
-
-      paths.push({ d: getSvgPathFromStroke(stroke), color: it.color });
+      rawLines.push(it.dots);
     } else if (it.type === "bucket") {
       // todo: calculate area by current "paths" and generate proper "d"
     } else if (it.type === "undo") {
-      paths.pop();
+      rawLines.pop();
     }
   });
 
-  return paths;
+  return rawLines;
 });
 
 db.subscribeQuery(

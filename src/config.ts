@@ -54,8 +54,8 @@ const easingFunctions = {
 
 export const smoothConf = {
   simulatePressure: false,
-  smoothing: 1,
-  thinning: 0.1,
-  streamline: 0,
+  smoothing: 1, // 0.01 +0.99
+  thinning: 0.1, // -0.99 +0.99
+  streamline: 0, // 0.01 +0.99
   easing: easingFunctions.linear,
 };

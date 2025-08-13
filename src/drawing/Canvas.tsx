@@ -6,14 +6,15 @@ import {
   $currentLine,
   $debugMode,
   $imDrawing,
+  $rawPath,
   $renderMode,
+  $smoothConf,
   $svgPaths,
   addBucket,
   addLine,
   currentLineChanged,
 } from "../game.model";
 import getStroke from "perfect-freehand";
-import { smoothConf } from "../config";
 
 type HistoryItem = [event: string, x?: number, y?: number];
 
@@ -43,6 +44,7 @@ export function Canvas() {
   const imDrawing = useUnit($imDrawing);
   const currentLine = useUnit($currentLine);
   const debugMode = useUnit($debugMode);
+  const smoothConf = useUnit($smoothConf);
 
   const startDrawing = (e: React.MouseEvent | React.TouchEvent) => {
     if (!imDrawing) return;
@@ -182,33 +184,30 @@ const ExistingLines = memo(() => {
 });
 
 const DebugOverlay = memo(() => {
-  const linesRaw = useUnit($currentCanvas);
+  const linesRaw = useUnit($rawPath);
 
   return linesRaw.map((line, i) => {
-    if (line.type === "line") {
-      return (
-        <g key={"debug" + i}>
-          <polyline
-            points={line.dots.map(([x, y]) => `${x},${y}`).join(" ") || ""}
-            stroke={"white"}
-            strokeWidth={2}
-            strokeDasharray="2,5"
-            fill="none"
-          />
-          {line.dots.map(([x, y], pointIndex) => {
-            return (
-              <circle
-                key={`${i}-${pointIndex}`}
-                cx={x}
-                cy={y}
-                r={1}
-                fill={`hsl(0, 70%, ${(pointIndex % 5) * 10 + 30}%)`}
-              />
-            );
-          })}
-        </g>
-      );
-    }
-    return null;
+    return (
+      <g key={"debug" + i}>
+        <polyline
+          points={line.map(([x, y]) => `${x},${y}`).join(" ") || ""}
+          stroke={"white"}
+          strokeWidth={2}
+          strokeDasharray="2,5"
+          fill="none"
+        />
+        {line.map(([x, y], pointIndex) => {
+          return (
+            <circle
+              key={`${i}-${pointIndex}`}
+              cx={x}
+              cy={y}
+              r={1}
+              fill={`hsl(0, 70%, ${(pointIndex % 5) * 10 + 30}%)`}
+            />
+          );
+        })}
+      </g>
+    );
   });
 });

@@ -1,13 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { ColorSelector } from "./drawing/ColorSelector";
-
-type DrawingOptions = {
-  size: number;
-  smoothing: number;
-  thinning: number;
-  streamline: number;
-  easing: (t: number) => number;
-};
+import { useUnit } from "effector-react";
+import { $smoothConf, setSmoothConf } from "./game.model";
 
 const easingFunctions = {
   cubic: (t: number) =>
@@ -61,61 +54,33 @@ const easingFunctions = {
     t + 0.2 * Math.sin(t * 15) * Math.cos(t * 23) * Math.sin(t * 7),
 };
 
-const STORAGE_KEY = "canvasSmooth-settings";
-
-const loadSettingsFromStorage = () => {
-  try {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    return stored ? JSON.parse(stored) : {};
-  } catch {
-    return {};
-  }
-};
-
-const saveSettingsToStorage = (settings: any) => {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
-  } catch {
-    // Silently fail if localStorage is not available
-  }
-};
-
 export function DrawParams() {
-  const storedSettings = loadSettingsFromStorage();
-  const [color, setColor] = useState(storedSettings.color || "#000000");
-  const [size, setSize] = useState(storedSettings.size || 10);
-  const [smoothing, setSmoothing] = useState(storedSettings.smoothing || 0.9);
-  const [thinning, setThinning] = useState(storedSettings.thinning || 0.1);
-  const [streamline, setStreamline] = useState(
-    storedSettings.streamline || 0.0,
-  );
-  const [simulatePressure, setSimulatePressure] = useState(
-    storedSettings.simulatePressure || false,
-  );
-  const [easingType, setEasingType] = useState<keyof typeof easingFunctions>(
-    storedSettings.easingType || "cubic",
-  );
+  const smoothConf = useUnit($smoothConf);
 
-  useEffect(() => {
-    const settings = {
-      color,
-      size,
-      smoothing,
-      thinning,
-      streamline,
-      simulatePressure,
-      easingType,
-    };
-    saveSettingsToStorage(settings);
-  }, [
-    color,
-    size,
-    smoothing,
-    thinning,
-    streamline,
-    simulatePressure,
-    easingType,
-  ]);
+  const handleSmoothingChange = (value: number) => {
+    setSmoothConf({ ...smoothConf, smoothing: value });
+  };
+
+  const handleThinningChange = (value: number) => {
+    setSmoothConf({ ...smoothConf, thinning: value });
+  };
+
+  const handleStreamlineChange = (value: number) => {
+    setSmoothConf({ ...smoothConf, streamline: value });
+  };
+
+  const handleEasingChange = (easingKey: keyof typeof easingFunctions) => {
+    setSmoothConf({ ...smoothConf, easing: easingFunctions[easingKey] });
+  };
+
+  const currentEasingKey =
+    (Object.keys(easingFunctions).find(
+      (key) =>
+        easingFunctions[key as keyof typeof easingFunctions] ===
+        smoothConf.easing,
+    ) as keyof typeof easingFunctions) || "linear";
+
+  console.log(smoothConf);
 
   return (
     <div
@@ -126,25 +91,9 @@ export function DrawParams() {
         flexWrap: "wrap",
       }}
     >
-      <ColorSelector value={color} onChange={setColor} />
-      <div style={{ display: "flex" }}>
-        <label htmlFor="size" style={{ width: "150px" }}>
-          Size: {size}
-        </label>
-        <input
-          id="size"
-          type="range"
-          min="1"
-          max="30"
-          step="1"
-          value={size}
-          onChange={(e) => setSize(Number(e.target.value))}
-          style={{ marginLeft: "8px" }}
-        />
-      </div>
       <div style={{ display: "flex" }}>
         <label htmlFor="smoothing" style={{ width: "150px" }}>
-          Smoothing: {smoothing.toFixed(2)}
+          Smoothing: {smoothConf.smoothing.toFixed(2)}
         </label>
         <input
           id="smoothing"
@@ -152,14 +101,14 @@ export function DrawParams() {
           min="0.01"
           max="1"
           step="0.01"
-          value={smoothing}
-          onChange={(e) => setSmoothing(Number(e.target.value))}
+          value={smoothConf.smoothing}
+          onChange={(e) => handleSmoothingChange(Number(e.target.value))}
           style={{ marginLeft: "8px" }}
         />
       </div>
       <div style={{ display: "flex" }}>
         <label htmlFor="thinning" style={{ width: "150px" }}>
-          Thinning: {thinning.toFixed(2)}
+          Thinning: {smoothConf.thinning.toFixed(2)}
         </label>
         <input
           id="thinning"
@@ -167,14 +116,14 @@ export function DrawParams() {
           min="-1"
           max="1"
           step="0.1"
-          value={thinning}
-          onChange={(e) => setThinning(Number(e.target.value))}
+          value={smoothConf.thinning}
+          onChange={(e) => handleThinningChange(Number(e.target.value))}
           style={{ marginLeft: "8px" }}
         />
       </div>
       <div style={{ display: "flex" }}>
         <label htmlFor="streamline" style={{ width: "150px" }}>
-          Streamline: {streamline.toFixed(2)}
+          Streamline: {smoothConf.streamline.toFixed(2)}
         </label>
         <input
           id="streamline"
@@ -182,22 +131,10 @@ export function DrawParams() {
           min="0"
           max="1"
           step="0.01"
-          value={streamline}
-          onChange={(e) => setStreamline(Number(e.target.value))}
+          value={smoothConf.streamline}
+          onChange={(e) => handleStreamlineChange(Number(e.target.value))}
           style={{ marginLeft: "8px" }}
         />
-      </div>
-      <div>
-        <label htmlFor="simulatePressure">
-          <input
-            id="simulatePressure"
-            type="checkbox"
-            checked={simulatePressure}
-            onChange={(e) => setSimulatePressure(e.target.checked)}
-            style={{ marginRight: "8px" }}
-          />
-          Simulate Pressure
-        </label>
       </div>
       <div style={{ display: "flex" }}>
         <label htmlFor="easingType" style={{ width: "150px" }}>
@@ -205,9 +142,9 @@ export function DrawParams() {
         </label>
         <select
           id="easingType"
-          value={easingType}
+          value={currentEasingKey}
           onChange={(e) =>
-            setEasingType(e.target.value as keyof typeof easingFunctions)
+            handleEasingChange(e.target.value as keyof typeof easingFunctions)
           }
           style={{ marginLeft: "8px", padding: "2px 4px" }}
         >

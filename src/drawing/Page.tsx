@@ -20,6 +20,7 @@ import { DeveloperTools } from "./DeveloperTools";
 import { useUnit } from "effector-react";
 import { Tools } from "./Tools";
 import { ListOfPlayers } from "./ListOfPlayers";
+import { DrawParams } from "../DrawParams";
 import css from "./Page.module.css";
 
 export function DrawingPage() {
@@ -57,6 +58,7 @@ export function DrawingPage() {
       </div>
       <div className={css.players}>
         <ListOfPlayers />
+        <DrawParams />
       </div>
     </div>
   );
