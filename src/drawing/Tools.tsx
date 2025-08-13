@@ -2,6 +2,7 @@ import { LineWidthSelector } from "./LineWidthSelector";
 import {
   resetDEMO,
   undoClicked,
+  clearCanvasClicked,
   $renderMode,
   $party,
   $imDrawing,
@@ -31,6 +32,9 @@ export function Tools() {
       >
         <button onClick={undoClicked}>
           <img style={{ width: "20px" }} src={arrowArcLeftSrc} />
+        </button>
+        <button onClick={clearCanvasClicked}>
+          Clear
         </button>
         <LineWidthSelector />
       </div>

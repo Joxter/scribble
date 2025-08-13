@@ -71,6 +71,7 @@ export const debugModeToggled = createEvent<boolean>();
 export const makeWeDraw = createEvent<any>();
 
 export const undoClicked = createEvent<any>();
+export const clearCanvasClicked = createEvent<any>();
 export const addLine = createEvent<CurrentLine>();
 export const addBucket = createEvent<{
   x: number;
@@ -104,8 +105,12 @@ sample({
 });
 
 $currentCanvas.on(historyUpdated, (currentHistory, { history }) => {
-  return currentHistory.length < history.length ? history : currentHistory;
+  return history;
 });
+
+// $currentCanvas.watch((v) => {
+//   console.log("$currentCanvas", v);
+// });
 
 $currentLineID.on(setCurrentLineID, (_, id) => id);
 
@@ -194,11 +199,9 @@ db.subscribeQuery(
   (resp) => {
     if (resp.error) console.error(resp.error);
     if (resp.data) {
-      // console.log(
-      //   "roomEvents:",
-      //   resp.data.roomEvent.map((a) => a.it),
-      // );
+      // if (!$imDrawing.getState()) {
       historyUpdated({ history: resp.data.roomEvent.map((a) => a.it) });
+      // }
     }
   },
 );
@@ -245,6 +248,23 @@ undoClicked.watch(() => {
       })
       .link({ party: DEMO_ID }),
   );
+});
+
+clearCanvasClicked.watch(async () => {
+  const { roomEvent } = await db
+    .queryOnce({
+      roomEvent: {
+        $: { where: { party: DEMO_ID } },
+      },
+    })
+    .then((it) => it.data);
+
+  console.log("DELETE");
+  console.log(roomEvent);
+
+  if (roomEvent.length > 0) {
+    db.transact(roomEvent.map((event) => db.tx.roomEvent[event.id].delete()));
+  }
 });
 
 sample({ source: $party, clock: makeWeDraw }).watch((party) => {
