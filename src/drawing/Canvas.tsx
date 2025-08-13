@@ -6,6 +6,7 @@ import {
   $currentLine,
   $debugMode,
   $imDrawing,
+  $polylinePaths,
   $rawPath,
   $renderMode,
   $smoothConf,
@@ -45,6 +46,7 @@ export function Canvas() {
   const currentLine = useUnit($currentLine);
   const debugMode = useUnit($debugMode);
   const smoothConf = useUnit($smoothConf);
+  const renderMode = useUnit($renderMode);
 
   const startDrawing = (e: React.MouseEvent | React.TouchEvent) => {
     if (!imDrawing) return;
@@ -159,15 +161,26 @@ export function Canvas() {
             </>
           )}
           <ExistingLines />
-          <path
-            d={getSvgPathFromStroke(
-              getStroke(currentLine.points, {
-                ...smoothConf,
-                size: currentLine.size,
-              }),
-            )}
-            fill={currentLine.color}
-          />
+          {renderMode === "polyline" ? (
+            <polyline
+              points={currentLine.points.map(([x, y]) => `${x},${y}`).join(" ")}
+              stroke={currentLine.color}
+              strokeWidth={currentLine.size}
+              fill="none"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          ) : (
+            <path
+              d={getSvgPathFromStroke(
+                getStroke(currentLine.points, {
+                  ...smoothConf,
+                  size: currentLine.size,
+                }),
+              )}
+              fill={currentLine.color}
+            />
+          )}
           {debugMode && <DebugOverlay />}
         </svg>
       )}
@@ -177,6 +190,24 @@ export function Canvas() {
 
 const ExistingLines = memo(() => {
   const lines = useUnit($svgPaths);
+  const polylines = useUnit($polylinePaths);
+  const renderMode = useUnit($renderMode);
+
+  if (renderMode === "polyline") {
+    return polylines.map((line, i) => {
+      return (
+        <polyline
+          key={"ExistingPolylines" + i}
+          points={line.points}
+          stroke={line.color}
+          strokeWidth={line.strokeWidth}
+          fill="none"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      );
+    });
+  }
 
   return lines.map((line, i) => {
     return <path key={"ExistingLines" + i} d={line.d} fill={line.color} />;

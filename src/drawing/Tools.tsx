@@ -4,6 +4,7 @@ import {
   undoClicked,
   clearCanvasClicked,
   $renderMode,
+  renderModeChanged,
   $party,
   $imDrawing,
   $artistName,
@@ -33,9 +34,8 @@ export function Tools() {
         <button onClick={undoClicked}>
           <img style={{ width: "20px" }} src={arrowArcLeftSrc} />
         </button>
-        <button onClick={clearCanvasClicked}>
-          Clear
-        </button>
+
+        <button onClick={clearCanvasClicked}>Clear</button>
         <LineWidthSelector />
       </div>
       <div

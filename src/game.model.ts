@@ -61,7 +61,7 @@ export const $myName = combine($party, $localId, (party, localId) => {
   return myPlayer ? myPlayer.name : "";
 });
 
-export const $renderMode = createStore<"normal" | "old">("normal");
+export const $renderMode = createStore<"normal" | "old" | "polyline">("normal");
 export const $debugMode = createStore(false);
 
 export const setSmoothConf = createEvent<Partial<typeof smoothConf>>();
@@ -69,7 +69,7 @@ export const $smoothConf = restore(setSmoothConf, smoothConf);
 
 export const currentLineChanged = createEvent<Partial<CurrentLine>>();
 export const setCurrentLineID = createEvent<string>();
-export const renderModeChanged = createEvent<"normal" | "old">();
+export const renderModeChanged = createEvent<"normal" | "old" | "polyline">();
 export const debugModeToggled = createEvent<boolean>();
 export const makeWeDraw = createEvent<any>();
 
@@ -170,6 +170,28 @@ export const $rawPath = combine($currentCanvas, (lines) => {
   });
 
   return rawLines;
+});
+
+export const $polylinePaths = combine($currentCanvas, (lines) => {
+  const polylines: Array<{ points: string; color: string; strokeWidth: number }> = [];
+
+  lines.forEach((it, i) => {
+    if (it.type === "line") {
+      const optimizedDots = optimizeLine(it.dots);
+      const points = optimizedDots.map(([x, y]) => `${x},${y}`).join(" ");
+      polylines.push({
+        points,
+        color: it.color,
+        strokeWidth: it.width,
+      });
+    } else if (it.type === "bucket") {
+      // todo: handle bucket for polylines
+    } else if (it.type === "undo") {
+      polylines.pop();
+    }
+  });
+
+  return polylines;
 });
 
 db.subscribeQuery(

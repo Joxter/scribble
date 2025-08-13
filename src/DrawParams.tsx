@@ -1,6 +1,12 @@
-import React, { useEffect, useState } from "react";
 import { useUnit } from "effector-react";
-import { $smoothConf, setSmoothConf } from "./game.model";
+import {
+  $debugMode,
+  $renderMode,
+  $smoothConf,
+  debugModeToggled,
+  renderModeChanged,
+  setSmoothConf,
+} from "./game.model";
 
 const easingFunctions = {
   cubic: (t: number) =>
@@ -56,6 +62,8 @@ const easingFunctions = {
 
 export function DrawParams() {
   const smoothConf = useUnit($smoothConf);
+  const renderMode = useUnit($renderMode);
+  const debugMode = useUnit($debugMode);
 
   const handleSmoothingChange = (value: number) => {
     setSmoothConf({ ...smoothConf, smoothing: value });
@@ -80,15 +88,12 @@ export function DrawParams() {
         smoothConf.easing,
     ) as keyof typeof easingFunctions) || "linear";
 
-  console.log(smoothConf);
-
   return (
     <div
       style={{
-        marginBottom: "20px",
-        display: "flex",
-        gap: "15px",
-        flexWrap: "wrap",
+        display: "grid",
+        gap: "12px",
+        alignContent: "start",
       }}
     >
       <div style={{ display: "flex" }}>
@@ -154,6 +159,44 @@ export function DrawParams() {
             </option>
           ))}
         </select>
+      </div>
+      <div style={{ display: "flex" }}>
+        <div style={{ fontSize: "14px" }}>Render:</div>
+        <div>
+          {(["normal", "polyline", "old"] as const).map((mode) => (
+            <label
+              key={mode}
+              style={{
+                fontSize: "14px",
+                display: "flex",
+                alignItems: "center",
+                gap: "4px",
+              }}
+            >
+              <input
+                type="radio"
+                name="renderMode"
+                value={mode}
+                checked={renderMode === mode}
+                onChange={(e) =>
+                  renderModeChanged(e.target.value as typeof mode)
+                }
+              />
+              {mode.charAt(0).toUpperCase() + mode.slice(1)}
+            </label>
+          ))}
+        </div>
+      </div>
+      <div>
+        <label style={{ fontSize: "12px" }}>
+          <input
+            type="checkbox"
+            checked={debugMode}
+            onChange={(e) => debugModeToggled(e.target.checked)}
+            style={{ marginRight: "6px" }}
+          />
+          Debug overlay
+        </label>
       </div>
     </div>
   );

@@ -14,7 +14,6 @@ import {
 export function DeveloperTools() {
   const [isCollapsed, setIsCollapsed] = useState(true);
   const renderMode = useUnit($renderMode);
-  const debugMode = useUnit($debugMode);
   const localId = useUnit($localId);
   const party = useUnit($party);
 
@@ -56,35 +55,11 @@ export function DeveloperTools() {
             backgroundColor: "#f9f9f9",
           }}
         >
-          <p style={{ maxWidth: "300px" }}>{JSON.stringify(party)}</p>
+          <pre style={{ maxWidth: "300px" }}>
+            {JSON.stringify(party, null, 2)}
+          </pre>
           <p>{localId}</p>
-          <div style={{ marginBottom: "8px" }}>
-            <select
-              value={renderMode}
-              onChange={handleCanvasModeChange}
-              style={{
-                padding: "2px 6px",
-                fontSize: "12px",
-                border: "1px solid #ccc",
-                borderRadius: "3px",
-              }}
-            >
-              <option value="normal">Normal</option>
-              <option value="old">Canvas Old</option>
-            </select>
-          </div>
 
-          <div>
-            <label style={{ fontSize: "12px" }}>
-              <input
-                type="checkbox"
-                checked={debugMode}
-                onChange={(e) => debugModeToggled(e.target.checked)}
-                style={{ marginRight: "6px" }}
-              />
-              Debug overlay
-            </label>
-          </div>
           <div>
             <a href="https://joxter.github.io/scribble/" target="_blank">
               website
