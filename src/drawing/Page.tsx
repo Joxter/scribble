@@ -20,6 +20,7 @@ import { DeveloperTools } from "./DeveloperTools";
 import { useUnit } from "effector-react";
 import { Tools } from "./Tools";
 import { ListOfPlayers } from "./ListOfPlayers";
+import css from "./Page.module.css";
 
 export function DrawingPage() {
   const [show, setShow] = useState(false);
@@ -40,29 +41,10 @@ export function DrawingPage() {
   }
 
   return (
-    <div
-      style={{
-        height: "100%",
-        display: "grid",
-        gridTemplateRows: "min-content 1fr min-content",
-        gap: "16px",
-        // padding: "16px",
-        // justify-items: start
-        // justifyItems: "center",
-        width: "100%",
-        maxWidth: "500px",
-      }}
-    >
+    <div className={css.page}>
       <DeveloperTools />
-      <div>
-        <div
-          style={{
-            display: "flex",
-            gap: "32px",
-            alignItems: "center",
-            flexWrap: "wrap",
-          }}
-        >
+      <div className={css.header}>
+        <div className={css.headerContent}>
           <Link href="/scribble/">ЛОГО</Link>
           <p>я {myName}</p>
           {imDrawing ? (
@@ -75,18 +57,10 @@ export function DrawingPage() {
         </div>
       </div>
 
-      <div
-        style={{
-          overflow: "hidden",
-          width: "100%",
-          // backgroundColor: "red",
-          // display: "flex",
-          //
-        }}
-      >
+      <div className={css.canvasSection}>
         {renderMode === "old" ? <CanvasOld /> : <Canvas />}
       </div>
-      <div>
+      <div className={css.footer}>
         <Tools />
         <ListOfPlayers />
       </div>

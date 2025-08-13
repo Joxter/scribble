@@ -1,0 +1,28 @@
+.page {
+  height: 100%;
+  display: grid;
+  grid-template-rows: min-content 1fr min-content;
+  gap: 16px;
+  width: 100%;
+  max-width: 500px;
+}
+
+.header {
+  /* Header section styles */
+}
+
+.headerContent {
+  display: flex;
+  gap: 32px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.canvasSection {
+  overflow: hidden;
+  width: 100%;
+}
+
+.footer {
+  /* Footer section styles */
+}
