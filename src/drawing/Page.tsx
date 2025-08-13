@@ -19,6 +19,7 @@ import { ColorSelectorOld } from "./ColorSelectorOld";
 import { DeveloperTools } from "./DeveloperTools";
 import { useUnit } from "effector-react";
 import { Tools } from "./Tools";
+import { ListOfPlayers } from "./ListOfPlayers";
 
 export function DrawingPage() {
   const [show, setShow] = useState(false);
@@ -87,6 +88,7 @@ export function DrawingPage() {
       </div>
       <div>
         <Tools />
+        <ListOfPlayers />
       </div>
     </div>
   );
