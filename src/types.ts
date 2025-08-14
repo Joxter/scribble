@@ -31,6 +31,12 @@ export type PartyOLD = {
   };
 };
 
+export type CurrentLine = {
+  dots: [x: number, y: number][];
+  color: string;
+  width: number;
+};
+
 export type Party = {
   players: { id: string; name: string }[];
   name: string;
@@ -41,12 +47,6 @@ export type Party = {
 
 type ChatAndLines = {
   history: CanvasAndChatHistory[]; // чат и линии
-};
-
-type CurrentLine = {
-  currentLine: JSON[]; // то что что рисует прям сейчас мышкой игрок
-  width: number;
-  color: string;
 };
 
 type JSON = any;

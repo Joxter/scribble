@@ -1,5 +1,5 @@
 import { combine, createEvent, createStore, restore, sample } from "effector";
-import { CanvasAndChatHistory, Party } from "./types";
+import { CanvasAndChatHistory, Party, CurrentLine } from "./types";
 import getStroke from "perfect-freehand";
 import { getSvgPathFromStroke, historyToLines, optimizeLine } from "./utils";
 import { DEMO_ID, smoothConf } from "./config";
@@ -8,13 +8,6 @@ import { id, lookup } from "@instantdb/core";
 import { getUsername } from "./code-worlds";
 import { svgInk } from "./freehand/svgInk";
 import { Vec } from "./freehand/Vec";
-
-type CurrentLine = {
-  points: [x: number, y: number][];
-  color: string;
-  size: number;
-  isBucket: boolean;
-};
 
 const setLocalId = createEvent<string>();
 export const $localId = restore(setLocalId, "");
@@ -26,10 +19,9 @@ const setParty = createEvent<Party>();
 export const $party = restore(setParty, emptyParty());
 
 export const $currentLine = createStore<CurrentLine>({
-  points: [],
+  dots: [],
   color: "#000000",
-  size: 8,
-  isBucket: false,
+  width: 8,
 });
 
 // Add current user
@@ -63,9 +55,9 @@ export const $myName = combine($party, $localId, (party, localId) => {
   return myPlayer ? myPlayer.name : "";
 });
 
-export const $renderMode = createStore<
-  "normal" | "old" | "polyline" | "tldraw"
->("tldraw");
+export const $renderMode = createStore<"normal" | "polyline" | "tldraw">(
+  "tldraw",
+);
 export const $debugMode = createStore(false);
 
 export const setSmoothConf = createEvent<Partial<typeof smoothConf>>();
@@ -74,7 +66,7 @@ export const $smoothConf = restore(setSmoothConf, smoothConf);
 export const currentLineChanged = createEvent<Partial<CurrentLine>>();
 export const setCurrentLineID = createEvent<string>();
 export const renderModeChanged = createEvent<
-  "normal" | "old" | "polyline" | "tldraw"
+  "normal" | "polyline" | "tldraw"
 >();
 export const debugModeToggled = createEvent<boolean>();
 export const makeWeDraw = createEvent<any>();
@@ -113,9 +105,7 @@ sample({
   target: $party,
 });
 
-$currentCanvas.on(historyUpdated, (currentHistory, { history }) => {
-  return history;
-});
+$currentCanvas.on(historyUpdated, (_, { history }) => history);
 
 // $currentCanvas.watch((v) => {
 //   console.log("$currentCanvas", v);
@@ -213,42 +203,22 @@ export const $polylinePaths = combine($currentCanvas, (lines) => {
   return polylines;
 });
 
+db.subscribeQuery({ party: { $: { where: { id: DEMO_ID } } } }, (resp) => {
+  if (resp.error) console.error(resp.error);
+  if (resp.data) setParty(resp.data.party[0] as Party);
+});
+
 db.subscribeQuery(
-  {
-    party: {
-      $: { where: { id: DEMO_ID } },
-      currentLine: {},
-    },
-  },
+  { party: { $: { where: { id: DEMO_ID } }, currentLine: {} } },
   (resp) => {
     if (resp.error) console.error(resp.error);
     if (resp.data) {
       const party = resp.data.party[0];
-
       if (party?.currentLine) {
-        // console.log(party);
-        setParty({
-          name: party.name,
-          players: party.players || [],
-          gameState: party.gameState || {},
-        });
         setCurrentLineID(party.currentLine.id);
-
-        if ($imDrawing.getState()) {
-          // currentLineChanged({
-          // points: party.currentLine.dots,
-          // size: party.currentLine.width,
-          // color: party.currentLine.color,
-          // });
-        } else {
-          currentLineChanged({
-            points: party.currentLine.dots,
-            size: party.currentLine.width,
-            color: party.currentLine.color,
-          });
+        if (!$imDrawing.getState()) {
+          currentLineChanged(party.currentLine);
         }
-      } else {
-        console.log("no party or currentLine", party);
       }
     }
   },
@@ -263,23 +233,18 @@ db.subscribeQuery(
   (resp) => {
     if (resp.error) console.error(resp.error);
     if (resp.data) {
-      // if (!$imDrawing.getState()) {
       historyUpdated({ history: resp.data.roomEvent.map((a) => a.it) });
-      // }
     }
   },
 );
 
 combine([$currentLine, $imDrawing, $currentLineID]).watch(
   ([currentLine, imDrawing, lineId]) => {
-    // console.log([lineId], currentLine);
     if (imDrawing && lineId) {
-      // console.log("db.transact", currentLine);
-
       db.transact(
         db.tx.curretLine[lineId].update({
-          width: currentLine.size,
-          dots: currentLine.points,
+          width: currentLine.width,
+          dots: currentLine.dots,
           color: currentLine.color,
         }),
       );
@@ -293,11 +258,10 @@ addLine.watch((newLine) => {
       .create({
         it: {
           type: "line",
-          dots: newLine.points,
+          dots: newLine.dots,
           color: newLine.color,
-          width: newLine.size,
+          width: newLine.width,
         },
-        // timestamp: new Date(),
       })
       .link({ party: DEMO_ID }),
   );
@@ -306,21 +270,14 @@ addLine.watch((newLine) => {
 undoClicked.watch(() => {
   db.transact(
     db.tx.roomEvent[id()]
-      .create({
-        it: { type: "undo" },
-        // timestamp: new Date()
-      })
+      .create({ it: { type: "undo" } })
       .link({ party: DEMO_ID }),
   );
 });
 
 clearCanvasClicked.watch(async () => {
   const { roomEvent } = await db
-    .queryOnce({
-      roomEvent: {
-        $: { where: { party: DEMO_ID } },
-      },
-    })
+    .queryOnce({ roomEvent: { $: { where: { party: DEMO_ID } } } })
     .then((it) => it.data);
 
   console.log("DELETE");
