@@ -10,6 +10,8 @@
  * @returns {Float32Array} - the spline points.
  */
 
+import { VecLike } from "./freehand/Vec";
+
 export const canvasSize = 600;
 
 export function cSpline(
@@ -237,4 +239,34 @@ export function optimizeLine<T extends [number, number, ...any[]]>(
   }
 
   return optimized;
+}
+
+export function clamp(n: number, min: number, max: number): number;
+export function clamp(n: number, min: number, max?: number): number {
+  return Math.max(min, typeof max !== "undefined" ? Math.min(n, max) : n);
+}
+
+export function toDomPrecision(v: number) {
+  return Math.round(v * 1e4) / 1e4;
+}
+
+/**
+ * @public
+ */
+export function toFixed(v: number) {
+  return Math.round(v * 1e2) / 1e2;
+}
+
+export function assert(condition: any, message?: string): asserts condition {
+  if (!condition) {
+    throw new Error(message || "Assertion failed");
+  }
+}
+
+export function precise(A: VecLike) {
+  return `${toDomPrecision(A.x)},${toDomPrecision(A.y)} `;
+}
+
+export function average(A: VecLike, B: VecLike) {
+  return `${toDomPrecision((A.x + B.x) / 2)},${toDomPrecision((A.y + B.y) / 2)} `;
 }

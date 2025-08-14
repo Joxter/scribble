@@ -242,3 +242,50 @@ const DebugOverlay = memo(() => {
     );
   });
 });
+
+type StrokePoint = {
+  point: number;
+};
+
+function precise(n: number) {
+  return +n.toFixed(2);
+}
+
+function average(a: number, b: number) {
+  return precise((a + b) / 2);
+}
+
+function pairsToFlat(arr: [number, number][]): number[] {
+  return arr.reduce((acc, [x, y]) => [...acc, x, y], [] as number[]);
+}
+
+export function getSvgPathFromStrokePoints(
+  _points: [number, number][],
+): string {
+  const points = pairsToFlat(_points);
+  const len = points.length;
+
+  if (len < 2) {
+    return "";
+  }
+
+  let a = points[0];
+  let b = points[1];
+
+  if (len === 2) {
+    return `M${precise(a)}L${precise(b)}`;
+  }
+
+  let result = "";
+
+  for (let i = 2, max = len - 1; i < max; i++) {
+    a = points[i];
+    b = points[i + 1];
+    result += average(a, b);
+  }
+
+  return `M${precise(points[0])}Q${precise(points[1])}${average(
+    points[1],
+    points[2],
+  )}${points.length > 3 ? "T" : ""}${result}L${precise(points[len - 1])}`;
+}
