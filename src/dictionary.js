@@ -1,4 +1,4 @@
-const alisa = [
+export const alisaWords = [
   "домино",
   "стрэй кидс",
   "феликс",

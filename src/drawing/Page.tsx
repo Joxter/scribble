@@ -1,21 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { Canvas } from "./Canvas";
 import { Canvas as CanvasOld } from "./CanvasOld";
-import { canvasSize } from "../utils";
-import { ColorSelector } from "./ColorSelector";
-import { LineWidthSelector } from "./LineWidthSelector";
+import { randomFrom } from "../utils";
+import { alisaWords } from "../dictionary";
 import { Link } from "wouter";
-import {
-  resetDEMO,
-  undoClicked,
-  $renderMode,
-  $party,
-  $imDrawing,
-  $artistName,
-  $myName,
-} from "../game.model";
-import arrowArcLeftSrc from "./ArrowArcLeft.svg";
-import { ColorSelectorOld } from "./ColorSelectorOld";
+import { $renderMode } from "../game.model";
 import { DeveloperTools } from "./DeveloperTools";
 import { useUnit } from "effector-react";
 import { Tools } from "./Tools";
@@ -26,10 +15,8 @@ import css from "./Page.module.css";
 export function DrawingPage() {
   const [show, setShow] = useState(false);
   const renderMode = useUnit($renderMode);
-  const party = useUnit($party);
-  const imDrawing = useUnit($imDrawing);
-  const myName = useUnit($myName);
-  const artistName = useUnit($artistName);
+
+  const [word, setWord] = useState(randomFrom(alisaWords));
 
   useEffect(() => {
     setTimeout(() => {
@@ -47,6 +34,12 @@ export function DrawingPage() {
       <div className={css.header}>
         <div className={css.headerContent}>
           <Link href="/scribble/">ЛОГО</Link>
+          <p>
+            {word} ({word.length})
+          </p>
+          <button onClick={() => setWord(randomFrom(alisaWords))}>
+            обновить
+          </button>
         </div>
       </div>
 
