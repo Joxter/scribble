@@ -1,4 +1,4 @@
-import { assert, average, toDomPrecision } from "../utils";
+import { assert, average, precise, toDomPrecision } from "../utils";
 import { getStrokeOutlineTracks } from "./getStrokeOutlinePoints";
 import { getStrokePoints } from "./getStrokePoints";
 import { setStrokePointRadii } from "./setStrokePointRadii";
@@ -202,7 +202,4 @@ function renderPartition(
     )} 0 0 1 ${precise(arcEnd)}Z`;
   }
   return svg;
-}
-function precise(arcStart: Vec) {
-  throw new Error("Function not implemented.");
 }

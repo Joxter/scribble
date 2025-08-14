@@ -163,7 +163,7 @@ export function DrawParams() {
       <div style={{ display: "flex" }}>
         <div style={{ fontSize: "14px" }}>Render:</div>
         <div>
-          {(["normal", "polyline", "old"] as const).map((mode) => (
+          {(["normal", "polyline", "tldraw"] as const).map((mode) => (
             <label
               key={mode}
               style={{

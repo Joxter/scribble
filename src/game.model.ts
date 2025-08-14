@@ -6,6 +6,8 @@ import { DEMO_ID, smoothConf } from "./config";
 import { db } from "./DB";
 import { id, lookup } from "@instantdb/core";
 import { getUsername } from "./code-worlds";
+import { svgInk } from "./freehand/svgInk";
+import { Vec } from "./freehand/Vec";
 
 type CurrentLine = {
   points: [x: number, y: number][];
@@ -61,7 +63,9 @@ export const $myName = combine($party, $localId, (party, localId) => {
   return myPlayer ? myPlayer.name : "";
 });
 
-export const $renderMode = createStore<"normal" | "old" | "polyline">("normal");
+export const $renderMode = createStore<
+  "normal" | "old" | "polyline" | "tldraw"
+>("tldraw");
 export const $debugMode = createStore(false);
 
 export const setSmoothConf = createEvent<Partial<typeof smoothConf>>();
@@ -69,7 +73,9 @@ export const $smoothConf = restore(setSmoothConf, smoothConf);
 
 export const currentLineChanged = createEvent<Partial<CurrentLine>>();
 export const setCurrentLineID = createEvent<string>();
-export const renderModeChanged = createEvent<"normal" | "old" | "polyline">();
+export const renderModeChanged = createEvent<
+  "normal" | "old" | "polyline" | "tldraw"
+>();
 export const debugModeToggled = createEvent<boolean>();
 export const makeWeDraw = createEvent<any>();
 
@@ -133,18 +139,27 @@ $debugMode.on(debugModeToggled, (_, enabled) => enabled);
 
 export const $svgPaths = combine(
   $currentCanvas,
+  $renderMode,
   $smoothConf,
-  (lines, currentSmoothConf) => {
+  (lines, renderMode, currentSmoothConf) => {
     const paths: { d: string; color: string }[] = [];
 
     lines.forEach((it, i) => {
       if (it.type === "line") {
+        const aaa = svgInk(
+          optimizeLine(it.dots).map((it) => new Vec(it[0], it[1])),
+          { size: it.width },
+        );
+
         const stroke = getStroke(optimizeLine(it.dots), {
           ...currentSmoothConf,
           size: it.width,
         });
 
-        paths.push({ d: getSvgPathFromStroke(stroke), color: it.color });
+        paths.push({
+          d: renderMode === "tldraw" ? aaa : getSvgPathFromStroke(stroke),
+          color: it.color,
+        });
       } else if (it.type === "bucket") {
         // todo: calculate area by current "paths" and generate proper "d"
       } else if (it.type === "undo") {
@@ -173,7 +188,11 @@ export const $rawPath = combine($currentCanvas, (lines) => {
 });
 
 export const $polylinePaths = combine($currentCanvas, (lines) => {
-  const polylines: Array<{ points: string; color: string; strokeWidth: number }> = [];
+  const polylines: Array<{
+    points: string;
+    color: string;
+    strokeWidth: number;
+  }> = [];
 
   lines.forEach((it, i) => {
     if (it.type === "line") {

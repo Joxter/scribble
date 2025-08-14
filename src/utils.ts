@@ -210,7 +210,7 @@ export function optimizeLine<T extends [number, number, ...any[]]>(
   points: T[],
   threshold: number = 0,
 ): T[] {
-  if (points.length <= 1) {
+  if (points.length <= 1 || !threshold) {
     return points;
   }
 
