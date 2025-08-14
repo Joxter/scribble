@@ -1,11 +1,12 @@
-import { useUnit } from "effector-react";
-import React from "react";
-import { $currentLine, currentLineChanged } from "../game.model";
-
 const size = 28;
 const gap = 8;
 
-export function ColorSelectorOld() {
+type Props = {
+  value: string;
+  onChange: (color: string) => void;
+};
+
+export function ColorSelector({ value, onChange }: Props) {
   const colors = [
     "#111111",
     "#34495e",
@@ -21,8 +22,6 @@ export function ColorSelectorOld() {
     "#ff69b4",
   ];
 
-  const { color: value } = useUnit($currentLine);
-
   return (
     <div
       style={{
@@ -32,34 +31,16 @@ export function ColorSelectorOld() {
         justifyContent: "space-between",
       }}
     >
-      {/*
-      <div
-        style={{
-          width: "26px",
-          height: "26px",
-          border: `3px solid #000`,
-          borderRadius: "2px",
-          // padding: "0",
-          backgroundColor: value,
-        }}
-      >
-        {/* {value} * /}
-      </div>
-      */}
       {colors.map((color, i) => (
         <button
           key={color}
-          onClick={() => currentLineChanged({ color })}
+          onClick={() => onChange(color)}
           style={{
             width: size + "px",
             height: size + "px",
-            // border: color === "#ffffff" ? `1px solid #333` : `none`,
-            // border: false ? `1px solid #333` : `none`,
             border: i === 2 || i === 3 ? `1px solid #333` : `none`,
             borderRadius: "100%",
-            // borderRadius: "8px",
             padding: "0",
-            // backgroundColor: color === value ? color : "#ffffff",
             backgroundColor: color,
             cursor: "pointer",
             boxShadow:

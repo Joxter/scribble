@@ -1,19 +1,17 @@
-import { LineWidthSelector } from "./LineWidthSelector";
+import { WidthSelector } from "../components/WidthSelector.tsx";
 import {
-  resetDEMO,
   undoClicked,
   clearCanvasClicked,
-  $renderMode,
-  renderModeChanged,
-  $party,
-  $imDrawing,
-  $artistName,
-  $myName,
+  $currentLine,
+  currentLineChanged,
 } from "../game.model";
 import arrowArcLeftSrc from "./ArrowArcLeft.svg";
-import { ColorSelectorOld } from "./ColorSelectorOld";
+import { ColorSelector } from "../components/ColorSelector.tsx";
+import { useUnit } from "effector-react";
 
 export function Tools() {
+  const currentLine = useUnit($currentLine);
+
   return (
     <div
       style={{
@@ -36,16 +34,16 @@ export function Tools() {
         </button>
 
         <button onClick={clearCanvasClicked}>Clear</button>
-        <LineWidthSelector />
+        <WidthSelector
+          value={currentLine.width}
+          onChange={(width) => currentLineChanged({ width })}
+        />
       </div>
-      <div
-        style={
-          {
-            //
-          }
-        }
-      >
-        <ColorSelectorOld />
+      <div>
+        <ColorSelector
+          value={currentLine.color}
+          onChange={(color) => currentLineChanged({ color })}
+        />
       </div>
     </div>
   );

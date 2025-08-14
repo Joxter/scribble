@@ -1,26 +1,16 @@
-import React, { useRef, useState, useEffect } from "react";
-import { $currentLine, currentLineChanged } from "../game.model";
-import { useUnit } from "effector-react";
-
 const widths = [3, 8, 15, 20, 25];
+const valGap = 4;
 
-export function LineWidthSelector() {
-  const { size: value, isBucket } = useUnit($currentLine);
-  const sliderRef = useRef<HTMLDivElement>(null);
+type Props = {
+  value: number;
+  onChange: (width: number) => void;
+};
 
+export function WidthSelector({ value, onChange }: Props) {
   const currentIndex = widths.indexOf(value);
-  const isLast = currentIndex === widths.length - 1;
-
   const valWidth = Math.max(...widths);
-  const valGap = 4;
-
-  const silderWidth = valWidth * widths.length + valGap * (widths.length - 1);
 
   let pinLeft = currentIndex * valWidth + valGap * currentIndex;
-
-  if (isLast) {
-    pinLeft -= 2;
-  }
 
   return (
     <div
@@ -59,12 +49,10 @@ export function LineWidthSelector() {
           width: "100%",
         }}
       >
-        {widths.map((width, index) => {
+        {widths.map((width) => {
           return (
             <div
-              onClick={() => {
-                currentLineChanged({ size: width, isBucket: false });
-              }}
+              onClick={() => onChange(width)}
               key={width}
               style={{
                 display: "flex",
@@ -85,13 +73,6 @@ export function LineWidthSelector() {
           );
         })}
       </div>
-      {/*<input
-        type="checkbox"
-        checked={isBucket}
-        onChange={() => {
-          currentLineChanged({ isBucket: !isBucket, size: 0 });
-        }}
-      />*/}
     </div>
   );
 }
