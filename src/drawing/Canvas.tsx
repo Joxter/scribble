@@ -9,11 +9,11 @@ import {
   $rawPath,
   $renderMode,
   $smoothConf,
-  $svgPaths,
+  $svgCanvasPaths,
+  $svgCurrentLine,
   addLine,
   currentLineChanged,
 } from "../game.model";
-import getStroke from "perfect-freehand";
 
 function getCoordinates(e: React.MouseEvent | React.TouchEvent) {
   const svgEl = document.querySelector("#player-canvas")!;
@@ -41,8 +41,6 @@ export function Canvas() {
   const imDrawing = useUnit($imDrawing);
   const currentLine = useUnit($currentLine);
   const debugMode = useUnit($debugMode);
-  const smoothConf = useUnit($smoothConf);
-  const renderMode = useUnit($renderMode);
 
   const startDrawing = (e: React.MouseEvent | React.TouchEvent) => {
     if (!imDrawing) return;
@@ -118,55 +116,35 @@ export function Canvas() {
           aspectRatio: "1 / 1",
         }}
       >
-        {false && (
-          <>
-            <defs>
-              <pattern
-                id="grid"
-                width="10"
-                height="10"
-                patternUnits="userSpaceOnUse"
-              >
-                <path
-                  d="M 10 0 L 0 0 0 10"
-                  fill="none"
-                  stroke="#ccc"
-                  strokeWidth="1"
-                />
-              </pattern>
-            </defs>
-            <rect width="100%" height="100%" fill="url(#grid)" />
-          </>
-        )}
+        {false && <GridPattern />}
         <ExistingLines />
-        {renderMode === "polyline" ? (
-          <polyline
-            points={currentLine.dots.map(([x, y]) => `${x},${y}`).join(" ")}
-            stroke={currentLine.color}
-            strokeWidth={currentLine.width}
-            fill="none"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        ) : (
-          <path
-            d={getSvgPathFromStroke(
-              getStroke(currentLine.dots, {
-                ...smoothConf,
-                size: currentLine.width,
-              }),
-            )}
-            fill={currentLine.color}
-          />
-        )}
+        <CurrentLine />
         {debugMode && <DebugOverlay />}
       </svg>
     </div>
   );
 }
 
+function GridPattern() {
+  return (
+    <>
+      <defs>
+        <pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse">
+          <path
+            d="M 10 0 L 0 0 0 10"
+            fill="none"
+            stroke="#ccc"
+            strokeWidth="1"
+          />
+        </pattern>
+      </defs>
+      <rect width="100%" height="100%" fill="url(#grid)" />
+    </>
+  );
+}
+
 const ExistingLines = memo(() => {
-  const lines = useUnit($svgPaths);
+  const lines = useUnit($svgCanvasPaths);
   const polylines = useUnit($polylinePaths);
   const renderMode = useUnit($renderMode);
 
@@ -189,6 +167,14 @@ const ExistingLines = memo(() => {
   return lines.map((line, i) => {
     return <path key={"ExistingLines" + i} d={line.d} fill={line.color} />;
   });
+});
+
+const CurrentLine = memo(() => {
+  const currentLine = useUnit($svgCurrentLine);
+
+  if (!currentLine) return null;
+
+  return <path d={currentLine.d} fill={currentLine.color} />;
 });
 
 const DebugOverlay = memo(() => {

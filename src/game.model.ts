@@ -1,7 +1,7 @@
 import { combine, createEvent, createStore, restore, sample } from "effector";
 import { CanvasAndChatHistory, Party, CurrentLine } from "./types";
 import getStroke from "perfect-freehand";
-import { getSvgPathFromStroke, historyToLines, optimizeLine } from "./utils";
+import { getSvgPathFromStroke, optimizeLine } from "./utils";
 import { DEMO_ID, smoothConf } from "./config";
 import { db } from "./DB";
 import { id, lookup } from "@instantdb/core";
@@ -121,13 +121,13 @@ $currentLine
     return { ...s, ...v };
   })
   .on(addLine, (s) => {
-    return { ...s, points: [] };
+    return { ...s, dots: [] };
   });
 
 $renderMode.on(renderModeChanged, (_, mode) => mode);
 $debugMode.on(debugModeToggled, (_, enabled) => enabled);
 
-export const $svgPaths = combine(
+export const $svgCanvasPaths = combine(
   $currentCanvas,
   $renderMode,
   $smoothConf,
@@ -141,13 +141,15 @@ export const $svgPaths = combine(
           { size: it.width },
         );
 
-        const stroke = getStroke(optimizeLine(it.dots), {
-          ...currentSmoothConf,
-          size: it.width,
-        });
+        const bbb = getSvgPathFromStroke(
+          getStroke(optimizeLine(it.dots), {
+            ...currentSmoothConf,
+            size: it.width,
+          }),
+        );
 
         paths.push({
-          d: renderMode === "tldraw" ? aaa : getSvgPathFromStroke(stroke),
+          d: renderMode === "tldraw" ? aaa : bbb,
           color: it.color,
         });
       } else if (it.type === "bucket") {
@@ -158,6 +160,32 @@ export const $svgPaths = combine(
     });
 
     return paths;
+  },
+);
+
+export const $svgCurrentLine = combine(
+  $currentLine,
+  $renderMode,
+  $smoothConf,
+  (currentLine, renderMode, currentSmoothConf) => {
+    if (currentLine.dots.length === 0) return null;
+
+    const aaa = svgInk(
+      optimizeLine(currentLine.dots).map((it) => new Vec(it[0], it[1])),
+      { size: currentLine.width },
+    );
+
+    const bbb = getSvgPathFromStroke(
+      getStroke(optimizeLine(currentLine.dots), {
+        ...currentSmoothConf,
+        size: currentLine.width,
+      }),
+    );
+
+    return {
+      d: renderMode === "tldraw" ? aaa : bbb,
+      color: currentLine.color,
+    };
   },
 );
 
