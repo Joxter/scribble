@@ -274,3 +274,11 @@ export function precise(A: VecLike) {
 export function average(A: VecLike, B: VecLike) {
   return `${toDomPrecision((A.x + B.x) / 2)},${toDomPrecision((A.y + B.y) / 2)} `;
 }
+
+export function getBasePath(): string {
+  return window.location.pathname.includes("/scribble/") ? "/scribble/" : "/";
+}
+
+export function getUrl(partyId?: string): string {
+  return `${getBasePath()}${partyId || ""}`;
+}
