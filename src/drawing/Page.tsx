@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import { Canvas } from "./Canvas";
 import { randomFrom } from "../utils";
 import { alisaWords } from "../dictionary";
-import { Link } from "wouter";
 import { DeveloperTools } from "./DeveloperTools";
 import { Tools } from "./Tools";
 import { ListOfPlayers } from "./ListOfPlayers";
@@ -28,7 +27,7 @@ export function DrawingPage() {
     <div className={css.page}>
       <div className={css.header}>
         <div className={css.headerContent}>
-          <Link href="/scribble/">ЛОГО</Link>
+          <a href="/">ЛОГО</a>
           <p>
             {word} ({word.length})
           </p>

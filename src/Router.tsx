@@ -1,14 +1,13 @@
 import React from "react";
-import { Route, Switch } from "wouter";
 import { DrawingPage } from "./drawing/Page";
+
+const URL_ROOM_NAME = window.location.search.slice(1);
+// console.log({ URL_ROOM_NAME });
 
 export function Router() {
   return (
     <div style={{ height: "100%" }}>
-      <Switch>
-        <Route path="/scribble/" component={DrawingPage} />
-        <Route>404: No such page!</Route>
-      </Switch>
+      {URL_ROOM_NAME ? <DrawingPage /> : <p>all rooms</p>}
     </div>
   );
 }
