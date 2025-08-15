@@ -1,5 +1,5 @@
 import { useUnit } from "effector-react";
-import { $party, $localId, makeWeDraw } from "../game.model";
+import { $party, $localId, makeWeDraw } from "../model/game.model.ts";
 
 export function ListOfPlayers() {
   const party = useUnit($party);

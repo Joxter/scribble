@@ -4,7 +4,7 @@ import {
   clearCanvasClicked,
   $currentLine,
   currentLineChanged,
-} from "../game.model";
+} from "../model/game.model.ts";
 import arrowArcLeftSrc from "./ArrowArcLeft.svg";
 import { ColorSelector } from "../components/ColorSelector.tsx";
 import { useUnit } from "effector-react";

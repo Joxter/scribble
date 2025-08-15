@@ -13,7 +13,7 @@ import {
   $svgCurrentLine,
   addLine,
   currentLineChanged,
-} from "../game.model";
+} from "../model/game.model.ts";
 
 function getCoordinates(e: React.MouseEvent | React.TouchEvent) {
   const svgEl = document.querySelector("#player-canvas")!;

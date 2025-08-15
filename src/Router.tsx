@@ -1,13 +1,14 @@
 import React from "react";
 import { DrawingPage } from "./drawing/Page";
-
-const URL_ROOM_NAME = window.location.search.slice(1);
-// console.log({ URL_ROOM_NAME });
+import { $roomId } from "./model/app.ts";
+import { useUnit } from "effector-react";
 
 export function Router() {
+  const roomId = useUnit($roomId);
+
   return (
     <div style={{ height: "100%" }}>
-      {URL_ROOM_NAME ? <DrawingPage /> : <p>all rooms</p>}
+      {roomId ? <DrawingPage /> : <p>all rooms</p>}
     </div>
   );
 }

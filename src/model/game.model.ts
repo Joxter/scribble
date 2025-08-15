@@ -1,30 +1,27 @@
-import { combine, createEvent, createStore, restore, sample } from "effector";
-import { CanvasAndChatHistory, Party, CurrentLine } from "./types";
+import {
+  combine,
+  createEvent,
+  createStore,
+  restore,
+  sample,
+  Store,
+} from "effector";
+import { CanvasAndChatHistory, Party, CurrentLine } from "../types.ts";
 import getStroke from "perfect-freehand";
-import { getSvgPathFromStroke, optimizeLine } from "./utils";
-import { DEMO_ID, smoothConf } from "./config";
-import { db } from "./DB";
+import { getSvgPathFromStroke, optimizeLine } from "../utils.ts";
+import { DEMO_ID, smoothConf } from "../config.ts";
+import { db } from "../DB.ts";
 import { id, lookup } from "@instantdb/core";
-import { getUsername } from "./code-worlds";
-import { svgInk } from "./freehand/svgInk";
-import { Vec } from "./freehand/Vec";
+import { getUsername } from "../code-worlds.ts";
+import { svgInk } from "../freehand/svgInk.ts";
+import { Vec } from "../freehand/Vec.ts";
 
 const setLocalId = createEvent<string>();
 export const $localId = restore(setLocalId, "");
 db.getLocalId("guest").then((a) => setLocalId(a));
 
-const $currentLineID = createStore("");
-
 const setParty = createEvent<Party>();
 export const $party = restore(setParty, emptyParty());
-
-const { $allParties } = createParties();
-
-export const $currentLine = createStore<CurrentLine>({
-  dots: [],
-  color: "#000000",
-  width: 8,
-});
 
 // Add current user
 combine([$localId, $party]).watch(([localId, party]) => {
@@ -57,6 +54,9 @@ export const $myName = combine($party, $localId, (party, localId) => {
   return myPlayer ? myPlayer.name : "";
 });
 
+export const { currentLineChanged, $currentLine, addLine } =
+  createCurrentLine($imDrawing);
+
 export const $renderMode = createStore<"normal" | "polyline" | "tldraw">(
   "tldraw",
 );
@@ -65,8 +65,6 @@ export const $debugMode = createStore(false);
 export const setSmoothConf = createEvent<Partial<typeof smoothConf>>();
 export const $smoothConf = restore(setSmoothConf, smoothConf);
 
-export const currentLineChanged = createEvent<Partial<CurrentLine>>();
-export const setCurrentLineID = createEvent<string>();
 export const renderModeChanged = createEvent<
   "normal" | "polyline" | "tldraw"
 >();
@@ -75,7 +73,6 @@ export const makeWeDraw = createEvent<any>();
 
 export const undoClicked = createEvent<any>();
 export const clearCanvasClicked = createEvent<any>();
-export const addLine = createEvent<CurrentLine>();
 export const addBucket = createEvent<{
   x: number;
   y: number;
@@ -112,19 +109,6 @@ $currentCanvas.on(historyUpdated, (_, { history }) => history);
 // $currentCanvas.watch((v) => {
 //   console.log("$currentCanvas", v);
 // });
-
-$currentLineID.on(setCurrentLineID, (_, id) => id);
-
-$currentLine
-  // .on(canvasAndChatHistoryLoaded, (s, { currentLine }) => {
-  //   return currentLine;
-  // })
-  .on(currentLineChanged, (s, v) => {
-    return { ...s, ...v };
-  })
-  .on(addLine, (s) => {
-    return { ...s, dots: [] };
-  });
 
 $renderMode.on(renderModeChanged, (_, mode) => mode);
 $debugMode.on(debugModeToggled, (_, enabled) => enabled);
@@ -239,22 +223,6 @@ db.subscribeQuery({ party: { $: { where: { id: DEMO_ID } } } }, (resp) => {
 });
 
 db.subscribeQuery(
-  { party: { $: { where: { id: DEMO_ID } }, currentLine: {} } },
-  (resp) => {
-    if (resp.error) console.error(resp.error);
-    if (resp.data) {
-      const party = resp.data.party[0];
-      if (party?.currentLine) {
-        setCurrentLineID(party.currentLine.id);
-        if (!$imDrawing.getState()) {
-          currentLineChanged(party.currentLine);
-        }
-      }
-    }
-  },
-);
-
-db.subscribeQuery(
   {
     roomEvent: {
       $: { where: { party: DEMO_ID }, order: { serverCreatedAt: "asc" } },
@@ -267,35 +235,6 @@ db.subscribeQuery(
     }
   },
 );
-
-combine([$currentLine, $imDrawing, $currentLineID]).watch(
-  ([currentLine, imDrawing, lineId]) => {
-    if (imDrawing && lineId) {
-      db.transact(
-        db.tx.curretLine[lineId].update({
-          width: currentLine.width,
-          dots: currentLine.dots,
-          color: currentLine.color,
-        }),
-      );
-    }
-  },
-);
-
-addLine.watch((newLine) => {
-  db.transact(
-    db.tx.roomEvent[id()]
-      .create({
-        it: {
-          type: "line",
-          dots: newLine.dots,
-          color: newLine.color,
-          width: newLine.width,
-        },
-      })
-      .link({ party: DEMO_ID }),
-  );
-});
 
 undoClicked.watch(() => {
   db.transact(
@@ -371,18 +310,73 @@ function emptyParty(): Party {
   };
 }
 
-function createParties() {
-  const allPartiesLoaded = createEvent<Party[]>();
-  const $allParties = restore(allPartiesLoaded, []);
+function createCurrentLine($imDrawing: Store<boolean>) {
+  const $currentLineID = createStore("");
 
-  // $allParties.watch((allParties) => {
-  //   console.log("allParties", allParties);
-  // });
-
-  db.subscribeQuery({ party: {} }, (resp) => {
-    if (resp.error) console.error(resp.error);
-    if (resp.data) allPartiesLoaded(resp.data.party as Party[]);
+  const $currentLine = createStore<CurrentLine>({
+    dots: [],
+    color: "#000000",
+    width: 8,
   });
 
-  return { $allParties };
+  const currentLineChanged = createEvent<Partial<CurrentLine>>();
+  const setCurrentLineID = createEvent<string>();
+  const addLine = createEvent<CurrentLine>();
+
+  $currentLineID.on(setCurrentLineID, (_, id) => id);
+
+  $currentLine
+    .on(currentLineChanged, (s, v) => {
+      return { ...s, ...v };
+    })
+    .on(addLine, (s) => {
+      return { ...s, dots: [] };
+    });
+
+  combine([$currentLine, $imDrawing, $currentLineID]).watch(
+    ([currentLine, imDrawing, lineId]) => {
+      if (imDrawing && lineId) {
+        db.transact(
+          db.tx.curretLine[lineId].update({
+            width: currentLine.width,
+            dots: currentLine.dots,
+            color: currentLine.color,
+          }),
+        );
+      }
+    },
+  );
+
+  db.subscribeQuery(
+    { party: { $: { where: { id: DEMO_ID } }, currentLine: {} } },
+    (resp) => {
+      if (resp.error) console.error(resp.error);
+      if (resp.data) {
+        const party = resp.data.party[0];
+        if (party?.currentLine) {
+          setCurrentLineID(party.currentLine.id);
+          if (!$imDrawing.getState()) {
+            currentLineChanged(party.currentLine);
+          }
+        }
+      }
+    },
+  );
+
+  addLine.watch((newLine) => {
+    db.transact(
+      db.tx.roomEvent[id()]
+        .create({
+          it: {
+            type: "line",
+            dots: newLine.dots,
+            color: newLine.color,
+            width: newLine.width,
+          },
+        })
+        .link({ party: DEMO_ID }),
+    );
+  });
+
+  return { $currentLine, currentLineChanged, addLine };
 }

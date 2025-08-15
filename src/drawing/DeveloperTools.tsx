@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useUnit } from "effector-react";
-import { $localId, $party, resetDEMO } from "../game.model";
+import { $localId, $party, resetDEMO } from "../model/game.model.ts";
 
 export function DeveloperTools() {
   const [isCollapsed, setIsCollapsed] = useState(true);
