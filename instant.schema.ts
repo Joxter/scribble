@@ -4,14 +4,23 @@ import { i } from "@instantdb/core";
 
 const _schema = i.schema({
   entities: {
+    // room ?
     party: i.entity({
       name: i.string().unique().indexed(),
       players: i.any().optional(),
       gameState: i.any().optional(),
     }),
+    // roomEvent paintingEvent ?
     roomEvent: i.entity({
       it: i.any(),
     }),
+    // players: i.entity({
+    //   it: i.any(),
+    // }),
+    // paintings: i.entity({
+    //   word,
+    //   roomEvents,
+    // }),
     curretLine: i.entity({
       color: i.string(),
       dots: i.any(),

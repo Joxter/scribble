@@ -18,6 +18,8 @@ const $currentLineID = createStore("");
 const setParty = createEvent<Party>();
 export const $party = restore(setParty, emptyParty());
 
+const { $allParties } = createParties();
+
 export const $currentLine = createStore<CurrentLine>({
   dots: [],
   color: "#000000",
@@ -367,4 +369,20 @@ function emptyParty(): Party {
     players: [],
     gameState: { drawing: "" },
   };
+}
+
+function createParties() {
+  const allPartiesLoaded = createEvent<Party[]>();
+  const $allParties = restore(allPartiesLoaded, []);
+
+  // $allParties.watch((allParties) => {
+  //   console.log("allParties", allParties);
+  // });
+
+  db.subscribeQuery({ party: {} }, (resp) => {
+    if (resp.error) console.error(resp.error);
+    if (resp.data) allPartiesLoaded(resp.data.party as Party[]);
+  });
+
+  return { $allParties };
 }

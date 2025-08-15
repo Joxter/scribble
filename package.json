@@ -20,6 +20,7 @@
     "effector-react": "^23.3.0",
     "lazy-brush": "^2.0.2",
     "perfect-freehand": "^1.2.2",
+    "prettier": "^3.6.2",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "typescript": "^5.8.3",
