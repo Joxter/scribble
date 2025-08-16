@@ -1,25 +1,42 @@
 import { useUnit } from "effector-react";
-import { $party, $localId } from "../model/game.model.ts";
+import {
+  $party,
+  $localId,
+  joinParty,
+  leaveParty,
+} from "../model/game.model.ts";
+import { Player } from "../types.ts";
+import pencilSvg from "./Pencil.svg";
 
 export function ListOfPlayers() {
   const party = useUnit($party);
   const localId = useUnit($localId);
 
-  if (!party.players || party.players.length === 0) {
-    return <div>No players</div>;
-  }
+  const players: Player[] = party.players2 || [];
+
+  const joined = !!players.find((p: Player) => p.localId === localId);
 
   return (
-    <div
-      style={
-        {
-          // padding: "16px",
-          // border: "1px solid #ccc",
-          // borderRadius: "8px",
-          // backgroundColor: "#f9f9f9",
-        }
-      }
-    >
+    <div>
+      {joined ? (
+        <button
+          type="button"
+          onClick={() => {
+            leaveParty(party.id);
+          }}
+        >
+          покинуть
+        </button>
+      ) : (
+        <button
+          type="button"
+          onClick={() => {
+            joinParty(party.id);
+          }}
+        >
+          приосединиться
+        </button>
+      )}
       <div
         style={{
           display: "grid",
@@ -28,8 +45,8 @@ export function ListOfPlayers() {
           //
         }}
       >
-        {party.players.map((player) => {
-          const isCurrentPlayer = player.id === localId;
+        {players.length === 0 ? <p>никого нет</p> : null}
+        {players?.map((player: Player) => {
           const isDrawingPlayer = player.id === party.gameState.drawing;
 
           return (
@@ -41,11 +58,12 @@ export function ListOfPlayers() {
                 backgroundColor: "#fff",
                 color: "#333",
                 border: "1px solid #ddd",
-                fontWeight: isCurrentPlayer ? "bold" : "normal",
               }}
             >
-              {player.name}
-              {isDrawingPlayer && " (рисует)"}
+              {player.name}{" "}
+              {isDrawingPlayer && (
+                <img src={pencilSvg} style={{ width: "18px" }} />
+              )}
             </div>
           );
         })}

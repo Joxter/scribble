@@ -1,6 +1,6 @@
 import React from "react";
 import { DrawingPage } from "./drawing/Page";
-import { AllParties } from "./AllParties";
+import { HomePage } from "./AllParties";
 import { $roomId } from "./model/game.model.ts";
 import { useUnit } from "effector-react";
 
@@ -9,7 +9,7 @@ export function Router() {
 
   return (
     <div style={{ height: "100%" }}>
-      {roomId ? <DrawingPage /> : <AllParties />}
+      {roomId ? <DrawingPage /> : <HomePage />}
     </div>
   );
 }

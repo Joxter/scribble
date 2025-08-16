@@ -4,27 +4,48 @@ import { $allParties } from "./model/app";
 import { getUrl } from "./utils.ts";
 import { $player, createNewParty, editPlayerName } from "./model/game.model.ts";
 
-export function AllParties() {
-  const [allParties, player] = useUnit([$allParties, $player]);
+export function HomePage() {
+  const player = useUnit($player);
 
   return (
-    <div style={{ padding: "20px" }}>
+    <div
+      style={{
+        padding: "20px",
+        display: "grid",
+        alignContent: "center",
+        gap: "16px",
+      }}
+    >
       {player && player.name && <EditPlayerName name={player.name} />}
+      <AllParties />
+      <CreateNewParty />
+    </div>
+  );
+}
+
+export function AllParties() {
+  const allParties = useUnit($allParties);
+
+  return (
+    <div>
       <h2>All Parties</h2>
       {allParties.length === 0 ? (
         <p>No parties found</p>
       ) : (
         <ul style={{ listStyle: "none", padding: 0 }}>
-          {allParties.map((party) => (
-            <li key={party.id} style={{ marginBottom: "10px" }}>
-              <a href={getUrl("?" + party.id)}>
-                {party.name} ({party.players.length} players)
-              </a>
-            </li>
-          ))}
+          {allParties.map((party) => {
+            const cnt = party.players2?.length || 0;
+
+            return (
+              <li key={party.id} style={{ marginBottom: "10px" }}>
+                <a href={getUrl("?" + party.id)}>
+                  {party.name} (игроков: {cnt})
+                </a>
+              </li>
+            );
+          })}
         </ul>
       )}
-      <CreateNewParty />
     </div>
   );
 }

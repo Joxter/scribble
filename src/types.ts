@@ -46,7 +46,8 @@ export type Player = {
 
 export type Party = {
   id: string;
-  players: { id: string; name: string }[];
+  players: unknown[];
+  players2?: Player[];
   name: string;
   gameState: {
     drawing: string;

@@ -14,7 +14,7 @@ function createParties() {
   //   console.log("allParties", allParties);
   // });
 
-  db.subscribeQuery({ party: {} }, (resp) => {
+  db.subscribeQuery({ party: { players2: {} } }, (resp) => {
     if (resp.error) console.error(resp.error);
     if (resp.data) allPartiesLoaded(resp.data.party as Party[]);
   });

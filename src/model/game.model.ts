@@ -63,16 +63,6 @@ export const $currentCanvas = createStore<CanvasAndChatHistory[]>([]);
 export const $imDrawing = combine($party, $localId, (party, localId) => {
   return party.gameState.drawing === localId;
 });
-export const $artistName = $party.map((party) => {
-  const drawingPlayer = party.players.find(
-    (player) => player.id === party.gameState.drawing,
-  );
-  return drawingPlayer ? drawingPlayer.name : "";
-});
-export const $myName = combine($party, $localId, (party, localId) => {
-  const myPlayer = party.players.find((player) => player.id === localId);
-  return myPlayer ? myPlayer.name : "";
-});
 
 export const { currentLineChanged, $currentLine, addLine } = createCurrentLine(
   $roomId,
@@ -269,18 +259,6 @@ liveQuery($roomId, (roomId) => {
   if (!roomId) return () => {};
 
   return db.subscribeQuery(
-    { party: { $: { where: { id: roomId } } } },
-    (resp) => {
-      if (resp.error) console.error(resp.error);
-      if (resp.data) setParty(resp.data.party[0] as Party);
-    },
-  );
-});
-
-liveQuery($roomId, (roomId) => {
-  if (!roomId) return () => {};
-
-  return db.subscribeQuery(
     {
       roomEvent: {
         $: { where: { party: roomId }, order: { serverCreatedAt: "asc" } },
@@ -317,7 +295,14 @@ clearCanvasClicked.watch(async () => {
 });
 
 sample({ source: $party, clock: makeWeDraw }).watch((party) => {
-  db.transact(db.tx.party[party.id].update(party));
+  db.transact(
+    db.tx.party[party.id].update({
+      gameState: {
+        ...party.gameState,
+        drawing: party.gameState.drawing,
+      },
+    }),
+  );
 });
 
 export async function createNewParty(name: string) {
@@ -344,6 +329,20 @@ export async function editPlayerName(name: string) {
 
   return await db.transact([
     db.tx.players[localId].update({ name, localId, avatar: "" }),
+  ]);
+}
+
+export async function joinParty(partyId: string) {
+  const localId = await db.getLocalId("guest");
+
+  return await db.transact([db.tx.players[localId].link({ parties: partyId })]);
+}
+
+export async function leaveParty(partyId: string) {
+  const localId = await db.getLocalId("guest");
+
+  return await db.transact([
+    db.tx.players[localId].unlink({ parties: partyId }),
   ]);
 }
 
