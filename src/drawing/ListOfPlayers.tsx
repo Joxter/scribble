@@ -1,5 +1,5 @@
 import { useUnit } from "effector-react";
-import { $party, $localId, makeWeDraw } from "../model/game.model.ts";
+import { $party, $localId } from "../model/game.model.ts";
 
 export function ListOfPlayers() {
   const party = useUnit($party);
@@ -49,9 +49,6 @@ export function ListOfPlayers() {
             </div>
           );
         })}
-        <div>
-          <button onClick={makeWeDraw}>я рисую</button>
-        </div>
       </div>
     </div>
   );
