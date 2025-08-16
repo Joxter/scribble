@@ -37,6 +37,13 @@ export type CurrentLine = {
   width: number;
 };
 
+export type Player = {
+  id: string;
+  localId: string;
+  name: string;
+  avatar: string;
+};
+
 export type Party = {
   id: string;
   players: { id: string; name: string }[];

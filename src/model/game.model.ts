@@ -6,7 +6,7 @@ import {
   sample,
   Store,
 } from "effector";
-import { CanvasAndChatHistory, Party, CurrentLine } from "../types.ts";
+import { CanvasAndChatHistory, Party, CurrentLine, Player } from "../types.ts";
 import getStroke from "perfect-freehand";
 import { getSvgPathFromStroke, optimizeLine, URL_ROOM_NAME } from "../utils.ts";
 import { smoothConf } from "../config.ts";
@@ -18,7 +18,9 @@ import { Vec } from "../freehand/Vec.ts";
 
 const setLocalId = createEvent<string>();
 export const $localId = restore(setLocalId, "");
+
 db.getLocalId("guest").then((a) => setLocalId(a));
+getPlayer();
 
 const setParty = createEvent<Party>();
 export const $party = restore(setParty, {
@@ -31,8 +33,18 @@ export const $party = restore(setParty, {
 const setRoomId = createEvent<string>();
 export const $roomId = restore(setRoomId, URL_ROOM_NAME);
 
+const setPlayer = createEvent<Player>();
+export const $player = restore(setPlayer, {
+  id: "",
+  localId: "",
+  name: "",
+  avatar: "",
+});
+
 // Add current user
 combine([$localId, $party, $roomId]).watch(([localId, party, roomId]) => {
+  // console.log("party");
+  // console.log(party);
   if (localId && party.name && party.players) {
     const ps = party.players.map((it) => it.id);
 
@@ -245,7 +257,7 @@ liveQuery($roomId, (roomId) => {
   if (!roomId) return () => {};
 
   return db.subscribeQuery(
-    { party: { $: { where: { id: roomId } } } },
+    { party: { $: { where: { id: roomId } }, players2: {} } },
     (resp) => {
       if (resp.error) console.error(resp.error);
       if (resp.data) setParty(resp.data.party[0] as Party);
@@ -326,6 +338,46 @@ export async function createNewParty(name: string) {
       .link({ party: partyId }),
   ]);
 }
+
+export async function editPlayerName(name: string) {
+  const localId = await db.getLocalId("guest");
+
+  return await db.transact([
+    db.tx.players[localId].update({ name, localId, avatar: "" }),
+  ]);
+}
+
+export async function getPlayer(limit = 3) {
+  if (limit < 0) throw new Error(`Can't get user`);
+
+  const localId = await db.getLocalId("guest");
+
+  const player = await db
+    .queryOnce({ players: { $: { where: { id: localId } } } })
+    .then((it) => it.data.players[0]);
+
+  if (player) return player;
+
+  const randomName = getUsername();
+  await editPlayerName(randomName);
+
+  return getPlayer(limit - 1);
+}
+
+liveQuery($localId, (localId) => {
+  if (!localId) return () => {};
+
+  return db.subscribeQuery(
+    { players: { $: { where: { id: localId } } } },
+    (resp) => {
+      if (resp.error) console.error(resp.error);
+      if (resp.data) {
+        const player = resp.data.players[0];
+        setPlayer(player);
+      }
+    },
+  );
+});
 
 export async function deleteAllPartiesAndLines() {
   let allParties = await db

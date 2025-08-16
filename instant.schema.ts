@@ -14,10 +14,11 @@ const _schema = i.schema({
     roomEvent: i.entity({
       it: i.any(),
     }),
-    // players: i.entity({
-    //   localId: i.string().unique().indexed(),
-    //   name: i.string(),
-    // }),
+    players: i.entity({
+      localId: i.string().unique().indexed(),
+      name: i.string(),
+      avatar: i.string(),
+    }),
     // paintings: i.entity({
     //   word,
     //   roomEvents,
@@ -33,10 +34,10 @@ const _schema = i.schema({
       forward: { on: "party", has: "many", label: "roomEvents" },
       reverse: { on: "roomEvent", has: "one", label: "party" },
     },
-    // partyPlayers: {
-    //   forward: { on: "party", has: "many", label: "players2" },
-    //   reverse: { on: "players", has: "many", label: "parties" },
-    // },
+    partyPlayers: {
+      forward: { on: "party", has: "many", label: "players2" },
+      reverse: { on: "players", has: "many", label: "parties" },
+    },
     partyCurrentLine: {
       forward: { on: "party", has: "one", label: "currentLine" },
       reverse: { on: "curretLine", has: "one", label: "party" },
