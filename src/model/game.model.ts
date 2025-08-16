@@ -8,8 +8,8 @@ import {
 } from "effector";
 import { CanvasAndChatHistory, Party, CurrentLine } from "../types.ts";
 import getStroke from "perfect-freehand";
-import { getSvgPathFromStroke, optimizeLine } from "../utils.ts";
-import { DEMO_ID, smoothConf } from "../config.ts";
+import { getSvgPathFromStroke, optimizeLine, URL_ROOM_NAME } from "../utils.ts";
+import { smoothConf } from "../config.ts";
 import { db } from "../DB.ts";
 import { id, lookup } from "@instantdb/core";
 import { getUsername } from "../code-worlds.ts";
@@ -21,16 +21,24 @@ export const $localId = restore(setLocalId, "");
 db.getLocalId("guest").then((a) => setLocalId(a));
 
 const setParty = createEvent<Party>();
-export const $party = restore(setParty, emptyParty());
+export const $party = restore(setParty, {
+  gameState: { drawing: "" },
+  name: "",
+  players: [],
+  id: "",
+});
+
+const setRoomId = createEvent<string>();
+export const $roomId = restore(setRoomId, URL_ROOM_NAME);
 
 // Add current user
-combine([$localId, $party]).watch(([localId, party]) => {
+combine([$localId, $party, $roomId]).watch(([localId, party, roomId]) => {
   if (localId && party.name && party.players) {
     const ps = party.players.map((it) => it.id);
 
     if (!ps.includes(localId)) {
       db.transact(
-        db.tx.party[DEMO_ID].update({
+        db.tx.party[roomId].update({
           ...party,
           players: [...party.players, { id: localId, name: getUsername() }],
         }),
@@ -54,8 +62,10 @@ export const $myName = combine($party, $localId, (party, localId) => {
   return myPlayer ? myPlayer.name : "";
 });
 
-export const { currentLineChanged, $currentLine, addLine } =
-  createCurrentLine($imDrawing);
+export const { currentLineChanged, $currentLine, addLine } = createCurrentLine(
+  $roomId,
+  $imDrawing,
+);
 
 export const $renderMode = createStore<"normal" | "polyline" | "tldraw">(
   "tldraw",
@@ -217,36 +227,73 @@ export const $polylinePaths = combine($currentCanvas, (lines) => {
   return polylines;
 });
 
-db.subscribeQuery({ party: { $: { where: { id: DEMO_ID } } } }, (resp) => {
-  if (resp.error) console.error(resp.error);
-  if (resp.data) setParty(resp.data.party[0] as Party);
+function liveQuery<T>(store: Store<T>, cb: (val: T) => () => void) {
+  let prev: any;
+
+  let unsub = () => {};
+
+  store.watch((val) => {
+    if (val !== prev) {
+      unsub();
+      unsub = cb(val);
+      prev = val;
+    }
+  });
+}
+
+liveQuery($roomId, (roomId) => {
+  if (!roomId) return () => {};
+
+  return db.subscribeQuery(
+    { party: { $: { where: { id: roomId } } } },
+    (resp) => {
+      if (resp.error) console.error(resp.error);
+      if (resp.data) setParty(resp.data.party[0] as Party);
+    },
+  );
 });
 
-db.subscribeQuery(
-  {
-    roomEvent: {
-      $: { where: { party: DEMO_ID }, order: { serverCreatedAt: "asc" } },
+liveQuery($roomId, (roomId) => {
+  if (!roomId) return () => {};
+
+  return db.subscribeQuery(
+    { party: { $: { where: { id: roomId } } } },
+    (resp) => {
+      if (resp.error) console.error(resp.error);
+      if (resp.data) setParty(resp.data.party[0] as Party);
     },
-  },
-  (resp) => {
-    if (resp.error) console.error(resp.error);
-    if (resp.data) {
-      historyUpdated({ history: resp.data.roomEvent.map((a) => a.it) });
-    }
-  },
-);
+  );
+});
+
+liveQuery($roomId, (roomId) => {
+  if (!roomId) return () => {};
+
+  return db.subscribeQuery(
+    {
+      roomEvent: {
+        $: { where: { party: roomId }, order: { serverCreatedAt: "asc" } },
+      },
+    },
+    (resp) => {
+      if (resp.error) console.error(resp.error);
+      if (resp.data) {
+        historyUpdated({ history: resp.data.roomEvent.map((a) => a.it) });
+      }
+    },
+  );
+});
 
 undoClicked.watch(() => {
   db.transact(
     db.tx.roomEvent[id()]
       .create({ it: { type: "undo" } })
-      .link({ party: DEMO_ID }),
+      .link({ party: $roomId.getState() }),
   );
 });
 
 clearCanvasClicked.watch(async () => {
   const { roomEvent } = await db
-    .queryOnce({ roomEvent: { $: { where: { party: DEMO_ID } } } })
+    .queryOnce({ roomEvent: { $: { where: { party: $roomId.getState() } } } })
     .then((it) => it.data);
 
   console.log("DELETE");
@@ -258,7 +305,7 @@ clearCanvasClicked.watch(async () => {
 });
 
 sample({ source: $party, clock: makeWeDraw }).watch((party) => {
-  db.transact(db.tx.party[DEMO_ID].update(party));
+  db.transact(db.tx.party[party.id].update(party));
 });
 
 export async function createNewParty(name: string) {
@@ -298,15 +345,22 @@ export async function deleteAllPartiesAndLines() {
 }
 
 export async function resetDEMO() {
+  throw new Error("Not implemented");
   console.log("------- RESET All -------");
 
   return deleteAllPartiesAndLines()
     .then(() => {
       console.log(`DELETED`);
-      return db.transact([db.tx.party[DEMO_ID].create(emptyParty())]);
+      return db.transact([
+        db.tx.party[$roomId.getState()].create({
+          name: "Алиска",
+          players: [],
+          gameState: { drawing: "" },
+        }),
+      ]);
     })
     .then(() => {
-      console.log(`Created party`, DEMO_ID);
+      console.log(`Created party`, $roomId.getState());
       return db.transact([
         db.tx.curretLine[id()]
           .create({
@@ -314,7 +368,7 @@ export async function resetDEMO() {
             width: 8,
             color: "#34495e",
           })
-          .link({ party: DEMO_ID }),
+          .link({ party: "DEMO_ID" }),
       ]);
     })
     .then(() => {
@@ -325,15 +379,7 @@ export async function resetDEMO() {
     });
 }
 
-function emptyParty(): Party {
-  return {
-    name: "Алиска",
-    players: [],
-    gameState: { drawing: "" },
-  };
-}
-
-function createCurrentLine($imDrawing: Store<boolean>) {
+function createCurrentLine($roomId: Store<string>, $imDrawing: Store<boolean>) {
   const $currentLineID = createStore("");
 
   const $currentLine = createStore<CurrentLine>({
@@ -370,21 +416,25 @@ function createCurrentLine($imDrawing: Store<boolean>) {
     },
   );
 
-  db.subscribeQuery(
-    { party: { $: { where: { id: DEMO_ID } }, currentLine: {} } },
-    (resp) => {
-      if (resp.error) console.error(resp.error);
-      if (resp.data) {
-        const party = resp.data.party[0];
-        if (party?.currentLine) {
-          setCurrentLineID(party.currentLine.id);
-          if (!$imDrawing.getState()) {
-            currentLineChanged(party.currentLine);
+  liveQuery($roomId, (roomId) => {
+    if (!roomId) return () => {};
+
+    return db.subscribeQuery(
+      { party: { $: { where: { id: roomId } }, currentLine: {} } },
+      (resp) => {
+        if (resp.error) console.error(resp.error);
+        if (resp.data) {
+          const party = resp.data.party[0];
+          if (party?.currentLine) {
+            setCurrentLineID(party.currentLine.id);
+            if (!$imDrawing.getState()) {
+              currentLineChanged(party.currentLine);
+            }
           }
         }
-      }
-    },
-  );
+      },
+    );
+  });
 
   addLine.watch((newLine) => {
     db.transact(
@@ -397,7 +447,7 @@ function createCurrentLine($imDrawing: Store<boolean>) {
             width: newLine.width,
           },
         })
-        .link({ party: DEMO_ID }),
+        .link({ party: $roomId.getState() }),
     );
   });
 

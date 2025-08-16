@@ -39,7 +39,7 @@ export type CurrentLine = {
 
 export type Party = {
   id: string;
-  players: { localId: string; name: string }[];
+  players: { id: string; name: string }[];
   name: string;
   gameState: {
     drawing: string;

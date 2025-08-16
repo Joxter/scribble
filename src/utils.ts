@@ -14,6 +14,21 @@ import { VecLike } from "./freehand/Vec";
 
 export const canvasSize = 600;
 
+export const URL_ROOM_NAME = (() => {
+  const search = window.location.search.slice(1);
+  if (search) return search;
+
+  // For GitHub Pages: extract ID from pathname like /scribble/some-id
+  const pathname = window.location.pathname;
+  const basePath = "/scribble/";
+  if (pathname.startsWith(basePath)) {
+    const id = pathname.slice(basePath.length);
+    return id || "";
+  }
+
+  return "";
+})();
+
 export function randomFrom<T>(arr: T[]): T {
   return arr[Math.floor(Math.random() * arr.length)];
 }
