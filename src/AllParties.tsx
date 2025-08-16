@@ -1,14 +1,56 @@
-import React from "react";
+import React, { useState } from "react";
 import { useUnit } from "effector-react";
 import { $allParties } from "./model/app";
 import { getUrl } from "./utils.ts";
+import { createNewParty } from "./model/game.model.ts";
 
 export function AllParties() {
   const allParties = useUnit($allParties);
+  const [newPartyName, setNewPartyName] = useState("");
+  const [isCreating, setIsCreating] = useState(false);
+
+  const handleCreateParty = async () => {
+    if (!newPartyName.trim()) return;
+
+    setIsCreating(true);
+    try {
+      await createNewParty(newPartyName.trim());
+      setNewPartyName("");
+    } catch (error) {
+      console.error("Failed to create party:", error);
+    } finally {
+      setIsCreating(false);
+    }
+  };
 
   return (
     <div style={{ padding: "20px" }}>
       <h1>All Parties</h1>
+
+      <form
+        style={{
+          margin: "8px 0",
+          display: "grid",
+          gridTemplateColumns: "1fr min-content",
+          gap: "8px",
+          maxWidth: "300px",
+        }}
+        onSubmit={(ev) => {
+          ev.preventDefault();
+          handleCreateParty();
+        }}
+      >
+        <input
+          type="text"
+          value={newPartyName}
+          onChange={(e) => setNewPartyName(e.target.value)}
+          disabled={isCreating}
+        />
+        <button type="submit" disabled={!newPartyName.trim() || isCreating}>
+          {isCreating ? "Создаю..." : "Создать"}
+        </button>
+      </form>
+
       {allParties.length === 0 ? (
         <p>No parties found</p>
       ) : (

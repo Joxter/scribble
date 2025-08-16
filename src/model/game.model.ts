@@ -261,23 +261,46 @@ sample({ source: $party, clock: makeWeDraw }).watch((party) => {
   db.transact(db.tx.party[DEMO_ID].update(party));
 });
 
-export async function resetDEMO() {
-  console.log("------- RESET All -------");
+export async function createNewParty(name: string) {
+  const partyId = id();
 
+  await db.transact([
+    db.tx.party[partyId].create({
+      name,
+      players: [],
+      gameState: { drawing: "" },
+    }),
+    db.tx.curretLine[partyId]
+      .create({
+        dots: [],
+        width: 8,
+        color: "#34495e",
+      })
+      .link({ party: partyId }),
+  ]);
+}
+
+export async function deleteAllPartiesAndLines() {
   let allParties = await db
     .queryOnce({ party: {} })
     .then((it) => it.data.party);
   console.log(`allParties.len`, allParties.length);
 
-  let curretLines = await db
+  let currentLines = await db
     .queryOnce({ curretLine: {} })
     .then((it) => it.data.curretLine);
-  console.log(`curretLines.len`, curretLines.length);
+  console.log(`curretLines.len`, currentLines.length);
 
-  db.transact([
+  return db.transact([
     ...allParties.map((it) => db.tx.party[it.id].delete()),
-    ...curretLines.map((it) => db.tx.curretLine[it.id].delete()),
-  ])
+    ...currentLines.map((it) => db.tx.curretLine[it.id].delete()),
+  ]);
+}
+
+export async function resetDEMO() {
+  console.log("------- RESET All -------");
+
+  return deleteAllPartiesAndLines()
     .then(() => {
       console.log(`DELETED`);
       return db.transact([db.tx.party[DEMO_ID].create(emptyParty())]);
@@ -315,7 +338,7 @@ function createCurrentLine($imDrawing: Store<boolean>) {
 
   const $currentLine = createStore<CurrentLine>({
     dots: [],
-    color: "#000000",
+    color: "#34495e",
     width: 8,
   });
 
