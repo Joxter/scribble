@@ -41,24 +41,6 @@ export const $player = restore(setPlayer, {
   avatar: "",
 });
 
-// Add current user
-combine([$localId, $party, $roomId]).watch(([localId, party, roomId]) => {
-  // console.log("party");
-  // console.log(party);
-  if (localId && party.name && party.players) {
-    const ps = party.players.map((it) => it.id);
-
-    if (!ps.includes(localId)) {
-      db.transact(
-        db.tx.party[roomId].update({
-          ...party,
-          players: [...party.players, { id: localId, name: getUsername() }],
-        }),
-      );
-    }
-  }
-});
-
 export const $currentCanvas = createStore<CanvasAndChatHistory[]>([]);
 export const $imDrawing = combine($party, $localId, (party, localId) => {
   return party.gameState.drawing === localId;
