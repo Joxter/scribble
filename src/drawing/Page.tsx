@@ -1,15 +1,15 @@
 import React, { useState } from "react";
 import { Canvas } from "./Canvas";
 import { getUrl, randomFrom } from "../utils";
-import { alisaWords } from "../dictionary";
 import { DeveloperTools } from "./DeveloperTools";
 import { Tools } from "./Tools";
 import { ListOfPlayers } from "./ListOfPlayers";
 import { DrawParams } from "../DrawParams";
 import css from "./Page.module.css";
+import { ru } from "../../dictionaries/ru.ts";
 
 export function DrawingPage() {
-  const [word, setWord] = useState(randomFrom(alisaWords));
+  const [word, setWord] = useState(randomFrom(ru));
 
   return (
     <div className={css.page}>
@@ -19,9 +19,7 @@ export function DrawingPage() {
           <p>
             {word} ({word.length})
           </p>
-          <button onClick={() => setWord(randomFrom(alisaWords))}>
-            обновить
-          </button>
+          <button onClick={() => setWord(randomFrom(ru))}>другое слово</button>
         </div>
       </div>
 
