@@ -9,9 +9,7 @@ import { DrawParams } from "../DrawParams";
 import {
   $imChoosingWord,
   $imDrawing,
-  makeWeDraw,
   chooseWordClicked,
-  noDraw,
   newWordSelected,
   $clue,
 } from "../model/game.model";
@@ -43,15 +41,15 @@ export function DrawingPage() {
         )}
       </div>
       <div className={css.footer}>
-        {imDrawing ? (
-          <Tools />
-        ) : (
+        {imDrawing && <Tools />}
+        {!imDrawing && clue && (
           <div style={{ padding: "4px 12px" }}>
             <div style={{ display: "flex", justifyContent: "center" }}>
               <EnterGuess clue={clue} />
             </div>
           </div>
         )}
+
         <div style={{ display: "flex", justifyContent: "flex-end" }}>
           <DeveloperTools />
         </div>

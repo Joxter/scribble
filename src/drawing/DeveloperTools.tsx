@@ -1,6 +1,11 @@
 import React, { useState } from "react";
 import { useUnit } from "effector-react";
-import { $localId, $party, resetDEMO } from "../model/game.model.ts";
+import {
+  $localId,
+  $party,
+  clearCanvasClicked,
+  resetDEMO,
+} from "../model/game.model.ts";
 
 export function DeveloperTools() {
   const [isCollapsed, setIsCollapsed] = useState(true);
@@ -14,19 +19,22 @@ export function DeveloperTools() {
       </button>
       {!isCollapsed && (
         <div>
-          <pre style={{ maxWidth: "300px" }}>
-            {JSON.stringify(party, null, 2)}
-          </pre>
-          <p>{localId}</p>
-
           <div>
             <a href="https://joxter.github.io/scribble/" target="_blank">
               website
             </a>
           </div>
+          <p>localId: {localId}</p>
+
           <div>
-            <button onClick={resetDEMO}>reset</button>
+            <button onClick={clearCanvasClicked}>Удалить все сообщения</button>
+            <br />
+            <br />
+            <button onClick={resetDEMO}>перезагрузить всю комнату</button>
           </div>
+          <pre style={{ maxWidth: "300px" }}>
+            {JSON.stringify(party, null, 2)}
+          </pre>
         </div>
       )}
     </div>

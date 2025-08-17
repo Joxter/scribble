@@ -14,6 +14,7 @@ import {
   GuessEvent,
   NewWord,
   ChoosingWord,
+  LineEvent,
 } from "../types.ts";
 import getStroke from "perfect-freehand";
 import {
@@ -72,14 +73,16 @@ export const $imDrawing = combine(
   $allRoomEvents,
   $localId,
   (roomEvents, localId) => {
-    const last = roomEvents
-      //
-      .filter((it) => it.type === "new-word")
-      .at(-1);
+    const last = findLastEvent(
+      roomEvents,
+      (it) => it.type === "new-word" || it.type === "choosing-word",
+    );
 
-    if (!last) return false;
+    if (last && last.type === "new-word" && last.playerId === localId) {
+      return last.word;
+    }
 
-    return last.playerId === localId ? last.word : false;
+    return false;
   },
 );
 
@@ -87,14 +90,16 @@ export const $clue = combine(
   $allRoomEvents,
   $localId,
   (roomEvents, localId) => {
-    const last = roomEvents
-      //
-      .filter((it) => it.type === "new-word")
-      .at(-1);
+    const last = findLastEvent(
+      roomEvents,
+      (it) => it.type === "new-word" || it.type === "choosing-word",
+    ) as NewWord | null;
 
-    if (!last) return "";
+    if (last && last.type === "new-word") {
+      return last.word.replace(/\S/g, "_");
+    }
 
-    return last.word.replace(/\S/g, "_");
+    return "";
   },
 );
 
@@ -102,14 +107,12 @@ export const $imChoosingWord = combine(
   $allRoomEvents,
   $localId,
   (roomEvents, localId) => {
-    const last = roomEvents
-      //
-      .filter((it) => it.type === "choosing-word")
-      .at(-1);
+    const last = findLastEvent(
+      roomEvents,
+      (it) => it.type === "choosing-word",
+    ) as ChoosingWord | null;
 
-    if (!last) return null;
-
-    if (last.playerId === localId) {
+    if (last && last.playerId === localId) {
       return last.words.split("|");
     }
 
@@ -148,12 +151,6 @@ export const addBucket = createEvent<{
   color: string;
 }>();
 
-// export const canvasAndChatHistoryLoaded = createEvent<{
-//   history: CanvasAndChatHistory[];
-//   word: string;
-//   currentLine: CurrentLine;
-// }>();
-
 export const historyUpdated = createEvent<{
   history: CanvasAndChatHistory[];
 }>();
@@ -175,43 +172,74 @@ sample({
 
 $allRoomEvents.on(historyUpdated, (_, { history }) => history);
 
-// $currentCanvas.watch((v) => {
-//   console.log("$currentCanvas", v);
-// });
-
 $renderMode.on(renderModeChanged, (_, mode) => mode);
 $debugMode.on(debugModeToggled, (_, enabled) => enabled);
 
+function findLastEvent(
+  arr: CanvasAndChatHistory[],
+  cb: (it: CanvasAndChatHistory) => boolean | undefined,
+): CanvasAndChatHistory | null {
+  for (let i = arr.length - 1; i >= 0; i--) {
+    if (cb(arr[i])) {
+      return arr[i];
+    }
+  }
+  return null;
+}
+
+function findLastEventIndex(
+  arr: CanvasAndChatHistory[],
+  cb: (it: CanvasAndChatHistory) => boolean | undefined,
+): { i: number } | null {
+  for (let i = arr.length - 1; i >= 0; i--) {
+    if (cb(arr[i])) {
+      return { i };
+    }
+  }
+  return null;
+}
+
+const $canvasLines = $allRoomEvents.map((events) => {
+  const last = findLastEventIndex(events, (it) => it.type === "new-word");
+  if (!last) return [];
+
+  const lines: LineEvent[] = [];
+
+  events.slice(last.i).forEach((it) => {
+    if (it.type === "line") {
+      lines.push(it);
+    } else if (it.type === "undo") {
+      lines.pop();
+    }
+  });
+
+  return lines;
+});
+
 export const $svgCanvasPaths = combine(
-  $allRoomEvents,
+  $canvasLines,
   $renderMode,
   $smoothConf,
   (lines, renderMode, currentSmoothConf) => {
     const paths: { d: string; color: string }[] = [];
 
-    lines.forEach((it, i) => {
-      if (it.type === "line") {
-        const aaa = svgInk(
-          optimizeLine(it.dots).map((it) => new Vec(it[0], it[1])),
-          { size: it.width },
-        );
+    lines.forEach((it) => {
+      const aaa = svgInk(
+        optimizeLine(it.dots).map((it) => new Vec(it[0], it[1])),
+        { size: it.width },
+      );
 
-        const bbb = getSvgPathFromStroke(
-          getStroke(optimizeLine(it.dots), {
-            ...currentSmoothConf,
-            size: it.width,
-          }),
-        );
+      const bbb = getSvgPathFromStroke(
+        getStroke(optimizeLine(it.dots), {
+          ...currentSmoothConf,
+          size: it.width,
+        }),
+      );
 
-        paths.push({
-          d: renderMode === "tldraw" ? aaa : bbb,
-          color: it.color,
-        });
-      } else if (it.type === "bucket") {
-        // todo: calculate area by current "paths" and generate proper "d"
-      } else if (it.type === "undo") {
-        paths.pop();
-      }
+      paths.push({
+        d: renderMode === "tldraw" ? aaa : bbb,
+        color: it.color,
+      });
     });
 
     return paths;
@@ -244,23 +272,9 @@ export const $svgCurrentLine = combine(
   },
 );
 
-export const $rawPath = combine($allRoomEvents, (lines) => {
-  const rawLines: Array<[number, number, any][]> = [];
+export const $rawPath = $canvasLines;
 
-  lines.forEach((it, i) => {
-    if (it.type === "line") {
-      rawLines.push(optimizeLine(it.dots));
-    } else if (it.type === "bucket") {
-      // todo: calculate area by current "paths" and generate proper "d"
-    } else if (it.type === "undo") {
-      rawLines.pop();
-    }
-  });
-
-  return rawLines;
-});
-
-export const $polylinePaths = combine($allRoomEvents, (lines) => {
+export const $polylinePaths = combine($canvasLines, (lines) => {
   const polylines: Array<{
     points: string;
     color: string;
@@ -268,19 +282,13 @@ export const $polylinePaths = combine($allRoomEvents, (lines) => {
   }> = [];
 
   lines.forEach((it, i) => {
-    if (it.type === "line") {
-      const optimizedDots = optimizeLine(it.dots);
-      const points = optimizedDots.map(([x, y]) => `${x},${y}`).join(" ");
-      polylines.push({
-        points,
-        color: it.color,
-        strokeWidth: it.width,
-      });
-    } else if (it.type === "bucket") {
-      // todo: handle bucket for polylines
-    } else if (it.type === "undo") {
-      polylines.pop();
-    }
+    const optimizedDots = optimizeLine(it.dots);
+    const points = optimizedDots.map(([x, y]) => `${x},${y}`).join(" ");
+    polylines.push({
+      points,
+      color: it.color,
+      strokeWidth: it.width,
+    });
   });
 
   return polylines;

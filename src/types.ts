@@ -80,13 +80,15 @@ export type ChoosingWord = {
   words: string; // word|word2|word3...
 };
 
+export type LineEvent = {
+  type: "line";
+  dots: [x: number, y: number, timestamp: number][];
+  color: string;
+  width: number;
+};
+
 export type CanvasAndChatHistory =
-  | {
-      type: "line";
-      dots: [x: number, y: number, timestamp: number][];
-      color: string;
-      width: number;
-    }
+  | LineEvent
   | { type: "undo" }
   | { type: "bucket"; x: number; y: number; color: string }
   | NewWord

@@ -1,7 +1,6 @@
 import { WidthSelector } from "../components/WidthSelector.tsx";
 import {
   undoClicked,
-  clearCanvasClicked,
   $currentLine,
   currentLineChanged,
 } from "../model/game.model.ts";
@@ -33,7 +32,6 @@ export function Tools() {
           <img style={{ width: "20px" }} src={arrowArcLeftSrc} />
         </button>
 
-        <button onClick={clearCanvasClicked}>Clear</button>
         <WidthSelector
           value={currentLine.width}
           onChange={(width) => currentLineChanged({ width })}
