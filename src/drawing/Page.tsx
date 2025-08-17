@@ -9,6 +9,7 @@ import { DrawParams } from "../DrawParams";
 import { $imDrawing, makeWeDraw } from "../model/game.model";
 import css from "./Page.module.css";
 import { ru } from "../../dictionaries/ru.ts";
+import { EnterGuess } from "./EnterGuess.tsx";
 
 export function DrawingPage() {
   const [word, setWord] = useState(randomFrom(ru));
@@ -18,7 +19,7 @@ export function DrawingPage() {
     <div className={css.page}>
       <div className={css.header}>
         <div className={css.headerContent}>
-          <a href={getUrl()}>ЛОГО</a>
+          <a href={getUrl()}>Главная</a>
           <p>
             {word} ({word.length})
           </p>
@@ -33,13 +34,10 @@ export function DrawingPage() {
         {imDrawing ? (
           <Tools />
         ) : (
-          <div
-            style={{
-              display: "flex",
-              padding: "8px",
-              justifyContent: "center",
-            }}
-          >
+          <div style={{ padding: "4px 12px" }}>
+            <div style={{ display: "flex", justifyContent: "center" }}>
+              <EnterGuess clue={"hello w____"} />
+            </div>
             <button onClick={makeWeDraw}>я рисую</button>
           </div>
         )}

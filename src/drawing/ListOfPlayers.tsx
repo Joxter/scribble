@@ -12,7 +12,7 @@ export function ListOfPlayers() {
   const party = useUnit($party);
   const localId = useUnit($localId);
 
-  const players: Player[] = party.players2 || [];
+  const players = party.players2 || [];
 
   const joined = !!players.find((p: Player) => p.localId === localId);
 

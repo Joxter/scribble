@@ -26,7 +26,6 @@ const setParty = createEvent<Party>();
 export const $party = restore(setParty, {
   gameState: { drawing: "" },
   name: "",
-  players: [],
   id: "",
 });
 

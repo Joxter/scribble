@@ -135,8 +135,11 @@ function EditPlayerName(props: { name: string }) {
           onChange={(e) => setName(e.target.value)}
           disabled={isCreating}
         />
-        <button type="submit" disabled={!name.trim() || isCreating}>
-          {isCreating ? "Сохраня..." : "Сохранить"}
+        <button
+          type="submit"
+          disabled={!name.trim() || isCreating || name === props.name}
+        >
+          Сохранить
         </button>
       </form>
     </div>
