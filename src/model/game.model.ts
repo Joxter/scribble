@@ -315,7 +315,11 @@ liveQuery($roomId, (roomId) => {
     { party: { $: { where: { id: roomId } }, players2: {} } },
     (resp) => {
       if (resp.error) console.error(resp.error);
-      if (resp.data) setParty(resp.data.party[0] as Party);
+      if (resp.data?.party[0]) {
+        setParty(resp.data.party[0] as Party);
+      } else {
+        console.error(`No room with "${roomId}" id`);
+      }
     },
   );
 });

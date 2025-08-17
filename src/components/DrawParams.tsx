@@ -6,7 +6,7 @@ import {
   debugModeToggled,
   renderModeChanged,
   setSmoothConf,
-} from "./model/game.model.ts";
+} from "../model/game.model.ts";
 
 const easingFunctions = {
   cubic: (t: number) =>

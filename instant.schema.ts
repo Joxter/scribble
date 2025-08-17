@@ -10,20 +10,29 @@ const _schema = i.schema({
       players: i.any().optional(),
       gameState: i.any().optional(),
     }),
-    // roomEvent paintingEvent ?
     roomEvent: i.entity({
       it: i.any(),
     }),
+    // roomEvent: i.entity({
+    //   type: i.string(),
+    //   payload: i.any(),
+    // }),
     players: i.entity({
       localId: i.string().unique().indexed(),
       name: i.string(),
       avatar: i.string(),
     }),
     // paintings: i.entity({
-    //   word,
-    //   roomEvents,
+    //   canvas: i.any(), // event[]
+    //   word: i.string(),
     // }),
+    words: i.entity({
+      word: i.string().unique().indexed(),
+      lang: i.string(),
+      category: i.string(),
+    }),
     curretLine: i.entity({
+      // remove "curretLine"
       color: i.string(),
       dots: i.any(),
       width: i.number(),

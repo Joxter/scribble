@@ -5,7 +5,6 @@ import { getUrl, randomFrom } from "../utils";
 import { DeveloperTools } from "./DeveloperTools";
 import { Tools } from "./Tools";
 import { ListOfPlayers } from "./ListOfPlayers";
-import { DrawParams } from "../DrawParams";
 import {
   $imChoosingWord,
   $imDrawing,
