@@ -12,15 +12,23 @@ import {
   CurrentLine,
   Player,
   GuessEvent,
+  NewWord,
+  ChoosingWord,
 } from "../types.ts";
 import getStroke from "perfect-freehand";
-import { getSvgPathFromStroke, optimizeLine, URL_ROOM_NAME } from "../utils.ts";
+import {
+  getSvgPathFromStroke,
+  optimizeLine,
+  randomFrom,
+  URL_ROOM_NAME,
+} from "../utils.ts";
 import { smoothConf } from "../config.ts";
 import { db } from "../DB.ts";
 import { id, lookup } from "@instantdb/core";
 import { getUsername } from "../code-worlds.ts";
 import { svgInk } from "../freehand/svgInk.ts";
 import { Vec } from "../freehand/Vec.ts";
+import { ru } from "../../dictionaries/ru.ts";
 
 const setLocalId = createEvent<string>();
 export const $localId = restore(setLocalId, "");
@@ -47,12 +55,67 @@ export const $player = restore(setPlayer, {
 });
 
 export const $allRoomEvents = createStore<CanvasAndChatHistory[]>([]);
-export const $allGuessEvents = $allRoomEvents.map((events): GuessEvent[] => {
-  return events.filter((it) => it.type === "guess");
+export const $allChatEvents = $allRoomEvents.map((events) => {
+  return (
+    events
+      //
+      .filter(
+        (it) =>
+          it.type === "guess" ||
+          it.type === "new-word" ||
+          it.type === "choosing-word",
+      )
+  );
 });
-export const $imDrawing = combine($party, $localId, (party, localId) => {
-  return party.gameState.drawing === localId;
-});
+
+export const $imDrawing = combine(
+  $allRoomEvents,
+  $localId,
+  (roomEvents, localId) => {
+    const last = roomEvents
+      //
+      .filter((it) => it.type === "new-word")
+      .at(-1);
+
+    if (!last) return false;
+
+    return last.playerId === localId ? last.word : false;
+  },
+);
+
+export const $clue = combine(
+  $allRoomEvents,
+  $localId,
+  (roomEvents, localId) => {
+    const last = roomEvents
+      //
+      .filter((it) => it.type === "new-word")
+      .at(-1);
+
+    if (!last) return "";
+
+    return last.word.replace(/\S/g, "_");
+  },
+);
+
+export const $imChoosingWord = combine(
+  $allRoomEvents,
+  $localId,
+  (roomEvents, localId) => {
+    const last = roomEvents
+      //
+      .filter((it) => it.type === "choosing-word")
+      .at(-1);
+
+    if (!last) return null;
+
+    if (last.playerId === localId) {
+      return last.words.split("|");
+    }
+
+    return null;
+  },
+);
 
 export const { currentLineChanged, $currentLine, addLine } = createCurrentLine(
   $roomId,
@@ -73,6 +136,8 @@ export const renderModeChanged = createEvent<
 export const debugModeToggled = createEvent<boolean>();
 export const makeWeDraw = createEvent<any>();
 export const noDraw = createEvent<any>();
+export const chooseWordClicked = createEvent<any>();
+export const newWordSelected = createEvent<string>();
 
 export const undoClicked = createEvent<any>();
 export const guessSubmitted = createEvent<{ guess: string }>();
@@ -259,6 +324,7 @@ liveQuery($roomId, (roomId) => {
     (resp) => {
       if (resp.error) console.error(resp.error);
       if (resp.data) {
+        console.log(resp.data.roomEvent);
         historyUpdated({ history: resp.data.roomEvent.map((a) => a.it) });
       }
     },
@@ -282,6 +348,37 @@ sample({
     type: "guess",
     text: guess,
     player: localId,
+  };
+
+  db.transact(
+    db.tx.roomEvent[id()].create({ it: event }).link({ party: roomId }),
+  );
+});
+
+sample({
+  source: [$localId, $roomId] as const,
+  clock: chooseWordClicked,
+}).watch(([localId, roomId]) => {
+  const event: Omit<ChoosingWord, "id"> = {
+    type: "choosing-word",
+    playerId: localId,
+    words: [randomFrom(ru), randomFrom(ru), randomFrom(ru)].join("|"),
+  };
+
+  db.transact(
+    db.tx.roomEvent[id()].create({ it: event }).link({ party: roomId }),
+  );
+});
+
+sample({
+  source: [$localId, $roomId] as const,
+  clock: newWordSelected,
+  fn: (a, b) => [a, b] as const,
+}).watch(([[localId, roomId], word]) => {
+  const event: Omit<NewWord, "id"> = {
+    type: "new-word",
+    playerId: localId,
+    word,
   };
 
   db.transact(
@@ -449,7 +546,10 @@ export async function resetDEMO() {
     });
 }
 
-function createCurrentLine($roomId: Store<string>, $imDrawing: Store<boolean>) {
+function createCurrentLine(
+  $roomId: Store<string>,
+  $imDrawing: Store<unknown | false>,
+) {
   const $currentLineID = createStore("");
 
   const $currentLine = createStore<CurrentLine>({

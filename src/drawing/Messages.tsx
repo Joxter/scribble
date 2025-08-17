@@ -1,9 +1,9 @@
 import { useUnit } from "effector-react";
-import { $party, $allGuessEvents } from "../model/game.model.ts";
+import { $party, $allChatEvents } from "../model/game.model.ts";
 import { useAutoScroll } from "../hooks/useAutoScroll";
 
 export function Messages() {
-  const [events, { players2 }] = useUnit([$allGuessEvents, $party]);
+  const [events, { players2 }] = useUnit([$allChatEvents, $party]);
   const scrollRef = useAutoScroll(events);
 
   const playersMap = Object.fromEntries(
@@ -32,10 +32,50 @@ export function Messages() {
         wordBreak: "break-word",
       }}
     >
-      {events.slice(-50).map(({ text, player, id }) => {
+      {events.slice(-50).map((ev, i) => {
+        const key = ev.type + i;
+        if (ev.type === "guess") {
+          let { text, player, id } = ev;
+          return (
+            <p key={key} style={{}}>
+              <b>{playersMap[player]}:</b> {text}
+            </p>
+          );
+        }
+
+        if (ev.type === "new-word") {
+          let { word } = ev;
+          return (
+            <p key={key} style={{ fontStyle: "italic" }}>
+              Слово выбрано!{" "}
+              <b
+                style={{
+                  letterSpacing: "2px",
+                }}
+              >
+                {word.replace(/\S/g, "_")} (
+                {word
+                  .split(" ")
+                  .map((it) => it.length)
+                  .join(" ")}
+                )
+              </b>
+            </p>
+          );
+        }
+
+        if (ev.type === "choosing-word") {
+          let { playerId } = ev;
+          return (
+            <p key={key} style={{ fontStyle: "italic" }}>
+              {playersMap[playerId]} выбирает слово
+            </p>
+          );
+        }
+
         return (
-          <p key={id} style={{}}>
-            <b>{playersMap[player]}:</b> {text}
+          <p key={key} style={{ color: "#888" }}>
+            [{ev.type}]
           </p>
         );
       })}

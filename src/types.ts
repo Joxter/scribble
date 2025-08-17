@@ -62,10 +62,22 @@ type JSON = any;
 export type GuessEvent = {
   type: "guess";
   id: string;
-  // timestamp: number;
-  // firstCharTimestamp: number;
   player: string;
   text: string;
+};
+
+export type NewWord = {
+  type: "new-word";
+  id: string;
+  playerId: string;
+  word: string;
+};
+
+export type ChoosingWord = {
+  type: "choosing-word";
+  id: string;
+  playerId: string;
+  words: string; // word|word2|word3...
 };
 
 export type CanvasAndChatHistory =
@@ -77,4 +89,6 @@ export type CanvasAndChatHistory =
     }
   | { type: "undo" }
   | { type: "bucket"; x: number; y: number; color: string }
+  | NewWord
+  | ChoosingWord
   | GuessEvent;

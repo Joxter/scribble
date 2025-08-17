@@ -6,43 +6,50 @@ import { DeveloperTools } from "./DeveloperTools";
 import { Tools } from "./Tools";
 import { ListOfPlayers } from "./ListOfPlayers";
 import { DrawParams } from "../DrawParams";
-import { $imDrawing, makeWeDraw, noDraw } from "../model/game.model";
+import {
+  $imChoosingWord,
+  $imDrawing,
+  makeWeDraw,
+  chooseWordClicked,
+  noDraw,
+  newWordSelected,
+  $clue,
+} from "../model/game.model";
 import css from "./Page.module.css";
-import { ru } from "../../dictionaries/ru.ts";
 import { EnterGuess } from "./EnterGuess.tsx";
 import { Messages } from "./Messages.tsx";
 
 export function DrawingPage() {
-  const [word, setWord] = useState(randomFrom(ru));
-  const imDrawing = useUnit($imDrawing);
+  const [imDrawing, imChoosingWord, clue] = useUnit([
+    $imDrawing,
+    $imChoosingWord,
+    $clue,
+  ]);
 
   return (
     <div className={css.page}>
       <div className={css.header}>
         <div className={css.headerContent}>
           <a href={getUrl()}>Главная</a>
-          <p>
-            {word} ({word.length})
-          </p>
-          <button onClick={() => setWord(randomFrom(ru))}>новое слово</button>
+          {imDrawing && <h2>{imDrawing}</h2>}
         </div>
       </div>
 
       <div className={css.canvasSection}>
-        <Canvas />
+        {!imDrawing && imChoosingWord ? (
+          <ChooseWord words={imChoosingWord} />
+        ) : (
+          <Canvas />
+        )}
       </div>
       <div className={css.footer}>
         {imDrawing ? (
-          <div>
-            <Tools />
-            <button onClick={noDraw}>я отгадываю</button>
-          </div>
+          <Tools />
         ) : (
           <div style={{ padding: "4px 12px" }}>
             <div style={{ display: "flex", justifyContent: "center" }}>
-              <EnterGuess clue={"hello w____"} />
+              <EnterGuess clue={clue} />
             </div>
-            <button onClick={makeWeDraw}>я рисую</button>
           </div>
         )}
         <div style={{ display: "flex", justifyContent: "flex-end" }}>
@@ -51,9 +58,58 @@ export function DrawingPage() {
       </div>
       <div className={css.players}>
         <ListOfPlayers />
+        <GameControls />
         <Messages />
         {/*<DrawParams />*/}
       </div>
+    </div>
+  );
+}
+
+function ChooseWord({ words }: { words: string[] }) {
+  return (
+    <div
+      style={{
+        backgroundColor: "#ddd",
+        height: "100%",
+        display: "flex",
+        gap: "8px",
+        flexDirection: "column",
+        justifyContent: "center",
+        alignItems: "center",
+      }}
+    >
+      {words.map((w, i) => {
+        return (
+          <button key={i} type="button" onClick={() => newWordSelected(w)}>
+            {w}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+function GameControls() {
+  const imDrawing = useUnit($imDrawing);
+
+  return (
+    <div
+      style={
+        {
+          //  display: "flex", flexWrap: "wrap", gap: "8px"
+        }
+      }
+    >
+      {/*
+      <button onClick={makeWeDraw} disabled={imDrawing}>
+        я рисую
+      </button>
+      <button onClick={noDraw} disabled={!imDrawing}>
+        я отгадываю
+      </button>
+      */}
+      <button onClick={chooseWordClicked}>выбрать слово</button>
     </div>
   );
 }
