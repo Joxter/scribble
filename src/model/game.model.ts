@@ -72,6 +72,7 @@ export const renderModeChanged = createEvent<
 >();
 export const debugModeToggled = createEvent<boolean>();
 export const makeWeDraw = createEvent<any>();
+export const noDraw = createEvent<any>();
 
 export const undoClicked = createEvent<any>();
 export const guessSubmitted = createEvent<{ guess: string }>();
@@ -307,6 +308,17 @@ sample({ source: $party, clock: makeWeDraw }).watch((party) => {
       gameState: {
         ...party.gameState,
         drawing: party.gameState.drawing,
+      },
+    }),
+  );
+});
+
+sample({ source: $party, clock: noDraw }).watch((party) => {
+  db.transact(
+    db.tx.party[party.id].update({
+      gameState: {
+        ...party.gameState,
+        drawing: "",
       },
     }),
   );

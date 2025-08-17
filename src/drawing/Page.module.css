@@ -1,60 +1,61 @@
 @media (708px >= width) {
-    .page {
-        display: grid;
-        gap: 8px;
-        width: 100%;
-        max-width: 500px;
-        grid-template-areas:
-            "header"
-            "canvas"
-            "footer"
-            "players";
-        grid-template-rows: min-content 1fr min-content min-content;
-        margin: 0 auto;
-    }
+  .page {
+    display: grid;
+    gap: 8px;
+    width: 100%;
+    max-width: 500px;
+    grid-template-areas:
+      "header"
+      "canvas"
+      "footer"
+      "players";
+    grid-template-rows: min-content 1fr min-content min-content;
+    margin: 0 auto;
+  }
 }
 
 @media (708px < width) {
-    .page {
-        display: grid;
-        gap: 8px;
-        grid-template-areas:
-            "header ."
-            "canvas players"
-            "footer .";
-        grid-template-columns: 500px 200px;
-        margin: 0 auto;
-    }
+  .page {
+    display: grid;
+    gap: 8px;
+    grid-template-areas:
+      "header ."
+      "canvas players"
+      "footer .";
+    grid-template-columns: 500px 200px;
+    grid-template-rows: auto 500px auto;
+    margin: 0 auto;
+  }
 }
 
 .header {
-    grid-area: header;
+  grid-area: header;
 }
 
 .headerContent {
-    display: flex;
-    gap: 32px;
-    align-items: center;
-    flex-wrap: wrap;
+  display: flex;
+  gap: 32px;
+  align-items: center;
+  flex-wrap: wrap;
 }
 
 .canvasSection {
-    grid-area: canvas;
-    overflow: hidden;
-    width: 100%;
+  grid-area: canvas;
+  overflow: hidden;
+  width: 100%;
 }
 
 .footer {
-    grid-area: footer;
+  grid-area: footer;
 }
 
 .tools {
-    /* Tools section styles */
+  /* Tools section styles */
 }
 
 .players {
-    grid-area: players;
-    display: grid;
-    gap: 8px;
-    align-items: stretch;
+  grid-area: players;
+  display: grid;
+  gap: 8px;
+  overflow: hidden;
 }

@@ -6,7 +6,7 @@ import { DeveloperTools } from "./DeveloperTools";
 import { Tools } from "./Tools";
 import { ListOfPlayers } from "./ListOfPlayers";
 import { DrawParams } from "../DrawParams";
-import { $imDrawing, makeWeDraw } from "../model/game.model";
+import { $imDrawing, makeWeDraw, noDraw } from "../model/game.model";
 import css from "./Page.module.css";
 import { ru } from "../../dictionaries/ru.ts";
 import { EnterGuess } from "./EnterGuess.tsx";
@@ -33,7 +33,10 @@ export function DrawingPage() {
       </div>
       <div className={css.footer}>
         {imDrawing ? (
-          <Tools />
+          <div>
+            <Tools />
+            <button onClick={noDraw}>я отгадываю</button>
+          </div>
         ) : (
           <div style={{ padding: "4px 12px" }}>
             <div style={{ display: "flex", justifyContent: "center" }}>
