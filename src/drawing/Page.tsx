@@ -10,6 +10,7 @@ import { $imDrawing, makeWeDraw } from "../model/game.model";
 import css from "./Page.module.css";
 import { ru } from "../../dictionaries/ru.ts";
 import { EnterGuess } from "./EnterGuess.tsx";
+import { Messages } from "./Messages.tsx";
 
 export function DrawingPage() {
   const [word, setWord] = useState(randomFrom(ru));
@@ -41,11 +42,14 @@ export function DrawingPage() {
             <button onClick={makeWeDraw}>я рисую</button>
           </div>
         )}
+        <div style={{ display: "flex", justifyContent: "flex-end" }}>
+          <DeveloperTools />
+        </div>
       </div>
       <div className={css.players}>
         <ListOfPlayers />
+        <Messages />
         {/*<DrawParams />*/}
-        <DeveloperTools />
       </div>
     </div>
   );

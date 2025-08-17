@@ -6,7 +6,13 @@ import {
   sample,
   Store,
 } from "effector";
-import { CanvasAndChatHistory, Party, CurrentLine, Player } from "../types.ts";
+import {
+  CanvasAndChatHistory,
+  Party,
+  CurrentLine,
+  Player,
+  GuessEvent,
+} from "../types.ts";
 import getStroke from "perfect-freehand";
 import { getSvgPathFromStroke, optimizeLine, URL_ROOM_NAME } from "../utils.ts";
 import { smoothConf } from "../config.ts";
@@ -40,7 +46,10 @@ export const $player = restore(setPlayer, {
   avatar: "",
 });
 
-export const $currentCanvas = createStore<CanvasAndChatHistory[]>([]);
+export const $allRoomEvents = createStore<CanvasAndChatHistory[]>([]);
+export const $allGuessEvents = $allRoomEvents.map((events): GuessEvent[] => {
+  return events.filter((it) => it.type === "guess");
+});
 export const $imDrawing = combine($party, $localId, (party, localId) => {
   return party.gameState.drawing === localId;
 });
@@ -65,6 +74,7 @@ export const debugModeToggled = createEvent<boolean>();
 export const makeWeDraw = createEvent<any>();
 
 export const undoClicked = createEvent<any>();
+export const guessSubmitted = createEvent<{ guess: string }>();
 export const clearCanvasClicked = createEvent<any>();
 export const addBucket = createEvent<{
   x: number;
@@ -97,7 +107,7 @@ sample({
   target: $party,
 });
 
-$currentCanvas.on(historyUpdated, (_, { history }) => history);
+$allRoomEvents.on(historyUpdated, (_, { history }) => history);
 
 // $currentCanvas.watch((v) => {
 //   console.log("$currentCanvas", v);
@@ -107,7 +117,7 @@ $renderMode.on(renderModeChanged, (_, mode) => mode);
 $debugMode.on(debugModeToggled, (_, enabled) => enabled);
 
 export const $svgCanvasPaths = combine(
-  $currentCanvas,
+  $allRoomEvents,
   $renderMode,
   $smoothConf,
   (lines, renderMode, currentSmoothConf) => {
@@ -168,7 +178,7 @@ export const $svgCurrentLine = combine(
   },
 );
 
-export const $rawPath = combine($currentCanvas, (lines) => {
+export const $rawPath = combine($allRoomEvents, (lines) => {
   const rawLines: Array<[number, number, any][]> = [];
 
   lines.forEach((it, i) => {
@@ -184,7 +194,7 @@ export const $rawPath = combine($currentCanvas, (lines) => {
   return rawLines;
 });
 
-export const $polylinePaths = combine($currentCanvas, (lines) => {
+export const $polylinePaths = combine($allRoomEvents, (lines) => {
   const polylines: Array<{
     points: string;
     color: string;
@@ -259,6 +269,22 @@ undoClicked.watch(() => {
     db.tx.roomEvent[id()]
       .create({ it: { type: "undo" } })
       .link({ party: $roomId.getState() }),
+  );
+});
+
+sample({
+  source: [$localId, $roomId] as const,
+  clock: guessSubmitted,
+  fn: (a, b) => [a, b] as const,
+}).watch(([[localId, roomId], { guess }]) => {
+  const event: Omit<GuessEvent, "id"> = {
+    type: "guess",
+    text: guess,
+    player: localId,
+  };
+
+  db.transact(
+    db.tx.roomEvent[id()].create({ it: event }).link({ party: roomId }),
   );
 });
 

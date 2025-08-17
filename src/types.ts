@@ -59,6 +59,15 @@ type ChatAndLines = {
 
 type JSON = any;
 
+export type GuessEvent = {
+  type: "guess";
+  id: string;
+  // timestamp: number;
+  // firstCharTimestamp: number;
+  player: string;
+  text: string;
+};
+
 export type CanvasAndChatHistory =
   | {
       type: "line";
@@ -68,10 +77,4 @@ export type CanvasAndChatHistory =
     }
   | { type: "undo" }
   | { type: "bucket"; x: number; y: number; color: string }
-  | {
-      type: "message";
-      timestamp: number;
-      firstCharTimestamp: number;
-      player: string;
-      text: string;
-    };
+  | GuessEvent;

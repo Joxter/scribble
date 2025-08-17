@@ -1,11 +1,13 @@
 import React, { useState } from "react";
+import { guessSubmitted } from "../model/game.model.ts";
 
 export function EnterGuess({ clue }: { clue: string }) {
   const [guess, setGuess] = useState("");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO
+    guessSubmitted({ guess: guess.trim() });
+    setGuess("");
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
