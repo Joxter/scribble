@@ -1,29 +1,27 @@
 import React, { useState } from "react";
 import { getUrl } from "./utils.ts";
-
-const words = [
-  { word: "Арбуз", lang: "RU", category: "Фрукты" },
-  { word: "Автомобиль", lang: "RU", category: "Транспорт" },
-  { word: "Apple", lang: "EN", category: "Fruits" },
-  { word: "Airplane", lang: "EN", category: "Transport" },
-];
+import { useUnit } from "effector-react";
+import { ru } from "../dictionaries/ru.ts";
+import { $words, addNewWord, addNewWords } from "./model/words.model.ts";
 
 const ruLetters = "АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ".split("");
 const enLetters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
 
 export function WordsPage() {
+  const words = useUnit($words);
+
   const [selectedLang, setSelectedLang] = useState("RU");
   const [selectedLetter, setSelectedLetter] = useState("А");
   const [newWord, setNewWord] = useState("");
-  const [newCategory, setNewCategory] = useState("");
 
   const letters = selectedLang === "RU" ? ruLetters : enLetters;
 
-  const filteredWords = words.filter(
-    (word) =>
+  const filteredWords = words.filter((word) => {
+    return (
       word.lang === selectedLang &&
-      word.word.toUpperCase().startsWith(selectedLetter),
-  );
+      word.word[0].toUpperCase().startsWith(selectedLetter)
+    );
+  });
 
   const handleLangChange = (lang: string) => {
     setSelectedLang(lang);
@@ -32,14 +30,25 @@ export function WordsPage() {
 
   const handleAddWord = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Adding word:", {
-      word: newWord,
-      lang: selectedLang,
-      category: newCategory,
-    });
-    setNewWord("");
-    setNewCategory("");
+
+    addNewWord(newWord, selectedLang)
+      .then(() => {
+        setNewWord("");
+      })
+      .catch((err) => {
+        console.error(err);
+        if (String(err.message).includes("is a unique attribute on")) {
+          alert(`Слово "${newWord}" уже добавлено`);
+        }
+      });
   };
+
+  const existingWords = new Set(
+    words.filter((w) => w.lang === "RU").map((w) => w.word),
+  );
+  const newWords = [...new Set(ru)]
+    .filter((word) => !existingWords.has(word))
+    .slice(0, 100);
 
   return (
     <div style={{ padding: "20px", display: "grid", gap: "20px" }}>
@@ -47,6 +56,24 @@ export function WordsPage() {
         <a href={getUrl()}>Главная</a>
         <h1>Все слова</h1>
       </div>
+
+      {newWords.length > 0 && (
+        <div>
+          <button
+            onClick={() => {
+              addNewWords(newWords, "RU")
+                .then(() => {
+                  console.log(`Добавлено ${newWords.length} новых слов`);
+                })
+                .catch((err) => {
+                  console.error(err);
+                });
+            }}
+          >
+            ADD <b>RU</b> {newWords.length}
+          </button>
+        </div>
+      )}
 
       <LangSelector
         selectedLang={selectedLang}
@@ -193,7 +220,7 @@ function WordsList({
   filteredWords,
   selectedLetter,
 }: {
-  filteredWords: Array<{ word: string; lang: string; category: string }>;
+  filteredWords: Word[];
   selectedLetter: string;
 }) {
   return (
@@ -205,11 +232,16 @@ function WordsList({
         <p>Нет слов</p>
       ) : (
         <ul style={{ paddingLeft: "15px" }}>
-          {filteredWords.map((word, index) => (
-            <li key={index} style={{}}>
-              {word.word}
-            </li>
-          ))}
+          {filteredWords
+            .map((word) => word.word)
+            .toSorted()
+            .map((word, index) => {
+              return (
+                <li key={index} style={{}}>
+                  {word}
+                </li>
+              );
+            })}
         </ul>
       )}
     </div>

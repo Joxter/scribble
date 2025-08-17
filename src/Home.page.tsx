@@ -19,6 +19,7 @@ export function HomePage() {
       {player && player.name && <EditPlayerName name={player.name} />}
       <AllParties />
       <CreateNewParty />
+      <a href={getUrl("?words")}>Слова</a>
     </div>
   );
 }

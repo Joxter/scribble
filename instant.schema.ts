@@ -29,7 +29,7 @@ const _schema = i.schema({
     words: i.entity({
       word: i.string().unique().indexed(),
       lang: i.string(),
-      category: i.string(),
+      category: i.string().optional(),
     }),
     curretLine: i.entity({
       // remove "curretLine"

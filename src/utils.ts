@@ -1,18 +1,21 @@
-/**
- * see https://github.com/epistemex/cardinal-spline-js/blob/master/src/curve_calc.js
- *
- * Calculates an array containing points representing a cardinal spline through given point array.
- *
- * @param {Array} points - (flat) point array: [x1, y1, x2, y2, ..., xn, yn]
- * @param {Number} [tension=0.5] - tension. Typically between [0.0, 1.0] but can be exceeded
- * @param {Number} [numOfSeg=25] - number of segments between two points (line resolution)
- * @param {Boolean} [close=false] - Close the ends making the line continuous
- * @returns {Float32Array} - the spline points.
- */
-
 import { VecLike } from "./freehand/Vec";
+import { Store } from "effector";
 
 export const canvasSize = 600;
+
+export function liveQuery<T>(store: Store<T>, cb: (val: T) => () => void) {
+  let prev: any;
+
+  let unsub = () => {};
+
+  store.watch((val) => {
+    if (val !== prev) {
+      unsub();
+      unsub = cb(val);
+      prev = val;
+    }
+  });
+}
 
 export const URL_ROOM_NAME = (() => {
   const search = window.location.search.slice(1);

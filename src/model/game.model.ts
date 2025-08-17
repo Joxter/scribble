@@ -19,17 +19,18 @@ import {
 import getStroke from "perfect-freehand";
 import {
   getSvgPathFromStroke,
+  liveQuery,
   optimizeLine,
   randomFrom,
   URL_ROOM_NAME,
 } from "../utils.ts";
 import { smoothConf } from "../config.ts";
 import { db } from "../DB.ts";
-import { id, lookup } from "@instantdb/core";
+import { id } from "@instantdb/core";
 import { getUsername } from "../code-worlds.ts";
 import { svgInk } from "../freehand/svgInk.ts";
 import { Vec } from "../freehand/Vec.ts";
-import { ru } from "../../dictionaries/ru.ts";
+import { $words } from "./words.model.ts";
 
 const setLocalId = createEvent<string>();
 export const $localId = restore(setLocalId, "");
@@ -294,20 +295,6 @@ export const $polylinePaths = combine($canvasLines, (lines) => {
   return polylines;
 });
 
-function liveQuery<T>(store: Store<T>, cb: (val: T) => () => void) {
-  let prev: any;
-
-  let unsub = () => {};
-
-  store.watch((val) => {
-    if (val !== prev) {
-      unsub();
-      unsub = cb(val);
-      prev = val;
-    }
-  });
-}
-
 liveQuery($roomId, (roomId) => {
   if (!roomId) return () => {};
 
@@ -368,13 +355,19 @@ sample({
 });
 
 sample({
-  source: [$localId, $roomId] as const,
+  source: [$localId, $roomId, $words] as const,
   clock: chooseWordClicked,
-}).watch(([localId, roomId]) => {
+}).watch(([localId, roomId, words]) => {
   const event: Omit<ChoosingWord, "id"> = {
     type: "choosing-word",
     playerId: localId,
-    words: [randomFrom(ru), randomFrom(ru), randomFrom(ru)].join("|"),
+    words: [
+      randomFrom(words).word,
+      randomFrom(words).word,
+      randomFrom(words).word,
+      randomFrom(words).word,
+      randomFrom(words).word,
+    ].join("|"),
   };
 
   db.transact(
