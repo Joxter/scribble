@@ -5,13 +5,17 @@ import {
   joinParty,
   leaveParty,
   $compiledGameStateAndPaints,
+  $roomId,
 } from "../model/game.model.ts";
 import { Player } from "../types.ts";
 import pencilSvg from "./Pencil.svg";
+import { $allParties } from "../model/app.ts";
 
 export function ListOfPlayers() {
   const party = useUnit($party);
   const localId = useUnit($localId);
+  const allParties = useUnit($allParties);
+  const roomId = useUnit($roomId);
   const [gameState] = useUnit($compiledGameStateAndPaints);
 
   const players = party.players2 || [];
@@ -22,25 +26,36 @@ export function ListOfPlayers() {
 
   return (
     <div>
-      {joined ? (
-        <button
-          type="button"
-          onClick={() => {
-            leaveParty(party.id);
-          }}
-        >
-          покинуть
-        </button>
-      ) : (
-        <button
-          type="button"
-          onClick={() => {
-            joinParty(party.id);
-          }}
-        >
-          приосединиться
-        </button>
-      )}
+      <p>
+        Комната "
+        {
+          allParties.find((it) => {
+            return it.id === roomId;
+          })?.name
+        }
+        {`" `}
+        <br />
+        {joined ? (
+          <button
+            type="button"
+            onClick={() => {
+              leaveParty(party.id);
+            }}
+          >
+            уйти
+          </button>
+        ) : (
+          <button
+            type="button"
+            onClick={() => {
+              joinParty(party.id);
+            }}
+          >
+            зайти
+          </button>
+        )}
+      </p>
+
       <div
         style={{
           display: "grid",

@@ -253,3 +253,33 @@ export function isRevealed(
   // todo add Levenshtein distance here
   return "none";
 }
+
+export function delay(ms: number) {
+  return new Promise((res) => setTimeout(res, ms));
+}
+
+export function promiseInLineTODO<T extends any[], R>() {
+  let isRunning = false;
+  let skipped: (() => Promise<any>) | null = null;
+
+  return function runner(callback: () => Promise<any>): any {
+    if (isRunning) {
+      console.log("skipped");
+      skipped = callback;
+      return;
+    }
+    run(callback);
+
+    function run(cb: () => Promise<any>) {
+      isRunning = true;
+
+      cb().finally(() => {
+        isRunning = false;
+        if (skipped) {
+          run(skipped);
+          skipped = null;
+        }
+      });
+    }
+  };
+}

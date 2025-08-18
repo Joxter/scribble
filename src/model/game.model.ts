@@ -18,6 +18,7 @@ import {
 } from "../types.ts";
 import getStroke from "perfect-freehand";
 import {
+  delay,
   eventsToGameState,
   getSvgPathFromStroke,
   isRevealed,
@@ -618,16 +619,30 @@ function createCurrentLine(
       return { ...s, dots: [] };
     });
 
+  // let promiseLine = promiseInLine();
+
+  let loading = false;
   combine([$currentLine, $imDrawing, $currentLineID]).watch(
     ([currentLine, imDrawing, lineId]) => {
       if (imDrawing && lineId) {
+        if (loading) {
+          return;
+        }
+
+        loading = true;
         db.transact(
           db.tx.curretLine[lineId].update({
             width: currentLine.width,
             dots: currentLine.dots,
             color: currentLine.color,
           }),
-        );
+        )
+          // .then(() => {
+          //   return delay(1000);
+          // })
+          .finally(() => {
+            loading = false;
+          });
       }
     },
   );
