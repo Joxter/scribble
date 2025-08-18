@@ -16,6 +16,7 @@ import {
 import css from "./Page.module.css";
 import { EnterGuess } from "./EnterGuess.tsx";
 import { Messages } from "./Messages.tsx";
+import { Fps } from "../components/Fps.tsx";
 
 export function DrawingPage() {
   const [imDrawing, imChoosingWord, clue, iRevealed] = useUnit(
@@ -29,6 +30,7 @@ export function DrawingPage() {
         <div className={css.headerContent}>
           <a href={getUrl()}>Главная</a>
           {imDrawing && <h2>{imDrawing}</h2>}
+          <Fps />
         </div>
       </div>
 

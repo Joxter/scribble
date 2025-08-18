@@ -85,7 +85,9 @@ export const $imDrawing = combine(
   $compiledGameStateAndPaints,
   $localId,
   ([{ state }], localId) => {
-    return state.state === "drawing" && state.playerId === localId;
+    return state.state === "drawing" && state.playerId === localId
+      ? state.word
+      : "";
   },
 );
 
