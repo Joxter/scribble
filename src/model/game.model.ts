@@ -18,6 +18,7 @@ import {
 } from "../types.ts";
 import getStroke from "perfect-freehand";
 import {
+  eventsToGameState,
   getSvgPathFromStroke,
   liveQuery,
   optimizeLine,
@@ -70,51 +71,41 @@ export const $allChatEvents = $allRoomEvents.map((events) => {
   );
 });
 
+export const $compiledGameStateAndPaints = combine($allRoomEvents, (events) => {
+  return eventsToGameState(
+    events,
+    ["foo"],
+    { lang: "RU", rounds: 1000, suggestions: 3, canvasSize: 600 },
+    "foo|bar|baz",
+  );
+});
+
 export const $imDrawing = combine(
-  $allRoomEvents,
+  $compiledGameStateAndPaints,
   $localId,
-  (roomEvents, localId) => {
-    const last = findLastEvent(
-      roomEvents,
-      (it) => it.type === "new-word" || it.type === "choosing-word",
-    );
-
-    if (last && last.type === "new-word" && last.playerId === localId) {
-      return last.word;
-    }
-
-    return false;
+  ([{ state }], localId) => {
+    return state.state === "drawing" && state.playerId === localId;
   },
 );
 
 export const $clue = combine(
-  $allRoomEvents,
+  $compiledGameStateAndPaints,
   $localId,
-  (roomEvents, localId) => {
-    const last = findLastEvent(
-      roomEvents,
-      (it) => it.type === "new-word" || it.type === "choosing-word",
-    ) as NewWord | null;
-
-    if (last && last.type === "new-word") {
-      return last.word.replace(/\S/g, "_");
+  ([{ state }], localId) => {
+    if (state.state === "drawing") {
+      return state.word.replace(/\S/g, "_");
     }
 
-    return "";
+    return null;
   },
 );
 
 export const $imChoosingWord = combine(
-  $allRoomEvents,
+  $compiledGameStateAndPaints,
   $localId,
-  (roomEvents, localId) => {
-    const last = findLastEvent(
-      roomEvents,
-      (it) => it.type === "choosing-word",
-    ) as ChoosingWord | null;
-
-    if (last && last.playerId === localId) {
-      return last.words.split("|");
+  ([{ state }], localId) => {
+    if (state.state === "choosing-word") {
+      return state.words.split("|");
     }
 
     return null;

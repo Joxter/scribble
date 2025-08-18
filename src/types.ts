@@ -63,12 +63,13 @@ export type GameParams = {
   lang: Language;
   suggestions: number;
   rounds: number;
+  canvasSize: number;
 };
 
 export type Game = {
   playerIds: string[];
   messages: (NewWord | ChoosingWord | GuessEvent)[];
-  paintings: { id: string; name: string; player: string }[];
+  paintings: { id: string; name: string; playerId: string }[];
   params: GameParams;
   state:
     | {

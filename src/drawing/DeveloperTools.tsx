@@ -1,16 +1,30 @@
 import React, { useState } from "react";
 import { useUnit } from "effector-react";
 import {
+  $allRoomEvents,
   $localId,
   $party,
   clearCanvasClicked,
   resetDEMO,
 } from "../model/game.model.ts";
+import { canvasSize, eventsToGameState } from "../utils.ts";
 
 export function DeveloperTools() {
   const [isCollapsed, setIsCollapsed] = useState(true);
   const localId = useUnit($localId);
   const party = useUnit($party);
+
+  // const events = useUnit($allRoomEvents);
+  // const [gameState, oldPaints] = eventsToGameState(
+  //   events,
+  //   ["foo"],
+  //   { lang: "RU", rounds: 1000, suggestions: 3, canvasSize: 600 },
+  //   "foo|bar|baz",
+  // );
+
+  // console.log("gameState");
+  // console.log(gameState);
+  // console.log(oldPaints);
 
   return (
     <div>

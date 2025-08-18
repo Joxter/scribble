@@ -141,12 +141,18 @@ export function getUrl(partyId?: string): string {
   return `${getBasePath()}${partyId || ""}`;
 }
 
+type LegacyPaint = {
+  events: CanvasAndChatHistory[];
+  word: string;
+  playerId: string;
+};
+
 export function eventsToGameState(
   events: CanvasAndChatHistory[],
   playerIds: string[],
   params: GameParams,
   words: string,
-): Game {
+): [Game, LegacyPaint[]] {
   if (playerIds.length === 0) {
     throw new Event(`Can't play without players`);
   }
@@ -159,11 +165,7 @@ export function eventsToGameState(
     state: { state: "choosing-word", playerId: playerIds[0], words },
   };
 
-  const paintings: {
-    events: CanvasAndChatHistory[];
-    word: string;
-    playerId: string;
-  }[] = [];
+  const paintings: LegacyPaint[] = [];
   const paintCntByPlayer: Record<string, string[]> = {};
 
   events.forEach((event) => {
@@ -226,5 +228,5 @@ export function eventsToGameState(
     }
   });
 
-  return gameState;
+  return [gameState, paintings];
 }
