@@ -35,7 +35,14 @@ export function Messages() {
       {events.slice(-50).map((ev, i) => {
         const key = ev.type + i;
         if (ev.type === "guess") {
-          let { text, player, id } = ev;
+          let { text, player, isRevealed } = ev;
+          if (isRevealed === "revealed") {
+            return (
+              <p key={key} style={{ fontStyle: "italic", color: "green" }}>
+                <b>{playersMap[player]} отгадал слово!</b>
+              </p>
+            );
+          }
           return (
             <p key={key} style={{}}>
               <b>{playersMap[player]}:</b> {text}

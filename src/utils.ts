@@ -183,6 +183,15 @@ export function eventsToGameState(
       event.type === "choosing-word" ||
       event.type === "new-word"
     ) {
+      if (event.type === "guess" && gameState.state.state === "drawing") {
+        // @ts-ignore
+        const res = isRevealed(gameState.state.word, event.text);
+        if (event.isRevealed === "revealed") {
+          gameState.state.revealed.push({
+            playerId: event.player,
+          });
+        }
+      }
       gameState.messages.push(event);
     }
 
@@ -212,11 +221,13 @@ export function eventsToGameState(
           state: "drawing",
           playerId: event.playerId,
           word: event.word,
+          revealed: [],
         },
       };
     }
 
     if (
+      false &&
       Object.values(paintCntByPlayer).every(
         (paintIds) => paintIds.length >= gameState.params.rounds,
       )
@@ -229,4 +240,16 @@ export function eventsToGameState(
   });
 
   return [gameState, paintings];
+}
+
+export function isRevealed(
+  hiddenWord: string,
+  guess: string,
+): "almost" | "revealed" | "none" {
+  hiddenWord = hiddenWord.replace(/\S/g, "").toLowerCase();
+  guess = hiddenWord.replace(/\S/g, "").toLowerCase();
+
+  if (hiddenWord === guess) return "revealed";
+  // todo add Levenshtein distance here
+  return "none";
 }

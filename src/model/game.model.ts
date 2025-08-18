@@ -20,6 +20,7 @@ import getStroke from "perfect-freehand";
 import {
   eventsToGameState,
   getSvgPathFromStroke,
+  isRevealed,
   liveQuery,
   optimizeLine,
   randomFrom,
@@ -88,6 +89,17 @@ export const $imDrawing = combine(
   },
 );
 
+export const $iRevealed = combine(
+  $compiledGameStateAndPaints,
+  $localId,
+  ([{ state }], localId) => {
+    return state.state === "drawing" &&
+      state.revealed.find((it) => it.playerId === localId)
+      ? state.word
+      : "";
+  },
+);
+
 export const $clue = combine(
   $compiledGameStateAndPaints,
   $localId,
@@ -111,6 +123,9 @@ export const $imChoosingWord = combine(
     return null;
   },
 );
+
+// todo USE IT for EverybodyRevealed and other stuf
+export const $imServer = $imDrawing;
 
 export const { currentLineChanged, $currentLine, addLine } = createCurrentLine(
   $roomId,
@@ -330,14 +345,16 @@ undoClicked.watch(() => {
 });
 
 sample({
-  source: [$localId, $roomId] as const,
+  source: [$localId, $roomId, $compiledGameStateAndPaints] as const,
   clock: guessSubmitted,
   fn: (a, b) => [a, b] as const,
-}).watch(([[localId, roomId], { guess }]) => {
+}).watch(([[localId, roomId, [gameState]], { guess }]) => {
   const event: Omit<GuessEvent, "id"> = {
     type: "guess",
     text: guess,
     player: localId,
+    // @ts-ignore
+    isRevealed: isRevealed(gameState.state.word, guess),
   };
 
   db.transact(
@@ -365,6 +382,36 @@ sample({
     db.tx.roomEvent[id()].create({ it: event }).link({ party: roomId }),
   );
 });
+
+// sample({
+//   source: [$imServer, $roomId, $words, $localId] as const,
+//   clock: $compiledGameStateAndPaints,
+//   fn: (a, b) => [a, b] as const,
+// }).watch(([[imServer, roomId, words, localId], [gameState]]) => {
+//   if (imServer && gameState.state.state === "drawing") {
+//     if (gameState.state.revealed.length >= gameState.playerIds.length) {
+//       const myId = gameState.playerIds.findIndex((it) => it === localId);
+//       const nextInd = gameState.playerIds[myId + 1] ? myId + 1 : 0;
+//       const nextPlayerId = gameState.playerIds[nextInd];
+//
+//       const event: Omit<ChoosingWord, "id"> = {
+//         type: "choosing-word",
+//         playerId: nextPlayerId,
+//         words: [
+//           randomFrom(words).word,
+//           randomFrom(words).word,
+//           randomFrom(words).word,
+//           randomFrom(words).word,
+//           randomFrom(words).word,
+//         ].join("|"),
+//       };
+//
+//       db.transact(
+//         db.tx.roomEvent[id()].create({ it: event }).link({ party: roomId }),
+//       );
+//     }
+//   }
+// });
 
 sample({
   source: [$localId, $roomId] as const,

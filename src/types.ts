@@ -88,6 +88,7 @@ export type Game = {
         state: "drawing";
         playerId: string;
         word: string;
+        revealed: { playerId: string }[];
       }
     | {
         state: "results";
@@ -102,6 +103,12 @@ export type GuessEvent = {
   id: string;
   player: string;
   text: string;
+  isRevealed: "almost" | "revealed" | "none";
+};
+
+export type DrawingTimeout = {
+  type: "drawing-timeout";
+  id: string;
 };
 
 export type NewWord = {

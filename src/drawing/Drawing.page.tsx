@@ -11,17 +11,17 @@ import {
   chooseWordClicked,
   newWordSelected,
   $clue,
+  $iRevealed,
 } from "../model/game.model";
 import css from "./Page.module.css";
 import { EnterGuess } from "./EnterGuess.tsx";
 import { Messages } from "./Messages.tsx";
 
 export function DrawingPage() {
-  const [imDrawing, imChoosingWord, clue] = useUnit([
-    $imDrawing,
-    $imChoosingWord,
-    $clue,
-  ]);
+  const [imDrawing, imChoosingWord, clue, iRevealed] = useUnit(
+    //
+    [$imDrawing, $imChoosingWord, $clue, $iRevealed],
+  );
 
   return (
     <div className={css.page}>
@@ -33,8 +33,10 @@ export function DrawingPage() {
       </div>
 
       <div className={css.canvasSection}>
-        {!imDrawing && imChoosingWord ? (
-          <ChooseWord words={imChoosingWord} />
+        {imChoosingWord ? (
+          <div style={{ width: "100%", aspectRatio: "1" }}>
+            <ChooseWord words={imChoosingWord} />
+          </div>
         ) : (
           <Canvas />
         )}
@@ -44,7 +46,7 @@ export function DrawingPage() {
         {!imDrawing && clue && (
           <div style={{ padding: "4px 12px" }}>
             <div style={{ display: "flex", justifyContent: "center" }}>
-              <EnterGuess clue={clue} />
+              <EnterGuess clue={clue} revealed={iRevealed} />
             </div>
           </div>
         )}
