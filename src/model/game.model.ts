@@ -384,6 +384,7 @@ sample({
     type: "new-word",
     playerId: localId,
     word,
+    // todo create paint add `paintId` here
   };
 
   db.transact(

@@ -59,6 +59,43 @@ type ChatAndLines = {
 
 type JSON = any;
 
+export type GameParams = {
+  lang: Language;
+  suggestions: number;
+  rounds: number;
+};
+
+export type Game = {
+  playerIds: string[];
+  messages: (NewWord | ChoosingWord | GuessEvent)[];
+  paintings: { id: string; name: string; player: string }[];
+  params: GameParams;
+  state:
+    | {
+        // settings
+        state: "preparations";
+        lang: Language;
+        suggestions: number;
+        rounds: number;
+      }
+    | {
+        state: "choosing-word";
+        playerId: string;
+        words: string;
+      }
+    | {
+        state: "drawing";
+        playerId: string;
+        word: string;
+      }
+    | {
+        state: "results";
+      };
+};
+
+const LANGS = ["RU", "EN"] as const;
+export type Language = (typeof LANGS)[number];
+
 export type GuessEvent = {
   type: "guess";
   id: string;
