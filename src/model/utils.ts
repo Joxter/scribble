@@ -23,3 +23,17 @@ export function findLastEvent(
   }
   return null;
 }
+
+export function getChatEvents(
+  chat: CanvasAndChatHistory[],
+  allEvents: CanvasAndChatHistory[],
+) {
+  const newChat = allEvents.filter(
+    (it) =>
+      it.type === "guess" ||
+      it.type === "new-word" ||
+      it.type === "choosing-word",
+  );
+
+  return newChat.length !== chat.length ? newChat : chat;
+}

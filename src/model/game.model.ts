@@ -28,6 +28,7 @@ import { getUsername } from "../code-worlds.ts";
 import { $words } from "./words.model.ts";
 import { createDrawing } from "./drawing.model.ts";
 import { colors, widths } from "../config.ts";
+import { getChatEvents } from "./utils.ts";
 
 const setLocalId = createEvent<string>();
 export const $localId = restore(setLocalId, "");
@@ -54,17 +55,13 @@ export const $player = restore(setPlayer, {
 });
 
 export const $allRoomEvents = createStore<CanvasAndChatHistory[]>([]);
-export const $allChatEvents = $allRoomEvents.map((events) => {
-  return (
-    events
-      //
-      .filter(
-        (it) =>
-          it.type === "guess" ||
-          it.type === "new-word" ||
-          it.type === "choosing-word",
-      )
-  );
+export const $allChatEvents = createStore<CanvasAndChatHistory[]>([]);
+
+sample({
+  source: $allChatEvents,
+  clock: $allRoomEvents,
+  fn: (chat, allEvents) => getChatEvents(chat, allEvents),
+  target: $allChatEvents,
 });
 
 export const $compiledGameStateAndPaints = combine($allRoomEvents, (events) => {
