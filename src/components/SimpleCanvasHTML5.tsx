@@ -2,9 +2,16 @@ import React, { useState, useRef, useEffect, useCallback } from "react";
 import { Fps } from "./Fps.tsx";
 import { svgInk } from "../freehand/svgInk.ts";
 import { Vec } from "../freehand/Vec.ts";
+import { StrokeOptions } from "../freehand/types.ts";
 
 const CANVAS_SIZE = 600;
 const pixelRatio = window.devicePixelRatio || 1;
+
+const strokeOptions: StrokeOptions = {
+  // smoothing: 0.99, // 0.01 +0.99
+  thinning: 0.3, // -0.99 +0.99
+  // streamline: 0.01, // 0.01 +0.99
+};
 
 // Setup canvas for high-DPI rendering
 const setupCanvas = (canvas: HTMLCanvasElement) => {
@@ -73,7 +80,10 @@ export function SimpleCanvasHTML5() {
     lines.forEach((line) => {
       const svgPath = svgInk(
         line.dots.map(([x, y]) => new Vec(x, y)),
-        { size: line.width },
+        {
+          size: line.width,
+          ...strokeOptions,
+        },
       );
 
       ctx.fillStyle = line.color;
@@ -94,7 +104,10 @@ export function SimpleCanvasHTML5() {
     if (currentLine.length >= 2) {
       const svgPath = svgInk(
         currentLine.map(([x, y]) => new Vec(x, y)),
-        { size: 8 },
+        {
+          size: 8,
+          ...strokeOptions,
+        },
       );
 
       ctx.fillStyle = "#000000";
