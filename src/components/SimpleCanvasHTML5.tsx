@@ -4,6 +4,20 @@ import { svgInk } from "../freehand/svgInk.ts";
 import { Vec } from "../freehand/Vec.ts";
 
 const CANVAS_SIZE = 600;
+const pixelRatio = window.devicePixelRatio || 1;
+
+// Setup canvas for high-DPI rendering
+const setupCanvas = (canvas: HTMLCanvasElement) => {
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return null;
+
+  canvas.width = CANVAS_SIZE * pixelRatio;
+  canvas.height = CANVAS_SIZE * pixelRatio;
+
+  ctx.scale(pixelRatio, pixelRatio);
+
+  return ctx;
+};
 
 type Point = [number, number];
 type Line = {
@@ -12,12 +26,14 @@ type Line = {
   width: number;
 };
 
+const llllines = JSON.parse(`[]`);
+
 export function SimpleCanvasHTML5() {
   const canvasLinesRef = useRef<HTMLCanvasElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isDrawing, setIsDrawing] = useState(false);
   const [currentLine, setCurrentLine] = useState<Point[]>([]);
-  const [lines, setLines] = useState<Line[]>([]);
+  const [lines, setLines] = useState<Line[]>(llllines);
 
   const getCoordinates = useCallback(
     (e: React.MouseEvent | React.TouchEvent) => {
@@ -49,7 +65,7 @@ export function SimpleCanvasHTML5() {
     const canvas = canvasLinesRef.current;
     if (!canvas) return;
 
-    const ctx = canvas.getContext("2d");
+    const ctx = setupCanvas(canvas);
     if (!ctx) return;
 
     ctx.clearRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
@@ -70,7 +86,7 @@ export function SimpleCanvasHTML5() {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const ctx = canvas.getContext("2d");
+    const ctx = setupCanvas(canvas);
     if (!ctx) return;
 
     ctx.clearRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
@@ -112,12 +128,10 @@ export function SimpleCanvasHTML5() {
       if (!isDrawing) return;
       if (e) e.preventDefault();
 
-      if (currentLine.length > 1) {
-        setLines((prev) => [
-          ...prev,
-          { dots: currentLine, color: "#000000", width: 8 },
-        ]);
-      }
+      setLines((prev) => [
+        ...prev,
+        { dots: currentLine, color: "#000000", width: 8 },
+      ]);
       setCurrentLine([]);
       setIsDrawing(false);
     },
@@ -141,16 +155,9 @@ export function SimpleCanvasHTML5() {
       </button>
 
       <div className="canvas-wrapper">
-        <canvas
-          ref={canvasLinesRef}
-          width={CANVAS_SIZE}
-          height={CANVAS_SIZE}
-          className="canvas-layer"
-        />
+        <canvas ref={canvasLinesRef} className="canvas-layer" />
         <canvas
           ref={canvasRef}
-          width={CANVAS_SIZE}
-          height={CANVAS_SIZE}
           onMouseDown={startDrawing}
           onMouseMove={draw}
           onMouseUp={stopDrawing}
