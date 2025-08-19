@@ -174,7 +174,7 @@ export function eventsToGameState(
       event.type === "undo" ||
       event.type === "bucket"
     ) {
-      paintings.at(-1)!.events.push(event);
+      paintings.at(-1)?.events.push(event);
       return;
     }
 

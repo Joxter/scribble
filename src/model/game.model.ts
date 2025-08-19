@@ -34,6 +34,7 @@ import { getUsername } from "../code-worlds.ts";
 import { svgInk } from "../freehand/svgInk.ts";
 import { Vec } from "../freehand/Vec.ts";
 import { $words } from "./words.model.ts";
+import { createDrawing } from "./drawing.model.ts";
 
 const setLocalId = createEvent<string>();
 export const $localId = restore(setLocalId, "");
@@ -138,10 +139,11 @@ export const { currentLineChanged, $currentLine, addLine } = createCurrentLine(
 export const $renderMode = createStore<"normal" | "polyline" | "tldraw">(
   "tldraw",
 );
-export const $debugMode = createStore(false);
 
-export const setSmoothConf = createEvent<Partial<typeof smoothConf>>();
-export const $smoothConf = restore(setSmoothConf, smoothConf);
+export const { $svgCanvasPaths, $rawPath, $polylinePaths, $svgCurrentLine } =
+  createDrawing({ $allRoomEvents, $renderMode, $currentLine });
+
+export const $debugMode = createStore(false);
 
 export const renderModeChanged = createEvent<
   "normal" | "polyline" | "tldraw"
@@ -184,125 +186,6 @@ $allRoomEvents.on(historyUpdated, (_, { history }) => history);
 
 $renderMode.on(renderModeChanged, (_, mode) => mode);
 $debugMode.on(debugModeToggled, (_, enabled) => enabled);
-
-function findLastEvent(
-  arr: CanvasAndChatHistory[],
-  cb: (it: CanvasAndChatHistory) => boolean | undefined,
-): CanvasAndChatHistory | null {
-  for (let i = arr.length - 1; i >= 0; i--) {
-    if (cb(arr[i])) {
-      return arr[i];
-    }
-  }
-  return null;
-}
-
-function findLastEventIndex(
-  arr: CanvasAndChatHistory[],
-  cb: (it: CanvasAndChatHistory) => boolean | undefined,
-): { i: number } | null {
-  for (let i = arr.length - 1; i >= 0; i--) {
-    if (cb(arr[i])) {
-      return { i };
-    }
-  }
-  return null;
-}
-
-const $canvasLines = $allRoomEvents.map((events) => {
-  const last = findLastEventIndex(events, (it) => it.type === "new-word");
-  if (!last) return [];
-
-  const lines: LineEvent[] = [];
-
-  events.slice(last.i).forEach((it) => {
-    if (it.type === "line") {
-      lines.push(it);
-    } else if (it.type === "undo") {
-      lines.pop();
-    }
-  });
-
-  return lines;
-});
-
-export const $svgCanvasPaths = combine(
-  $canvasLines,
-  $renderMode,
-  $smoothConf,
-  (lines, renderMode, currentSmoothConf) => {
-    const paths: { d: string; color: string }[] = [];
-
-    lines.forEach((it) => {
-      const aaa = svgInk(
-        optimizeLine(it.dots).map((it) => new Vec(it[0], it[1])),
-        { size: it.width },
-      );
-
-      const bbb = getSvgPathFromStroke(
-        getStroke(optimizeLine(it.dots), {
-          ...currentSmoothConf,
-          size: it.width,
-        }),
-      );
-
-      paths.push({
-        d: renderMode === "tldraw" ? aaa : bbb,
-        color: it.color,
-      });
-    });
-
-    return paths;
-  },
-);
-
-export const $svgCurrentLine = combine(
-  $currentLine,
-  $renderMode,
-  $smoothConf,
-  (currentLine, renderMode, currentSmoothConf) => {
-    if (currentLine.dots.length === 0) return null;
-
-    const aaa = svgInk(
-      optimizeLine(currentLine.dots).map((it) => new Vec(it[0], it[1])),
-      { size: currentLine.width },
-    );
-
-    const bbb = getSvgPathFromStroke(
-      getStroke(optimizeLine(currentLine.dots), {
-        ...currentSmoothConf,
-        size: currentLine.width,
-      }),
-    );
-
-    return {
-      d: renderMode === "tldraw" ? aaa : bbb,
-      color: currentLine.color,
-    };
-  },
-);
-
-export const $rawPath = $canvasLines;
-
-export const $polylinePaths = combine($canvasLines, (lines) => {
-  const polylines: Array<{
-    points: string;
-    color: string;
-    strokeWidth: number;
-  }> = [];
-
-  lines.forEach((it, i) => {
-    const optimizedDots = optimizeLine(it.dots);
-    const points = optimizedDots.map(([x, y]) => `${x},${y}`).join(" ");
-    polylines.push({
-      points,
-      color: it.color,
-      strokeWidth: it.width,
-    });
-  });
-
-  return polylines;
-});
 
 liveQuery($roomId, (roomId) => {
   if (!roomId) return () => {};

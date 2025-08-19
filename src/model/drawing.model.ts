@@ -1,0 +1,123 @@
+import { combine, createEvent, restore, Store } from "effector";
+import { CanvasAndChatHistory, CurrentLine, LineEvent } from "../types.ts";
+import { smoothConf } from "../config.ts";
+import { svgInk } from "../freehand/svgInk.ts";
+import { getSvgPathFromStroke, optimizeLine } from "../utils.ts";
+import { Vec } from "../freehand/Vec.ts";
+import getStroke from "perfect-freehand";
+import { findLastEventIndex } from "./utils.ts";
+
+export function createDrawing({
+  $renderMode,
+  $allRoomEvents,
+  $currentLine,
+}: {
+  $renderMode: Store<"normal" | "polyline" | "tldraw">;
+  $allRoomEvents: Store<CanvasAndChatHistory[]>;
+  $currentLine: Store<CurrentLine>;
+}) {
+  const setSmoothConf = createEvent<Partial<typeof smoothConf>>();
+  const $smoothConf = restore(setSmoothConf, smoothConf);
+
+  const $canvasLines = $allRoomEvents.map((events) => {
+    const last = findLastEventIndex(events, (it) => it.type === "new-word");
+    if (!last) return [];
+
+    const lines: LineEvent[] = [];
+
+    events.slice(last.i).forEach((it) => {
+      if (it.type === "line") {
+        lines.push(it);
+      } else if (it.type === "undo") {
+        lines.pop();
+      }
+    });
+
+    return lines;
+  });
+
+  const $svgCanvasPaths = combine(
+    $canvasLines,
+    $renderMode,
+    $smoothConf,
+    (lines, renderMode, currentSmoothConf) => {
+      const paths: { d: string; color: string }[] = [];
+
+      lines.forEach((it) => {
+        const aaa = svgInk(
+          optimizeLine(it.dots).map((it) => new Vec(it[0], it[1])),
+          { size: it.width },
+        );
+
+        const bbb = getSvgPathFromStroke(
+          getStroke(optimizeLine(it.dots), {
+            ...currentSmoothConf,
+            size: it.width,
+          }),
+        );
+
+        paths.push({
+          d: renderMode === "tldraw" ? aaa : bbb,
+          color: it.color,
+        });
+      });
+
+      return paths;
+    },
+  );
+
+  const $svgCurrentLine = combine(
+    $currentLine,
+    $renderMode,
+    $smoothConf,
+    (currentLine, renderMode, currentSmoothConf) => {
+      if (currentLine.dots.length === 0) return null;
+
+      const aaa = svgInk(
+        optimizeLine(currentLine.dots).map((it) => new Vec(it[0], it[1])),
+        { size: currentLine.width },
+      );
+
+      const bbb = getSvgPathFromStroke(
+        getStroke(optimizeLine(currentLine.dots), {
+          ...currentSmoothConf,
+          size: currentLine.width,
+        }),
+      );
+
+      return {
+        d: renderMode === "tldraw" ? aaa : bbb,
+        color: currentLine.color,
+      };
+    },
+  );
+
+  const $rawPath = $canvasLines;
+
+  const $polylinePaths = combine($canvasLines, (lines) => {
+    const polylines: Array<{
+      points: string;
+      color: string;
+      strokeWidth: number;
+    }> = [];
+
+    lines.forEach((it, i) => {
+      const optimizedDots = optimizeLine(it.dots);
+      const points = optimizedDots.map(([x, y]) => `${x},${y}`).join(" ");
+      polylines.push({
+        points,
+        color: it.color,
+        strokeWidth: it.width,
+      });
+    });
+
+    return polylines;
+  });
+
+  return {
+    $svgCanvasPaths,
+    $svgCurrentLine,
+    $rawPath,
+    $polylinePaths,
+  };
+}
