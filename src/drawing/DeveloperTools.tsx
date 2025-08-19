@@ -4,7 +4,7 @@ import {
   $allRoomEvents,
   $localId,
   $party,
-  clearCanvasClicked,
+  deleteRoomEvents_DEV,
   resetDEMO,
 } from "../model/game.model.ts";
 import { canvasSize, eventsToGameState } from "../utils.ts";
@@ -41,7 +41,9 @@ export function DeveloperTools() {
           <p>localId: {localId}</p>
 
           <div>
-            <button onClick={clearCanvasClicked}>Удалить все сообщения</button>
+            <button onClick={deleteRoomEvents_DEV}>
+              Удалить все сообщения
+            </button>
             <br />
             <br />
             <button onClick={resetDEMO}>перезагрузить всю комнату</button>

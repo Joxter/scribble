@@ -169,11 +169,7 @@ export function eventsToGameState(
   const paintCntByPlayer: Record<string, string[]> = {};
 
   events.forEach((event) => {
-    if (
-      event.type === "line" ||
-      event.type === "undo" ||
-      event.type === "bucket"
-    ) {
+    if (event.type === "line" || event.type === "undo") {
       paintings.at(-1)?.events.push(event);
       return;
     }

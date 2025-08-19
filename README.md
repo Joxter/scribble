@@ -11,7 +11,6 @@ A real-time collaborative drawing application built with React and InstantDB. Cr
   - Color picker
   - Adjustable brush sizes
   - Undo functionality
-  - Bucket fill (in development)
 - **Responsive Design**: Optimized for various screen sizes
 
 ## Tech Stack
@@ -116,6 +115,5 @@ This will build the project and deploy it to the `gh-pages` branch.
 ## Development Notes
 
 - The app uses a demo configuration with a hardcoded party ID
-- Bucket fill functionality is implemented but not fully integrated
 - The drawing engine uses SVG paths for smooth, scalable strokes
 - Touch events are handled for mobile compatibility

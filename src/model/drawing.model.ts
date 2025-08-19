@@ -6,6 +6,9 @@ import { getSvgPathFromStroke, optimizeLine } from "../utils.ts";
 import { Vec } from "../freehand/Vec.ts";
 import getStroke from "perfect-freehand";
 import { findLastEventIndex } from "./utils.ts";
+import { db } from "../DB.ts";
+import { id } from "@instantdb/core";
+import { $roomId } from "./game.model.ts";
 
 export function createDrawing({
   $renderMode,
@@ -18,6 +21,8 @@ export function createDrawing({
 }) {
   const setSmoothConf = createEvent<Partial<typeof smoothConf>>();
   const $smoothConf = restore(setSmoothConf, smoothConf);
+
+  const undoClicked = createEvent<any>();
 
   const $canvasLines = $allRoomEvents.map((events) => {
     const last = findLastEventIndex(events, (it) => it.type === "new-word");
@@ -114,10 +119,21 @@ export function createDrawing({
     return polylines;
   });
 
+  undoClicked.watch(() => {
+    db.transact(
+      db.tx.roomEvent[id()]
+        .create({ it: { type: "undo" } })
+        .link({ party: $roomId.getState() }),
+    );
+  });
+
   return {
     $svgCanvasPaths,
     $svgCurrentLine,
     $rawPath,
     $polylinePaths,
+    undoClicked,
+    $smoothConf,
+    setSmoothConf,
   };
 }

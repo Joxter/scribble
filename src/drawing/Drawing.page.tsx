@@ -8,7 +8,7 @@ import { ListOfPlayers } from "./ListOfPlayers";
 import {
   $imChoosingWord,
   $imDrawing,
-  chooseWordClicked,
+  chooseWordClicked_DEV,
   newWordSelected,
   $clue,
   $iRevealed,
@@ -103,14 +103,14 @@ function GameControls() {
       }
     >
       {/*
-      <button onClick={makeWeDraw} disabled={imDrawing}>
+      <button onClick={makeWeDraw_DEV} disabled={imDrawing}>
         я рисую
       </button>
       <button onClick={noDraw} disabled={!imDrawing}>
         я отгадываю
       </button>
       */}
-      <button onClick={chooseWordClicked}>выбрать слово</button>
+      <button onClick={chooseWordClicked_DEV}>выбрать слово</button>
     </div>
   );
 }

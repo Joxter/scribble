@@ -135,7 +135,6 @@ export type LineEvent = {
 export type CanvasAndChatHistory =
   | LineEvent
   | { type: "undo" }
-  | { type: "bucket"; x: number; y: number; color: string }
   | NewWord
   | ChoosingWord
   | GuessEvent;

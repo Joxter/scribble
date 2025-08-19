@@ -8,31 +8,23 @@ import {
 } from "effector";
 import {
   CanvasAndChatHistory,
-  Party,
+  ChoosingWord,
   CurrentLine,
-  Player,
   GuessEvent,
   NewWord,
-  ChoosingWord,
-  LineEvent,
+  Party,
+  Player,
 } from "../types.ts";
-import getStroke from "perfect-freehand";
 import {
-  delay,
   eventsToGameState,
-  getSvgPathFromStroke,
   isRevealed,
   liveQuery,
-  optimizeLine,
   randomFrom,
   URL_ROOM_NAME,
 } from "../utils.ts";
-import { smoothConf } from "../config.ts";
 import { db } from "../DB.ts";
 import { id } from "@instantdb/core";
 import { getUsername } from "../code-worlds.ts";
-import { svgInk } from "../freehand/svgInk.ts";
-import { Vec } from "../freehand/Vec.ts";
 import { $words } from "./words.model.ts";
 import { createDrawing } from "./drawing.model.ts";
 
@@ -140,8 +132,15 @@ export const $renderMode = createStore<"normal" | "polyline" | "tldraw">(
   "tldraw",
 );
 
-export const { $svgCanvasPaths, $rawPath, $polylinePaths, $svgCurrentLine } =
-  createDrawing({ $allRoomEvents, $renderMode, $currentLine });
+export const {
+  undoClicked,
+  $svgCanvasPaths,
+  $rawPath,
+  $polylinePaths,
+  $svgCurrentLine,
+  $smoothConf,
+  setSmoothConf,
+} = createDrawing({ $allRoomEvents, $renderMode, $currentLine });
 
 export const $debugMode = createStore(false);
 
@@ -149,19 +148,12 @@ export const renderModeChanged = createEvent<
   "normal" | "polyline" | "tldraw"
 >();
 export const debugModeToggled = createEvent<boolean>();
-export const makeWeDraw = createEvent<any>();
-export const noDraw = createEvent<any>();
-export const chooseWordClicked = createEvent<any>();
+export const makeWeDraw_DEV = createEvent<any>();
+export const chooseWordClicked_DEV = createEvent<any>();
 export const newWordSelected = createEvent<string>();
 
-export const undoClicked = createEvent<any>();
 export const guessSubmitted = createEvent<{ guess: string }>();
-export const clearCanvasClicked = createEvent<any>();
-export const addBucket = createEvent<{
-  x: number;
-  y: number;
-  color: string;
-}>();
+export const deleteRoomEvents_DEV = createEvent<any>();
 
 export const historyUpdated = createEvent<{
   history: CanvasAndChatHistory[];
@@ -169,7 +161,7 @@ export const historyUpdated = createEvent<{
 
 sample({
   source: [$localId, $party] as const,
-  clock: makeWeDraw,
+  clock: makeWeDraw_DEV,
   fn: ([id, party]) => {
     return {
       ...party,
@@ -222,14 +214,6 @@ liveQuery($roomId, (roomId) => {
   );
 });
 
-undoClicked.watch(() => {
-  db.transact(
-    db.tx.roomEvent[id()]
-      .create({ it: { type: "undo" } })
-      .link({ party: $roomId.getState() }),
-  );
-});
-
 sample({
   source: [$localId, $roomId, $compiledGameStateAndPaints] as const,
   clock: guessSubmitted,
@@ -250,7 +234,7 @@ sample({
 
 sample({
   source: [$localId, $roomId, $words] as const,
-  clock: chooseWordClicked,
+  clock: chooseWordClicked_DEV,
 }).watch(([localId, roomId, words]) => {
   const event: Omit<ChoosingWord, "id"> = {
     type: "choosing-word",
@@ -316,7 +300,7 @@ sample({
   );
 });
 
-clearCanvasClicked.watch(async () => {
+deleteRoomEvents_DEV.watch(async () => {
   const { roomEvent } = await db
     .queryOnce({ roomEvent: { $: { where: { party: $roomId.getState() } } } })
     .then((it) => it.data);
@@ -329,23 +313,12 @@ clearCanvasClicked.watch(async () => {
   }
 });
 
-sample({ source: $party, clock: makeWeDraw }).watch((party) => {
+sample({ source: $party, clock: makeWeDraw_DEV }).watch((party) => {
   db.transact(
     db.tx.party[party.id].update({
       gameState: {
         ...party.gameState,
         drawing: party.gameState.drawing,
-      },
-    }),
-  );
-});
-
-sample({ source: $party, clock: noDraw }).watch((party) => {
-  db.transact(
-    db.tx.party[party.id].update({
-      gameState: {
-        ...party.gameState,
-        drawing: "",
       },
     }),
   );
