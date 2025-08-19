@@ -27,6 +27,7 @@ import { id } from "@instantdb/core";
 import { getUsername } from "../code-worlds.ts";
 import { $words } from "./words.model.ts";
 import { createDrawing } from "./drawing.model.ts";
+import { colors, widths } from "../config.ts";
 
 const setLocalId = createEvent<string>();
 export const $localId = restore(setLocalId, "");
@@ -123,10 +124,13 @@ export const $imChoosingWord = combine(
 // todo USE IT for EverybodyRevealed and other stuf
 export const $imServer = $imDrawing;
 
-export const { currentLineChanged, $currentLine, addLine } = createCurrentLine(
-  $roomId,
-  $imDrawing,
-);
+export const {
+  currentLineChanged,
+  $currentLine,
+  addLine,
+  lineStarted,
+  lineExtended,
+} = createCurrentLine($roomId, $imDrawing);
 
 export const $renderMode = createStore<"normal" | "polyline" | "tldraw">(
   "tldraw",
@@ -457,11 +461,14 @@ function createCurrentLine(
 
   const $currentLine = createStore<CurrentLine>({
     dots: [],
-    color: "#34495e",
-    width: 8,
+    color: colors[1],
+    width: widths[1],
   });
 
   const currentLineChanged = createEvent<Partial<CurrentLine>>();
+  const lineStarted = createEvent<[x: number, y: number]>();
+  const lineExtended = createEvent<[x: number, y: number]>();
+
   const setCurrentLineID = createEvent<string>();
   const addLine = createEvent<CurrentLine>();
 
@@ -471,11 +478,15 @@ function createCurrentLine(
     .on(currentLineChanged, (s, v) => {
       return { ...s, ...v };
     })
+    .on(lineStarted, (s, dot) => {
+      return { ...s, dots: [dot] };
+    })
+    .on(lineExtended, (s, dot) => {
+      return { ...s, dots: [...s.dots, dot] };
+    })
     .on(addLine, (s) => {
       return { ...s, dots: [] };
     });
-
-  // let promiseLine = promiseInLine();
 
   let loading = false;
   combine([$currentLine, $imDrawing, $currentLineID]).watch(
@@ -538,5 +549,11 @@ function createCurrentLine(
     );
   });
 
-  return { $currentLine, currentLineChanged, addLine };
+  return {
+    $currentLine,
+    currentLineChanged,
+    addLine,
+    lineStarted,
+    lineExtended,
+  };
 }

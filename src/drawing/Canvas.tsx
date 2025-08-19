@@ -1,6 +1,6 @@
 import React, { useState, memo } from "react";
 import { useUnit } from "effector-react";
-import { canvasSize, getSvgPathFromStroke } from "../utils";
+import { canvasSize } from "../utils";
 import {
   $currentLine,
   $debugMode,
@@ -8,11 +8,11 @@ import {
   $polylinePaths,
   $rawPath,
   $renderMode,
-  $smoothConf,
+  lineStarted,
+  lineExtended,
   $svgCanvasPaths,
   $svgCurrentLine,
   addLine,
-  currentLineChanged,
 } from "../model/game.model.ts";
 
 function getCoordinates(e: React.MouseEvent | React.TouchEvent) {
@@ -44,12 +44,11 @@ export function Canvas() {
 
   const startDrawing = (e: React.MouseEvent | React.TouchEvent) => {
     if (!imDrawing) return;
-
     e.preventDefault();
 
     const { x, y } = getCoordinates(e);
 
-    currentLineChanged({ dots: [[x, y]] });
+    lineStarted([x, y]);
     setIsDrawing(true);
   };
 
@@ -60,9 +59,7 @@ export function Canvas() {
 
     const { x, y } = getCoordinates(e);
 
-    currentLineChanged({
-      dots: [...currentLine.dots, [x, y]],
-    });
+    lineExtended([x, y]);
   };
 
   const stopDrawing = (e?: React.TouchEvent) => {
@@ -91,9 +88,12 @@ export function Canvas() {
         aspectRatio: "1 / 1",
         display: "flex",
         justifyContent: "center",
-        // backgroundColor: "rgb(236, 240, 241)",
-        backgroundColor: "#faf9f5",
-        // backgroundColor: "rgb(247, 242, 225)",
+        // backgroundColor: "#fbf4e9",
+        // background:
+        //   "linear-gradient(45deg, #faf7f0 0%, #f5f1e8 25%, #f8f4ec 50%, #f2ede4 75%, #f6f2ea 100%)",
+        // background: "#faf7f0",
+        background: "#f6eee2",
+        // background: "#e2d7c4",
       }}
     >
       <svg
@@ -109,10 +109,8 @@ export function Canvas() {
         viewBox={`0 0 ${canvasSize} ${canvasSize}`}
         style={{
           touchAction: "none",
-          // display: "block",
           border: "2px dashed #ccc",
           cursor: "crosshair",
-          // width: "100%",
           aspectRatio: "1 / 1",
         }}
       >

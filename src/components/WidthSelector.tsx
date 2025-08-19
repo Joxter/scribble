@@ -1,4 +1,5 @@
-const widths = [3, 8, 15, 20, 25];
+import { widths } from "../config.ts";
+
 const valGap = 4;
 
 type Props = {

@@ -6,10 +6,11 @@ import {
 } from "../model/game.model.ts";
 import arrowArcLeftSrc from "./ArrowArcLeft.svg";
 import { ColorSelector } from "../components/ColorSelector.tsx";
-import { useUnit } from "effector-react";
+import { useStoreMap } from "effector-react";
 
 export function Tools() {
-  const currentLine = useUnit($currentLine);
+  const width = useStoreMap($currentLine, (s) => s.width);
+  const color = useStoreMap($currentLine, (s) => s.color);
 
   return (
     <div
@@ -33,13 +34,13 @@ export function Tools() {
         </button>
 
         <WidthSelector
-          value={currentLine.width}
+          value={width}
           onChange={(width) => currentLineChanged({ width })}
         />
       </div>
       <div>
         <ColorSelector
-          value={currentLine.color}
+          value={color}
           onChange={(color) => currentLineChanged({ color })}
         />
       </div>

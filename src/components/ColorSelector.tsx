@@ -1,3 +1,5 @@
+import { colors } from "../config.ts";
+
 const size = 28;
 const gap = 8;
 
@@ -7,21 +9,6 @@ type Props = {
 };
 
 export function ColorSelector({ value, onChange }: Props) {
-  const colors = [
-    "#111111",
-    "#34495e",
-    "#faf9f5",
-    "#ffffff",
-    "#8b4513",
-    "#fa3224",
-    "#ffa729",
-    "#ffd129",
-    "#2ecc71",
-    "#3498db",
-    "#9b59b6",
-    "#ff69b4",
-  ];
-
   return (
     <div
       style={{

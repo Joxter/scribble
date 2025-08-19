@@ -59,3 +59,20 @@ export const smoothConf = {
   streamline: 0, // 0.01 +0.99
   easing: easingFunctions.linear,
 };
+
+export const widths = [3, 8, 15, 20, 25];
+
+export const colors = [
+  "#111111",
+  "#34495e",
+  "#faf9f5",
+  "#ffffff",
+  "#8b4513",
+  "#fa3224",
+  "#ffa729",
+  "#ffd129",
+  "#2ecc71",
+  "#3498db",
+  "#9b59b6",
+  "#ff69b4",
+];
