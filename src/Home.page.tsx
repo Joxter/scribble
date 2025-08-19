@@ -20,6 +20,7 @@ export function HomePage() {
       <AllParties />
       <CreateNewParty />
       <a href={getUrl("?words")}>Слова</a>
+      <a href={getUrl("?simple")}>Просто</a>
     </div>
   );
 }
