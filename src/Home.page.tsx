@@ -19,8 +19,56 @@ export function HomePage() {
       {player && player.name && <EditPlayerName name={player.name} />}
       <AllParties />
       <CreateNewParty />
+
+      <div style={{ marginTop: "20px" }}>
+        <h3>Canvas Demos</h3>
+        <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+          <a
+            href={getUrl("?simple")}
+            style={{
+              textDecoration: "none",
+              padding: "8px",
+              background: "#f0f0f0",
+              borderRadius: "4px",
+            }}
+          >
+            📝 Simple Canvas (SVG-based)
+            <div style={{ fontSize: "12px", color: "#666" }}>
+              Pure React + useState with SVG rendering
+            </div>
+          </a>
+          <a
+            href={getUrl("?canvas-html5")}
+            style={{
+              textDecoration: "none",
+              padding: "8px",
+              background: "#e8f4f8",
+              borderRadius: "4px",
+            }}
+          >
+            🎨 HTML5 Canvas (Path2D + svgInk)
+            <div style={{ fontSize: "12px", color: "#666" }}>
+              Canvas rendering using svgInk via Path2D
+            </div>
+          </a>
+          <a
+            href={getUrl("?canvas-optimized")}
+            style={{
+              textDecoration: "none",
+              padding: "8px",
+              background: "#f0f8e8",
+              borderRadius: "4px",
+            }}
+          >
+            🚀 Optimized Canvas (Direct rendering)
+            <div style={{ fontSize: "12px", color: "#666" }}>
+              Maximum performance, direct Canvas 2D API
+            </div>
+          </a>
+        </div>
+      </div>
+
       <a href={getUrl("?words")}>Слова</a>
-      <a href={getUrl("?simple")}>Просто</a>
     </div>
   );
 }
