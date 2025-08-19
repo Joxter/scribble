@@ -78,21 +78,26 @@ export function createDrawing({
     (currentLine, renderMode, currentSmoothConf) => {
       if (currentLine.dots.length === 0) return null;
 
+      let start = Date.now();
       const aaa = svgInk(
         optimizeLine(currentLine.dots).map((it) => new Vec(it[0], it[1])),
         { size: currentLine.width },
       );
+      let newTime = Date.now() - start;
 
+      let start2 = Date.now();
       const bbb = getSvgPathFromStroke(
         getStroke(optimizeLine(currentLine.dots), {
           ...currentSmoothConf,
           size: currentLine.width,
         }),
       );
+      let oldTime = Date.now() - start2;
 
       return {
         d: renderMode === "tldraw" ? aaa : bbb,
         color: currentLine.color,
+        perf: { oldTime, newTime },
       };
     },
   );
@@ -107,7 +112,7 @@ export function createDrawing({
     }> = [];
 
     lines.forEach((it, i) => {
-      const optimizedDots = optimizeLine(it.dots);
+      const optimizedDots = it.dots;
       const points = optimizedDots.map(([x, y]) => `${x},${y}`).join(" ");
       polylines.push({
         points,

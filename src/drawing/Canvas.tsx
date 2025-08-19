@@ -172,7 +172,17 @@ const CurrentLine = memo(() => {
 
   if (!currentLine) return null;
 
-  return <path d={currentLine.d} fill={currentLine.color} />;
+  return (
+    <>
+      <text x="10" y="15">
+        newTime: {currentLine.perf.newTime}
+      </text>
+      <text x="10" y="35">
+        oldTime: {currentLine.perf.oldTime}
+      </text>
+      <path d={currentLine.d} fill={currentLine.color} />
+    </>
+  );
 });
 
 const DebugOverlay = memo(() => {
