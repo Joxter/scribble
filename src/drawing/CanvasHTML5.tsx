@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
-import { Fps } from "./Fps.tsx";
+import { Fps } from "../components/Fps.tsx";
 import { svgInk } from "../freehand/svgInk.ts";
 import { Vec } from "../freehand/Vec.ts";
 import { StrokeOptions } from "../freehand/types.ts";
@@ -33,14 +33,12 @@ type Line = {
   width: number;
 };
 
-const llllines = JSON.parse(`[]`);
-
-export function SimpleCanvasHTML5() {
+export function CanvasHTML5() {
   const canvasLinesRef = useRef<HTMLCanvasElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isDrawing, setIsDrawing] = useState(false);
   const [currentLine, setCurrentLine] = useState<Point[]>([]);
-  const [lines, setLines] = useState<Line[]>(llllines);
+  const [lines, setLines] = useState<Line[]>([]);
 
   const getCoordinates = useCallback(
     (e: React.MouseEvent | React.TouchEvent) => {

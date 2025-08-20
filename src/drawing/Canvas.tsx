@@ -114,30 +114,11 @@ export function Canvas() {
           aspectRatio: "1 / 1",
         }}
       >
-        {false && <GridPattern />}
         <ExistingLines />
         <CurrentLine />
         {debugMode && <DebugOverlay />}
       </svg>
     </div>
-  );
-}
-
-function GridPattern() {
-  return (
-    <>
-      <defs>
-        <pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse">
-          <path
-            d="M 10 0 L 0 0 0 10"
-            fill="none"
-            stroke="#ccc"
-            strokeWidth="1"
-          />
-        </pattern>
-      </defs>
-      <rect width="100%" height="100%" fill="url(#grid)" />
-    </>
   );
 }
 
@@ -172,17 +153,7 @@ const CurrentLine = memo(() => {
 
   if (!currentLine) return null;
 
-  return (
-    <>
-      <text x="10" y="15">
-        newTime: {currentLine.perf.newTime}
-      </text>
-      <text x="10" y="35">
-        oldTime: {currentLine.perf.oldTime}
-      </text>
-      <path d={currentLine.d} fill={currentLine.color} />
-    </>
-  );
+  return <path d={currentLine.d} fill={currentLine.color} />;
 });
 
 const DebugOverlay = memo(() => {
