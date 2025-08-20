@@ -65,7 +65,8 @@ export const widths = [3, 8, 15, 20, 25];
 export const colors = [
   "#111111",
   "#34495e",
-  "#faf9f5",
+  // "#faf9f5",
+  "#f6eee2",
   "#ffffff",
   "#8b4513",
   "#fa3224",

@@ -1,9 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback, memo } from "react";
 import { useUnit } from "effector-react";
 import { canvasSize } from "../utils";
-import { svgInk } from "../freehand/svgInk.ts";
-import { Vec } from "../freehand/Vec.ts";
-import { StrokeOptions } from "../freehand/types.ts";
 import {
   $currentLine,
   $debugMode,
@@ -18,30 +15,95 @@ import {
   addLine,
 } from "../model/game.model.ts";
 
-const pixelRatio = window.devicePixelRatio || 1;
-
-const strokeOptions: StrokeOptions = {
-  thinning: 0.3,
-};
-
-// Setup canvas for high-DPI rendering
-const setupCanvas = (canvas: HTMLCanvasElement) => {
-  const ctx = canvas.getContext("2d");
-  if (!ctx) return null;
-
-  canvas.width = canvasSize * pixelRatio;
-  canvas.height = canvasSize * pixelRatio;
-
-  ctx.scale(pixelRatio, pixelRatio);
-
-  return ctx;
-};
+const PIXEL_RATIO = window.devicePixelRatio || 1;
 
 type Point = [number, number];
-type Line = {
-  dots: Point[];
-  color: string;
-  width: number;
+type CanvasEvent = React.MouseEvent | React.TouchEvent;
+
+function setupCanvas(canvas: HTMLCanvasElement) {
+  const ctx = canvas.getContext("2d")!;
+
+  canvas.width = canvasSize * PIXEL_RATIO;
+  canvas.height = canvasSize * PIXEL_RATIO;
+  ctx.scale(PIXEL_RATIO, PIXEL_RATIO);
+
+  return ctx;
+}
+
+function getEventCoordinates(e: CanvasEvent, canvas: HTMLCanvasElement) {
+  const rect = canvas.getBoundingClientRect();
+  const scale = canvasSize / rect.width;
+
+  const clientX =
+    "touches" in e ? (e.touches[0] || e.changedTouches[0]).clientX : e.clientX;
+  const clientY =
+    "touches" in e ? (e.touches[0] || e.changedTouches[0]).clientY : e.clientY;
+
+  return {
+    x: (clientX - rect.left) * scale,
+    y: (clientY - rect.top) * scale,
+  };
+}
+
+function renderPolylines(ctx: CanvasRenderingContext2D, polylinePaths: any[]) {
+  polylinePaths.forEach((line) => {
+    const points = line.points.split(" ").map((point: string) => {
+      const [x, y] = point.split(",").map(Number);
+      return [x, y] as Point;
+    });
+
+    if (points.length >= 2) {
+      ctx.strokeStyle = line.color;
+      ctx.lineWidth = line.strokeWidth;
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+
+      ctx.beginPath();
+      ctx.moveTo(points[0][0], points[0][1]);
+      for (let i = 1; i < points.length; i++) {
+        ctx.lineTo(points[i][0], points[i][1]);
+      }
+      ctx.stroke();
+    }
+  });
+}
+
+// Styles
+const containerStyle = {
+  margin: "0 auto",
+  maxWidth: "500px",
+  maxHeight: "100%",
+  height: "auto",
+  aspectRatio: "1 / 1" as const,
+  position: "relative" as const,
+  background: "#f6eee2",
+  borderRadius: "8px",
+  boxShadow: `0 4px 20px rgba(0, 0, 0, 0.1)`,
+};
+
+const canvasLayerStyle = {
+  position: "absolute" as const,
+  top: 0,
+  left: 0,
+  width: "100%",
+  height: "100%",
+  touchAction: "none" as const,
+  borderRadius: "8px",
+  cursor: "crosshair" as const,
+};
+
+const useCanvasRenderer = (
+  canvasRef: React.RefObject<HTMLCanvasElement | null>,
+  dependencies: any[],
+  renderFn: (ctx: CanvasRenderingContext2D) => void,
+) => {
+  useEffect(() => {
+    const canvas = canvasRef.current!;
+    const ctx = setupCanvas(canvas);
+
+    ctx.clearRect(0, 0, canvasSize, canvasSize);
+    renderFn(ctx);
+  }, dependencies);
 };
 
 export function Canvas() {
@@ -49,125 +111,63 @@ export function Canvas() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isDrawing, setIsDrawing] = useState(false);
 
-  const imDrawing = useUnit($imDrawing);
-  const currentLine = useUnit($currentLine);
+  const imDrawing = useUnit($imDrawing); // todo remove, remove pointer evens on parent element
+  const currentLine = useUnit($currentLine); // todo remove, move to model
+  const renderMode = useUnit($renderMode);
   const svgCurrentLine = useUnit($svgCurrentLine);
   const debugMode = useUnit($debugMode);
   const polylinePaths = useUnit($polylinePaths);
   const svgCanvasPaths = useUnit($svgCanvasPaths);
-  const renderMode = useUnit($renderMode);
 
-  const getCoordinates = useCallback(
-    (e: React.MouseEvent | React.TouchEvent) => {
-      const canvas = canvasRef.current;
-      if (!canvas) return { x: 0, y: 0 };
-
-      const rect = canvas.getBoundingClientRect();
-      const scale = canvasSize / rect.width;
-
-      const clientX =
-        "touches" in e
-          ? (e.touches[0] || e.changedTouches[0]).clientX
-          : e.clientX;
-      const clientY =
-        "touches" in e
-          ? (e.touches[0] || e.changedTouches[0]).clientY
-          : e.clientY;
-
-      return {
-        x: (clientX - rect.left) * scale,
-        y: (clientY - rect.top) * scale,
-      };
+  useCanvasRenderer(
+    canvasLinesRef,
+    [polylinePaths, svgCanvasPaths, renderMode],
+    (ctx) => {
+      if (renderMode === "polyline") {
+        renderPolylines(ctx, polylinePaths);
+      } else {
+        svgCanvasPaths.forEach((line) => {
+          ctx.fillStyle = line.color;
+          ctx.fill(new Path2D(line.d));
+        });
+      }
     },
-    [],
   );
 
-  // Render completed lines to background canvas
-  useEffect(() => {
-    const canvas = canvasLinesRef.current;
-    if (!canvas) return;
-
-    const ctx = setupCanvas(canvas);
-    if (!ctx) return;
-
-    ctx.clearRect(0, 0, canvasSize, canvasSize);
-
-    if (renderMode === "polyline") {
-      polylinePaths.forEach((line) => {
-        const points = line.points.split(" ").map((point) => {
-          const [x, y] = point.split(",").map(Number);
-          return [x, y] as Point;
-        });
-
-        if (points.length >= 2) {
-          ctx.strokeStyle = line.color;
-          ctx.lineWidth = line.strokeWidth;
-          ctx.lineCap = "round";
-          ctx.lineJoin = "round";
-
-          ctx.beginPath();
-          ctx.moveTo(points[0][0], points[0][1]);
-          for (let i = 1; i < points.length; i++) {
-            ctx.lineTo(points[i][0], points[i][1]);
-          }
-          ctx.stroke();
-        }
-      });
-    } else {
-      svgCanvasPaths.forEach((line) => {
-        ctx.fillStyle = line.color;
-        ctx.fill(new Path2D(line.d));
-      });
-    }
-  }, [polylinePaths, svgCanvasPaths, renderMode]);
-
-  // Render current line to top canvas
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    const ctx = setupCanvas(canvas);
-    if (!ctx) return;
-
-    ctx.clearRect(0, 0, canvasSize, canvasSize);
-
+  useCanvasRenderer(canvasRef, [svgCurrentLine], (ctx) => {
     if (svgCurrentLine) {
       ctx.fillStyle = svgCurrentLine.color;
       ctx.fill(new Path2D(svgCurrentLine.d));
     }
-  }, [svgCurrentLine]);
+  });
 
   const startDrawing = useCallback(
-    (e: React.MouseEvent | React.TouchEvent) => {
+    (e: CanvasEvent) => {
       if (!imDrawing) return;
       e.preventDefault();
-      const { x, y } = getCoordinates(e);
+      const { x, y } = getEventCoordinates(e, canvasRef.current!);
       lineStarted([x, y]);
       setIsDrawing(true);
     },
-    [imDrawing, getCoordinates],
+    [imDrawing],
   );
 
   const draw = useCallback(
-    (e: React.MouseEvent | React.TouchEvent) => {
-      if (!imDrawing) return;
-      if (!isDrawing) return;
+    (e: CanvasEvent) => {
+      if (!imDrawing || !isDrawing) return;
       e.preventDefault();
-
-      const { x, y } = getCoordinates(e);
+      const { x, y } = getEventCoordinates(e, canvasRef.current!);
       lineExtended([x, y]);
     },
-    [imDrawing, isDrawing, getCoordinates],
+    [imDrawing, isDrawing],
   );
 
   const stopDrawing = useCallback(
-    (e?: React.TouchEvent) => {
-      if (!imDrawing) return;
-      if (!isDrawing) return;
-      if (e) e.preventDefault();
+    (e: React.TouchEvent | React.MouseEvent) => {
+      if (!imDrawing || !isDrawing) return;
+      e.preventDefault();
 
-      const { x, y } = getCoordinates(e as any);
-
+      const { x, y } = getEventCoordinates(e, canvasRef.current!);
       addLine({
         dots: [...currentLine.dots, [x, y]],
         color: currentLine.color,
@@ -175,35 +175,12 @@ export function Canvas() {
       });
       setIsDrawing(false);
     },
-    [imDrawing, isDrawing, currentLine, getCoordinates],
+    [imDrawing, isDrawing, currentLine],
   );
 
   return (
-    <div
-      style={{
-        margin: "0 auto",
-        maxWidth: "500px",
-        maxHeight: "100%",
-        height: "auto",
-        aspectRatio: "1 / 1",
-        position: "relative",
-        background: "#f6eee2",
-        // border: "2px dashed #ccc",
-        borderRadius: "8px",
-        overflow: "hidden",
-      }}
-    >
-      <canvas
-        ref={canvasLinesRef}
-        style={{
-          position: "absolute",
-          top: 0,
-          left: 0,
-          width: "100%",
-          height: "100%",
-          touchAction: "none",
-        }}
-      />
+    <div style={containerStyle}>
+      <canvas ref={canvasLinesRef} style={canvasLayerStyle} />
       <canvas
         ref={canvasRef}
         onMouseDown={startDrawing}
@@ -214,15 +191,7 @@ export function Canvas() {
         onTouchMove={draw}
         onTouchEnd={stopDrawing}
         onTouchCancel={stopDrawing}
-        style={{
-          position: "absolute",
-          top: 0,
-          left: 0,
-          width: "100%",
-          height: "100%",
-          touchAction: "none",
-          cursor: "crosshair",
-        }}
+        style={canvasLayerStyle}
       />
       {debugMode && <DebugOverlay />}
     </div>
@@ -232,42 +201,37 @@ export function Canvas() {
 const DebugOverlay = memo(() => {
   const linesRaw = useUnit($rawPath);
 
+  const debugOverlayStyle = {
+    position: "absolute" as const,
+    top: 0,
+    left: 0,
+    width: "100%",
+    height: "100%",
+    pointerEvents: "none" as const,
+  };
+
   return (
-    <svg
-      style={{
-        position: "absolute",
-        top: 0,
-        left: 0,
-        width: "100%",
-        height: "100%",
-        pointerEvents: "none",
-      }}
-      viewBox={`0 0 ${canvasSize} ${canvasSize}`}
-    >
-      {linesRaw.map((line, i) => {
-        return (
-          <g key={"debug" + i}>
-            <polyline
-              points={line.dots.map(([x, y]) => `${x},${y}`).join(" ") || ""}
-              stroke={"white"}
-              strokeWidth={2}
-              strokeDasharray="2,5"
-              fill="none"
+    <svg style={debugOverlayStyle} viewBox={`0 0 ${canvasSize} ${canvasSize}`}>
+      {linesRaw.map((line, i) => (
+        <g key={`debug-${i}`}>
+          <polyline
+            points={line.dots.map(([x, y]) => `${x},${y}`).join(" ")}
+            stroke="white"
+            strokeWidth={2}
+            strokeDasharray="2,5"
+            fill="none"
+          />
+          {line.dots.map(([x, y], pointIndex) => (
+            <circle
+              key={`${i}-${pointIndex}`}
+              cx={x}
+              cy={y}
+              r={1}
+              fill={`hsl(0, 70%, ${(pointIndex % 5) * 10 + 30}%)`}
             />
-            {line.dots.map(([x, y], pointIndex) => {
-              return (
-                <circle
-                  key={`${i}-${pointIndex}`}
-                  cx={x}
-                  cy={y}
-                  r={1}
-                  fill={`hsl(0, 70%, ${(pointIndex % 5) * 10 + 30}%)`}
-                />
-              );
-            })}
-          </g>
-        );
-      })}
+          ))}
+        </g>
+      ))}
     </svg>
   );
 });

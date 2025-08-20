@@ -25,7 +25,7 @@ export function ColorSelector({ value, onChange }: Props) {
           style={{
             width: size + "px",
             height: size + "px",
-            border: i === 2 || i === 3 ? `1px solid #333` : `none`,
+            border: color === "#ffffff" ? `1px solid #333` : `none`,
             borderRadius: "100%",
             padding: "0",
             backgroundColor: color,
