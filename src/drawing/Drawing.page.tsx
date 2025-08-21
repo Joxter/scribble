@@ -13,6 +13,7 @@ import {
   $clue,
   $iRevealed,
   $paintingsToCreate,
+  createPainting,
 } from "../model/game.model";
 import css from "./Page.module.css";
 import { EnterGuess } from "./EnterGuess.tsx";
@@ -25,6 +26,8 @@ export function DrawingPage() {
     [$imDrawing, $imChoosingWord, $clue, $iRevealed],
   );
   const paintingsToCreate = useUnit($paintingsToCreate);
+  console.log("paintingsToCreate");
+  console.log(paintingsToCreate.map((it) => it.word).join("; "));
 
   return (
     <div className={css.page}>
@@ -62,8 +65,15 @@ export function DrawingPage() {
       <div className={css.players}>
         <div>
           <button
-            onClick={() => {
-              // todo create all paintings
+            onClick={async () => {
+              for (let p of paintingsToCreate) {
+                await createPainting({
+                  canvas: p.events as any[],
+                  word: p.word,
+                  playerId: p.playerId,
+                });
+              }
+              console.log(`Created paintings: ${paintingsToCreate.length}`);
             }}
           >
             create paintings {paintingsToCreate.length}
