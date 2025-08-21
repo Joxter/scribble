@@ -1,10 +1,9 @@
 import React, { useRef, useEffect } from "react";
 import { canvasSize } from "./utils";
 import { LineEvent } from "./types";
+import { doEventsUndo } from "./model/utils.ts";
 
 const PIXEL_RATIO = window.devicePixelRatio || 1;
-
-type Point = [number, number];
 
 function setupCanvas(canvas: HTMLCanvasElement, size: number = canvasSize) {
   const ctx = canvas.getContext("2d")!;
@@ -16,9 +15,23 @@ function setupCanvas(canvas: HTMLCanvasElement, size: number = canvasSize) {
   return ctx;
 }
 
-function renderPolylines(ctx: CanvasRenderingContext2D, lines: LineEvent[]) {
+function renderCanvas(
+  ctx: CanvasRenderingContext2D,
+  canvas: (LineEvent | { type: "undo" })[],
+  displaySize: number,
+) {
+  const scale = displaySize / canvasSize;
+  ctx.scale(scale, scale);
+
+  const lines = doEventsUndo(canvas);
+
   lines.forEach((line) => {
-    if (line.type === "line" && line.dots.length >= 2) {
+    if (line.dots.length === 1) {
+      ctx.fillStyle = line.color;
+      ctx.beginPath();
+      ctx.arc(line.dots[0][0], line.dots[0][1], line.width / 2, 0, 2 * Math.PI);
+      ctx.fill();
+    } else {
       ctx.strokeStyle = line.color;
       ctx.lineWidth = line.width;
       ctx.lineCap = "round";
@@ -34,23 +47,21 @@ function renderPolylines(ctx: CanvasRenderingContext2D, lines: LineEvent[]) {
   });
 }
 
-interface ReadOnlyCanvasProps {
+type Props = {
   canvas: (LineEvent | { type: "undo" })[];
   size?: number;
   className?: string;
-}
+};
 
-export function ReadOnlyCanvas({ canvas, size = 200, className }: ReadOnlyCanvasProps) {
+export function ReadOnlyCanvas({ canvas, size = 200, className }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
     if (!canvasRef.current) return;
-    
     const ctx = setupCanvas(canvasRef.current, size);
-    ctx.clearRect(0, 0, size, size);
 
-    const lines = canvas.filter((item): item is LineEvent => item.type === "line");
-    renderPolylines(ctx, lines);
+    ctx.clearRect(0, 0, size, size);
+    renderCanvas(ctx, canvas, size);
   }, [canvas, size]);
 
   const containerStyle = {

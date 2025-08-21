@@ -1,4 +1,4 @@
-import { CanvasAndChatHistory } from "../types.ts";
+import { CanvasAndChatHistory, LineEvent } from "../types.ts";
 
 export function findLastEventIndex(
   arr: CanvasAndChatHistory[],
@@ -36,4 +36,18 @@ export function getChatEvents(
   );
 
   return newChat.length !== chat.length ? newChat : chat;
+}
+
+export function doEventsUndo(events: CanvasAndChatHistory[]): LineEvent[] {
+  const lines: LineEvent[] = [];
+
+  events.forEach((item) => {
+    if (item.type === "line") {
+      lines.push(item);
+    } else if (item.type === "undo") {
+      lines.pop();
+    }
+  });
+
+  return lines;
 }

@@ -569,3 +569,9 @@ export async function getAllPaintings(): Promise<Painting[]> {
 
   return res.data.paintings as Painting[];
 }
+
+export async function getAllPlayers() {
+  const res = await db.queryOnce({ players: {} });
+
+  return res.data.players;
+}
