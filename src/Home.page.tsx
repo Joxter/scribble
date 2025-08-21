@@ -21,6 +21,7 @@ export function HomePage() {
       <CreateNewParty />
 
       <a href={getUrl("?words")}>Слова</a>
+      <a href={getUrl("?paintings")}>Картины</a>
     </div>
   );
 }
