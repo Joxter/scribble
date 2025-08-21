@@ -22,10 +22,11 @@ const _schema = i.schema({
       name: i.string(),
       avatar: i.string(),
     }),
-    // paintings: i.entity({
-    //   canvas: i.any(), // event[]
-    //   word: i.string(),
-    // }),
+    paintings: i.entity({
+      canvas: i.any(), // (line | undo)[]
+      playerId: i.string(),
+      word: i.string(),
+    }),
     words: i.entity({
       word: i.string().unique().indexed(),
       lang: i.string(),

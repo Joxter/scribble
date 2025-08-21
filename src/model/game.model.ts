@@ -12,6 +12,7 @@ import {
   CurrentLine,
   GuessEvent,
   NewWord,
+  Painting,
   Party,
   Player,
 } from "../types.ts";
@@ -72,6 +73,10 @@ export const $compiledGameStateAndPaints = combine($allRoomEvents, (events) => {
     "foo|bar|baz",
   );
 });
+
+export const $paintingsToCreate = $compiledGameStateAndPaints.map(
+  (it) => it[1],
+);
 
 export const $imDrawing = combine(
   $compiledGameStateAndPaints,
@@ -553,4 +558,14 @@ function createCurrentLine(
     lineStarted,
     lineExtended,
   };
+}
+
+export function createPainting(data: Omit<Painting, "id">) {
+  return db.transact([db.tx.paintings[id()].create(data)]);
+}
+
+export async function getAllPaintings(): Promise<Painting[]> {
+  const res = await db.queryOnce({ paintings: {} });
+
+  return res.data.paintings as Painting[];
 }

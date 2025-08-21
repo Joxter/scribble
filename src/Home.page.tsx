@@ -20,34 +20,6 @@ export function HomePage() {
       <AllParties />
       <CreateNewParty />
 
-      <div style={{ marginTop: "20px" }}>
-        <h3>Canvas Demos</h3>
-        <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-          <a
-            href={getUrl("?simple")}
-            style={{
-              textDecoration: "none",
-              padding: "8px",
-              background: "#f0f0f0",
-              borderRadius: "4px",
-            }}
-          >
-            Тестировать
-          </a>
-          <a
-            href={getUrl("?canvas-html5")}
-            style={{
-              textDecoration: "none",
-              padding: "8px",
-              background: "#e8f4f8",
-              borderRadius: "4px",
-            }}
-          >
-            Тестировать 2
-          </a>
-        </div>
-      </div>
-
       <a href={getUrl("?words")}>Слова</a>
     </div>
   );

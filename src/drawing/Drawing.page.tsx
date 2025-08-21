@@ -12,6 +12,7 @@ import {
   newWordSelected,
   $clue,
   $iRevealed,
+  $paintingsToCreate,
 } from "../model/game.model";
 import css from "./Page.module.css";
 import { EnterGuess } from "./EnterGuess.tsx";
@@ -23,6 +24,7 @@ export function DrawingPage() {
     //
     [$imDrawing, $imChoosingWord, $clue, $iRevealed],
   );
+  const paintingsToCreate = useUnit($paintingsToCreate);
 
   return (
     <div className={css.page}>
@@ -58,6 +60,15 @@ export function DrawingPage() {
         </div>
       </div>
       <div className={css.players}>
+        <div>
+          <button
+            onClick={() => {
+              // todo create all paintings
+            }}
+          >
+            create paintings {paintingsToCreate.length}
+          </button>
+        </div>
         <ListOfPlayers />
         <GameControls />
         <Messages />

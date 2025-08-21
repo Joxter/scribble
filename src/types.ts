@@ -37,6 +37,13 @@ export type CurrentLine = {
   width: number;
 };
 
+export type Painting = {
+  canvas: (LineEvent | { type: "undo" })[];
+  playerId: string;
+  word: string;
+  id: string;
+};
+
 export type Player = {
   id: string;
   localId: string;
