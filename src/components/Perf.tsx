@@ -1,9 +1,14 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useUnit } from "effector-react";
-import { $svgCurrentLine } from "../model/game.model.ts";
+import { $lineExtendedCount, $svgCurrentLine } from "../model/game.model.ts";
+
+const deltaMs = 500;
 
 export function Perf() {
-  const line = useUnit($svgCurrentLine);
+  const [line, lineExtendedCount] = useUnit([
+    $svgCurrentLine,
+    $lineExtendedCount,
+  ]);
   const [perfData, setPerfData] = useState<
     { oldTime: number; newTime: number }[]
   >([]);
@@ -14,7 +19,7 @@ export function Perf() {
       setPerfData((prev) => {
         const now = Date.now();
         const updated = [...prev, { ...line.perf, timestamp: now }];
-        return updated.filter((item) => now - item.timestamp <= 500);
+        return updated.filter((item) => now - item.timestamp <= deltaMs);
       });
     }
   }, [line?.perf]);
@@ -22,7 +27,9 @@ export function Perf() {
   useEffect(() => {
     intervalRef.current = setInterval(() => {
       const now = Date.now();
-      setPerfData((prev) => prev.filter((item) => now - item.timestamp <= 500));
+      setPerfData((prev) =>
+        prev.filter((item) => now - item.timestamp <= deltaMs),
+      );
     }, 100);
 
     return () => {
@@ -37,24 +44,18 @@ export function Perf() {
   const maxNewTime =
     perfData.length > 0 ? Math.max(...perfData.map((d) => d.newTime)) : 0;
 
+  const totalOldTime = perfData.reduce((sum, d) => sum + d.oldTime, 0);
+  const totalNewTime = perfData.reduce((sum, d) => sum + d.newTime, 0);
+
   return (
-    <div
-      style={{
-        position: "fixed",
-        top: "10px",
-        right: "150px",
-        backgroundColor: "#fff",
-        color: "#333",
-        border: "1px solid #333",
-        padding: "2px 4px",
-        borderRadius: "4px",
-        fontSize: "14px",
-        fontFamily: "monospace",
-        zIndex: 1000,
-        userSelect: "none",
-      }}
-    >
-      old: {maxOldTime}; new: {maxNewTime}
+    <div>
+      <p
+        style={{ fontSize: "10px", padding: "0", margin: "0", lineHeight: "1" }}
+      >
+        old: {maxOldTime}; new: {maxNewTime} ({perfData.length},{" "}
+        {lineExtendedCount})<br />
+        total: {totalOldTime + totalNewTime}ms
+      </p>
     </div>
   );
 }

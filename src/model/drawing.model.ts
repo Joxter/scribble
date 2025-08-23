@@ -78,24 +78,24 @@ export function createDrawing({
     (currentLine, renderMode, currentSmoothConf) => {
       if (currentLine.dots.length === 0) return null;
 
-      let start = Date.now();
-      const aaa = svgInk(
-        optimizeLine(currentLine.dots).map((it) => new Vec(it[0], it[1])),
+      let start = performance.now();
+      const tldrAlg = svgInk(
+        currentLine.dots.map((it) => new Vec(it[0], it[1])),
         { size: currentLine.width },
       );
-      let newTime = Date.now() - start;
+      let newTime = performance.now() - start;
 
-      let start2 = Date.now();
-      const bbb = getSvgPathFromStroke(
-        getStroke(optimizeLine(currentLine.dots), {
+      let start2 = performance.now();
+      const freehand = getSvgPathFromStroke(
+        getStroke(currentLine.dots, {
           ...currentSmoothConf,
           size: currentLine.width,
         }),
       );
-      let oldTime = Date.now() - start2;
+      let oldTime = performance.now() - start2;
 
       return {
-        d: renderMode === "tldraw" ? aaa : bbb,
+        d: renderMode === "tldraw" ? tldrAlg : freehand,
         color: currentLine.color,
         perf: { oldTime, newTime },
       };

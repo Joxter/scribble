@@ -133,6 +133,7 @@ export const {
   lineStarted,
   lineExtended,
   lineEnded,
+  $lineExtendedCount,
 } = createCurrentLine($roomId, $imDrawing);
 
 export const $renderMode = createStore<"normal" | "polyline" | "tldraw">(
@@ -473,10 +474,25 @@ function createCurrentLine(
   const lineExtended = createEvent<[x: number, y: number]>();
   const lineEnded = createEvent<[x: number, y: number]>();
 
+  const $lineExtendedTimes = createStore<number[]>([]);
+  const $lineExtendedCount = $lineExtendedTimes.map((times) => times.length);
+
   const setCurrentLineID = createEvent<string>();
   const addLine = createEvent<CurrentLine>();
 
   $currentLineID.on(setCurrentLineID, (_, id) => id);
+
+  $lineExtendedTimes.on(lineExtended, (times) => {
+    const now = Date.now();
+    const before500ms = now - 500;
+
+    const filtered = times.filter((t) => t > before500ms);
+    filtered.push(now);
+
+    return filtered;
+  });
+
+  let resetTimeout: NodeJS.Timeout | null = null;
 
   $currentLine
     .on(currentLineChanged, (s, v) => {
@@ -573,6 +589,7 @@ function createCurrentLine(
     lineStarted,
     lineExtended,
     lineEnded,
+    $lineExtendedCount,
   };
 }
 
