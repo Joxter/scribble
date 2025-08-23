@@ -1,8 +1,15 @@
-import { combine, createEvent, restore, Store } from "effector";
+import {
+  combine,
+  createEvent,
+  createStore,
+  restore,
+  sample,
+  Store,
+} from "effector";
 import { CanvasAndChatHistory, CurrentLine, LineEvent } from "../types.ts";
-import { smoothConf } from "../config.ts";
+import { colors, smoothConf, widths } from "../config.ts";
 import { svgInk } from "../freehand/svgInk.ts";
-import { getSvgPathFromStroke, optimizeLine } from "../utils.ts";
+import { getSvgPathFromStroke, liveQuery, optimizeLine } from "../utils.ts";
 import { Vec } from "../freehand/Vec.ts";
 import getStroke from "perfect-freehand";
 import { findLastEventIndex } from "./utils.ts";
@@ -140,5 +147,141 @@ export function createDrawing({
     undoClicked,
     $smoothConf,
     setSmoothConf,
+  };
+}
+
+export function createCurrentLine(
+  $roomId: Store<string>,
+  $imDrawing: Store<unknown | false>,
+) {
+  const $currentLineID = createStore("");
+
+  const $currentLine = createStore<CurrentLine>({
+    dots: [],
+    color: colors[1],
+    width: widths[1],
+  });
+
+  const currentLineChanged = createEvent<Partial<CurrentLine>>();
+  const lineStarted = createEvent<[x: number, y: number]>();
+  const lineExtended = createEvent<[x: number, y: number]>();
+  const lineEnded = createEvent<[x: number, y: number]>();
+
+  const $lineExtendedTimes = createStore<number[]>([]);
+  const $lineExtendedCount = $lineExtendedTimes.map((times) => times.length);
+
+  const setCurrentLineID = createEvent<string>();
+  const addLine = createEvent<CurrentLine>();
+
+  $currentLineID.on(setCurrentLineID, (_, id) => id);
+
+  $lineExtendedTimes.on(lineExtended, (times) => {
+    const now = Date.now();
+    const before1000ms = now - 1000;
+
+    const filtered = times.filter((t) => t > before1000ms);
+    filtered.push(now);
+
+    return filtered;
+  });
+
+  $currentLine
+    .on(currentLineChanged, (s, v) => {
+      return { ...s, ...v };
+    })
+    .on(lineStarted, (s, dot) => {
+      return { ...s, dots: [dot] };
+    })
+    .on(lineExtended, (s, dot) => {
+      return { ...s, dots: [...s.dots, dot] };
+    })
+    .on(addLine, (s) => {
+      return { ...s, dots: [] };
+    });
+
+  sample({
+    source: $currentLine,
+    clock: lineEnded,
+    fn: (currentLine, ended) => {
+      return {
+        dots: [...currentLine.dots, ended],
+        color: currentLine.color,
+        width: currentLine.width,
+      };
+    },
+    target: addLine,
+  });
+
+  let loading = false;
+  combine([$currentLine, $imDrawing, $currentLineID]).watch(
+    ([currentLine, imDrawing, lineId]) => {
+      if (imDrawing && lineId) {
+        if (loading) {
+          return;
+        }
+
+        loading = true;
+        // const start = Date.now();
+        db.transact(
+          db.tx.curretLine[lineId].update({
+            width: currentLine.width,
+            dots: currentLine.dots,
+            color: currentLine.color,
+          }),
+        )
+          // .then(() => {
+          //   return delay(1000);
+          // })
+          .finally(() => {
+            loading = false;
+          });
+        // console.log(Date.now() - start);
+      }
+    },
+  );
+
+  liveQuery($roomId, (roomId) => {
+    if (!roomId) return () => {};
+
+    return db.subscribeQuery(
+      { party: { $: { where: { id: roomId } }, currentLine: {} } },
+      (resp) => {
+        if (resp.error) console.error(resp.error);
+        if (resp.data) {
+          const party = resp.data.party[0];
+          if (party?.currentLine) {
+            setCurrentLineID(party.currentLine.id);
+            if (!$imDrawing.getState()) {
+              currentLineChanged(party.currentLine);
+            }
+          }
+        }
+      },
+    );
+  });
+
+  addLine.watch((newLine) => {
+    db.transact(
+      db.tx.roomEvent[id()]
+        .create({
+          it: {
+            type: "line",
+            dots: newLine.dots,
+            color: newLine.color,
+            width: newLine.width,
+          },
+        })
+        .link({ party: $roomId.getState() }),
+    );
+  });
+
+  return {
+    $currentLine,
+    currentLineChanged,
+    addLine,
+    lineStarted,
+    lineExtended,
+    lineEnded,
+    $lineExtendedCount,
   };
 }
