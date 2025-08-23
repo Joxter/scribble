@@ -132,6 +132,7 @@ export const {
   addLine,
   lineStarted,
   lineExtended,
+  lineEnded,
 } = createCurrentLine($roomId, $imDrawing);
 
 export const $renderMode = createStore<"normal" | "polyline" | "tldraw">(
@@ -213,7 +214,7 @@ liveQuery($roomId, (roomId) => {
     (resp) => {
       if (resp.error) console.error(resp.error);
       if (resp.data) {
-        console.log(resp.data.roomEvent);
+        // console.log(resp.data.roomEvent);
         historyUpdated({ history: resp.data.roomEvent.map((a) => a.it) });
       }
     },
@@ -470,6 +471,7 @@ function createCurrentLine(
   const currentLineChanged = createEvent<Partial<CurrentLine>>();
   const lineStarted = createEvent<[x: number, y: number]>();
   const lineExtended = createEvent<[x: number, y: number]>();
+  const lineEnded = createEvent<[x: number, y: number]>();
 
   const setCurrentLineID = createEvent<string>();
   const addLine = createEvent<CurrentLine>();
@@ -489,6 +491,19 @@ function createCurrentLine(
     .on(addLine, (s) => {
       return { ...s, dots: [] };
     });
+
+  sample({
+    source: $currentLine,
+    clock: lineEnded,
+    fn: (currentLine, ended) => {
+      return {
+        dots: [...currentLine.dots, ended],
+        color: currentLine.color,
+        width: currentLine.width,
+      };
+    },
+    target: addLine,
+  });
 
   let loading = false;
   combine([$currentLine, $imDrawing, $currentLineID]).watch(
@@ -557,6 +572,7 @@ function createCurrentLine(
     addLine,
     lineStarted,
     lineExtended,
+    lineEnded,
   };
 }
 

@@ -19,6 +19,7 @@ import css from "./Page.module.css";
 import { EnterGuess } from "./EnterGuess.tsx";
 import { Messages } from "./Messages.tsx";
 import { Fps } from "../components/Fps.tsx";
+import { Perf } from "../components/Perf.tsx";
 
 export function DrawingPage() {
   const [imDrawing, imChoosingWord, clue, iRevealed] = useUnit(
@@ -26,8 +27,6 @@ export function DrawingPage() {
     [$imDrawing, $imChoosingWord, $clue, $iRevealed],
   );
   const paintingsToCreate = useUnit($paintingsToCreate);
-  console.log("paintingsToCreate");
-  console.log(paintingsToCreate.map((it) => it.word).join("; "));
 
   return (
     <div className={css.page}>
@@ -35,6 +34,7 @@ export function DrawingPage() {
         <div className={css.headerContent}>
           <a href={getUrl()}>Главная</a>
           {imDrawing && <h2>{imDrawing}</h2>}
+          <Perf />
           <Fps />
         </div>
       </div>

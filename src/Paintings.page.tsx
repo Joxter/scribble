@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { getUrl } from "./utils.ts";
 import { getAllPaintings, getAllPlayers } from "./model/game.model.ts";
 import { Painting, Player } from "./types.ts";
-import { ReadOnlyCanvas } from "./ReadOnlyCanvas.tsx";
+import { ReadOnlyCanvas } from "./components/ReadOnlyCanvas.tsx";
 import { doEventsUndo } from "./model/utils.ts";
 
 export function PaintingsPage() {
@@ -54,7 +54,7 @@ export function PaintingsPage() {
             style={{
               display: "grid",
               gridTemplateColumns: "repeat(auto-fill, minmax(250px, 1fr))",
-              gap: "20px",
+              gap: "24px",
             }}
           >
             {paintings.map((painting) => (
@@ -88,22 +88,22 @@ function PaintingCard({
   return (
     <div
       style={{
-        border: "1px solid #dee2e6",
-        borderRadius: "8px",
-        padding: "16px",
-        backgroundColor: "white",
-        boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
+        // border: "1px solid #dee2e6",
+        // borderRadius: "8px",
+        // padding: "12px",
+        // backgroundColor: "white",
         display: "flex",
         flexDirection: "column",
-        gap: "12px",
+        lineHeight: "1",
+        gap: "8px",
       }}
     >
+      <h4 style={{ margin: 0, fontSize: "18px", fontWeight: "bold" }}>
+        {painting.word}
+      </h4>
       <ReadOnlyCanvas canvas={painting.canvas} size={200} />
 
       <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
-        <h4 style={{ margin: 0, fontSize: "18px", fontWeight: "bold" }}>
-          {painting.word}
-        </h4>
         <p style={{ margin: 0, color: "#6c757d", fontSize: "14px" }}>
           Автор: {author.name}
         </p>

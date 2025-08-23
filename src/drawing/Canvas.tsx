@@ -13,6 +13,7 @@ import {
   $svgCanvasPaths,
   $svgCurrentLine,
   addLine,
+  lineEnded,
 } from "../model/game.model.ts";
 
 const PIXEL_RATIO = window.devicePixelRatio || 1;
@@ -92,54 +93,58 @@ const canvasLayerStyle = {
   cursor: "crosshair" as const,
 };
 
-const useCanvasRenderer = (
-  canvasRef: React.RefObject<HTMLCanvasElement | null>,
-  dependencies: any[],
-  renderFn: (ctx: CanvasRenderingContext2D) => void,
-) => {
+export function Canvas() {
+  const canvasLinesRef = useRef<HTMLCanvasElement>(null);
+
+  const renderMode = useUnit($renderMode);
+  const debugMode = useUnit($debugMode);
+  const polylinePaths = useUnit($polylinePaths);
+  const svgCanvasPaths = useUnit($svgCanvasPaths);
+
+  useEffect(() => {
+    const canvas = canvasLinesRef.current!;
+    const ctx = setupCanvas(canvas);
+    // console.log("all lines");
+
+    ctx.clearRect(0, 0, canvasSize, canvasSize);
+
+    if (renderMode === "polyline") {
+      renderPolylines(ctx, polylinePaths);
+    } else {
+      svgCanvasPaths.forEach((line) => {
+        ctx.fillStyle = line.color;
+        ctx.fill(new Path2D(line.d));
+      });
+    }
+  }, [polylinePaths, svgCanvasPaths, renderMode]);
+
+  return (
+    <div style={containerStyle}>
+      <canvas ref={canvasLinesRef} style={canvasLayerStyle} />
+      <CurrentLine />
+      {debugMode && <DebugOverlay />}
+    </div>
+  );
+}
+
+const CurrentLine = memo(() => {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [isDrawing, setIsDrawing] = useState(false);
+
+  const imDrawing = useUnit($imDrawing);
+  const svgCurrentLine = useUnit($svgCurrentLine);
+
   useEffect(() => {
     const canvas = canvasRef.current!;
     const ctx = setupCanvas(canvas);
 
     ctx.clearRect(0, 0, canvasSize, canvasSize);
-    renderFn(ctx);
-  }, dependencies);
-};
 
-export function Canvas() {
-  const canvasLinesRef = useRef<HTMLCanvasElement>(null);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [isDrawing, setIsDrawing] = useState(false);
-
-  const imDrawing = useUnit($imDrawing); // todo remove, remove pointer evens on parent element
-  const currentLine = useUnit($currentLine); // todo remove, move to model
-  const renderMode = useUnit($renderMode);
-  const svgCurrentLine = useUnit($svgCurrentLine);
-  const debugMode = useUnit($debugMode);
-  const polylinePaths = useUnit($polylinePaths);
-  const svgCanvasPaths = useUnit($svgCanvasPaths);
-
-  useCanvasRenderer(
-    canvasLinesRef,
-    [polylinePaths, svgCanvasPaths, renderMode],
-    (ctx) => {
-      if (renderMode === "polyline") {
-        renderPolylines(ctx, polylinePaths);
-      } else {
-        svgCanvasPaths.forEach((line) => {
-          ctx.fillStyle = line.color;
-          ctx.fill(new Path2D(line.d));
-        });
-      }
-    },
-  );
-
-  useCanvasRenderer(canvasRef, [svgCurrentLine], (ctx) => {
     if (svgCurrentLine) {
       ctx.fillStyle = svgCurrentLine.color;
       ctx.fill(new Path2D(svgCurrentLine.d));
     }
-  });
+  }, [svgCurrentLine]);
 
   const startDrawing = useCallback(
     (e: CanvasEvent) => {
@@ -168,35 +173,27 @@ export function Canvas() {
       e.preventDefault();
 
       const { x, y } = getEventCoordinates(e, canvasRef.current!);
-      addLine({
-        dots: [...currentLine.dots, [x, y]],
-        color: currentLine.color,
-        width: currentLine.width,
-      });
+      lineEnded([x, y]);
       setIsDrawing(false);
     },
-    [imDrawing, isDrawing, currentLine],
+    [imDrawing, isDrawing],
   );
 
   return (
-    <div style={containerStyle}>
-      <canvas ref={canvasLinesRef} style={canvasLayerStyle} />
-      <canvas
-        ref={canvasRef}
-        onMouseDown={startDrawing}
-        onMouseMove={draw}
-        onMouseUp={stopDrawing}
-        onMouseLeave={stopDrawing}
-        onTouchStart={startDrawing}
-        onTouchMove={draw}
-        onTouchEnd={stopDrawing}
-        onTouchCancel={stopDrawing}
-        style={canvasLayerStyle}
-      />
-      {debugMode && <DebugOverlay />}
-    </div>
+    <canvas
+      ref={canvasRef}
+      onMouseDown={startDrawing}
+      onMouseMove={draw}
+      onMouseUp={stopDrawing}
+      onMouseLeave={stopDrawing}
+      onTouchStart={startDrawing}
+      onTouchMove={draw}
+      onTouchEnd={stopDrawing}
+      onTouchCancel={stopDrawing}
+      style={canvasLayerStyle}
+    />
   );
-}
+});
 
 const DebugOverlay = memo(() => {
   const linesRaw = useUnit($rawPath);

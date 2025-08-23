@@ -1,7 +1,7 @@
 import React, { useRef, useEffect } from "react";
-import { canvasSize } from "./utils";
-import { LineEvent } from "./types";
-import { doEventsUndo } from "./model/utils.ts";
+import { canvasSize } from "../utils.ts";
+import { LineEvent } from "../types.ts";
+import { doEventsUndo } from "../model/utils.ts";
 
 const PIXEL_RATIO = window.devicePixelRatio || 1;
 
