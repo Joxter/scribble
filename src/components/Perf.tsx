@@ -10,9 +10,8 @@ export function Perf() {
     $lineExtendedCount,
   ]);
   const [perfData, setPerfData] = useState<
-    { oldTime: number; newTime: number; timestamp: number }[]
+    { newTime: number; timestamp: number }[]
   >([]);
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     if (line?.perf) {
@@ -28,22 +27,24 @@ export function Perf() {
     }
   }, [line?.perf]);
 
-  const maxOldTime =
-    perfData.length > 0 ? Math.max(...perfData.map((d) => d.oldTime)) : 0;
   const maxNewTime =
     perfData.length > 0 ? Math.max(...perfData.map((d) => d.newTime)) : 0;
 
-  const totalOldTime = perfData.reduce((sum, d) => sum + d.oldTime, 0);
   const totalNewTime = perfData.reduce((sum, d) => sum + d.newTime, 0);
 
   return (
     <div>
       <p
-        style={{ fontSize: "10px", padding: "0", margin: "0", lineHeight: "1" }}
+        style={{
+          fontSize: "10px",
+          padding: "0",
+          margin: "0",
+          lineHeight: "1",
+        }}
       >
-        old: {maxOldTime.toFixed(2)}; new: {maxNewTime.toFixed(2)} (
-        {perfData.length}, {lineExtendedCount})<br />
-        total: {(totalOldTime + totalNewTime).toFixed(2)}ms
+        max tldraw calc: <b>{maxNewTime.toFixed(2)}ms</b> ({lineExtendedCount}){" "}
+        <br />
+        total in 1sec: <b>{totalNewTime.toFixed(2)}</b>ms
       </p>
     </div>
   );

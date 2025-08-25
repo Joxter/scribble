@@ -115,17 +115,19 @@ export function PaintingsPage() {
               gap: "24px",
             }}
           >
-            {paintings.map((painting) => (
-              <PaintingCard
-                key={painting.id}
-                painting={painting}
-                author={playersObj[painting.playerId]}
-                selected={selectedPaintings.has(painting.id)}
-                onSelectionChange={(selected) =>
-                  handlePaintingSelect(painting.id, selected)
-                }
-              />
-            ))}
+            {paintings.map((painting) => {
+              return (
+                <PaintingCard
+                  key={painting.id}
+                  painting={painting}
+                  author={playersObj[painting.playerId]}
+                  selected={selectedPaintings.has(painting.id)}
+                  onSelectionChange={(selected) =>
+                    handlePaintingSelect(painting.id, selected)
+                  }
+                />
+              );
+            })}
           </div>
         )}
       </div>
@@ -159,6 +161,17 @@ function PaintingCard({
         lineHeight: "1",
         gap: "8px",
         position: "relative",
+      }}
+      onClick={() => {
+        const str = JSON.stringify(
+          lines.map((it) => {
+            it.dots = it.dots.map(([x, y]) => [+x.toFixed(1), +y.toFixed(1)]);
+            return it;
+          }),
+        );
+
+        console.log(str);
+        console.log(str.length);
       }}
     >
       <label style={{ display: "flex", alignItems: "center", gap: "8px" }}>

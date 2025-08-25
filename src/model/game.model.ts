@@ -1,18 +1,9 @@
-import {
-  combine,
-  createEvent,
-  createStore,
-  restore,
-  sample,
-  Store,
-} from "effector";
+import { combine, createEvent, createStore, restore, sample } from "effector";
 import {
   CanvasAndChatHistory,
   ChoosingWord,
-  CurrentLine,
   GuessEvent,
   NewWord,
-  Painting,
   Party,
   Player,
 } from "../types.ts";
@@ -26,7 +17,7 @@ import {
 import { db } from "../DB.ts";
 import { id } from "@instantdb/core";
 import { getUsername } from "../code-worlds.ts";
-import { $words } from "./words.model.ts";
+import { $wordsRu } from "./words.model.ts";
 import { createCurrentLine, createDrawing } from "./drawing.model.ts";
 import { getChatEvents } from "./utils.ts";
 
@@ -240,7 +231,7 @@ sample({
 });
 
 sample({
-  source: [$localId, $roomId, $words] as const,
+  source: [$localId, $roomId, $wordsRu] as const,
   clock: chooseWordClicked_DEV,
 }).watch(([localId, roomId, words]) => {
   const event: Omit<ChoosingWord, "id"> = {

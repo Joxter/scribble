@@ -1,11 +1,16 @@
 import { createEvent, createStore } from "effector";
 import { db } from "../DB.ts";
 import { id } from "@instantdb/core";
+import { Language } from "../types.ts";
 
-type Word = { id: string; word: string; lang: string; category?: string };
+type Word = { id: string; word: string; lang: Language; category?: string };
 
 const updateWords = createEvent<Word[]>();
 export const $words = createStore<Word[]>([]);
+
+export const $wordsRu = $words.map((all) =>
+  all.filter((it) => it.lang === "RU"),
+);
 
 $words.on(updateWords, (_, v) => v);
 

@@ -17,11 +17,19 @@ export function HomePage() {
       }}
     >
       {player && player.name && <EditPlayerName name={player.name} />}
-      <AllParties />
-      <CreateNewParty />
+      <div>
+        <AllParties />
+        <CreateNewParty />
+      </div>
 
-      <a href={getUrl("?words")}>Слова</a>
-      <a href={getUrl("?paintings")}>Картины</a>
+      <div>
+        <p>
+          <a href={getUrl("?words")}>Слова</a>
+        </p>
+        <p>
+          <a href={getUrl("?paintings")}>Картины</a>
+        </p>
+      </div>
     </div>
   );
 }
@@ -31,7 +39,7 @@ export function AllParties() {
 
   return (
     <div>
-      <h2>All Parties</h2>
+      <h2>Все комнаты</h2>
       {allParties.length === 0 ? (
         <p>No parties found</p>
       ) : (
@@ -76,7 +84,7 @@ function CreateNewParty() {
       style={{
         margin: "8px 0",
         display: "grid",
-        gridTemplateColumns: "1fr min-content",
+        gridTemplateColumns: "1fr 100px",
         gap: "8px",
         maxWidth: "300px",
       }}
@@ -90,9 +98,10 @@ function CreateNewParty() {
         value={newPartyName}
         onChange={(e) => setNewPartyName(e.target.value)}
         disabled={isCreating}
+        placeholder="комната"
       />
       <button type="submit" disabled={!newPartyName.trim() || isCreating}>
-        {isCreating ? "Создаю..." : "Создать"}
+        Создать
       </button>
     </form>
   );

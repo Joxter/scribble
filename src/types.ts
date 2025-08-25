@@ -134,7 +134,7 @@ export type ChoosingWord = {
 
 export type LineEvent = {
   type: "line";
-  dots: [x: number, y: number, timestamp: number][];
+  dots: [x: number, y: number][];
   color: string;
   width: number;
 };
