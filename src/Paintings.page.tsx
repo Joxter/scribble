@@ -1,9 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { getUrl } from "./utils.ts";
-import { getAllPaintings, getAllPlayers } from "./model/game.model.ts";
+import { getAllPlayers } from "./model/game.model.ts";
 import { Painting, Player } from "./types.ts";
 import { ReadOnlyCanvas } from "./components/ReadOnlyCanvas.tsx";
 import { doEventsUndo } from "./model/utils.ts";
+import {
+  getAllPaintings,
+  deletePainting,
+} from "./model/all-paintings.model.ts";
 
 export function PaintingsPage() {
   const [paintings, setPaintings] = useState<Painting[]>([]);

@@ -1,30 +1,19 @@
 import React, { useState } from "react";
 import { useUnit } from "effector-react";
 import {
-  $allRoomEvents,
   $localId,
+  $paintingsToCreate,
   $party,
   deleteRoomEvents_DEV,
   resetDEMO,
 } from "../model/game.model.ts";
-import { canvasSize, eventsToGameState } from "../utils.ts";
+import { createPainting } from "../model/all-paintings.model.ts";
 
 export function DeveloperTools() {
   const [isCollapsed, setIsCollapsed] = useState(true);
   const localId = useUnit($localId);
   const party = useUnit($party);
-
-  // const events = useUnit($allRoomEvents);
-  // const [gameState, oldPaints] = eventsToGameState(
-  //   events,
-  //   ["foo"],
-  //   { lang: "RU", rounds: 1000, suggestions: 3, canvasSize: 600 },
-  //   "foo|bar|baz",
-  // );
-
-  // console.log("gameState");
-  // console.log(gameState);
-  // console.log(oldPaints);
+  const paintingsToCreate = useUnit($paintingsToCreate);
 
   return (
     <div>
@@ -41,6 +30,23 @@ export function DeveloperTools() {
           <p>localId: {localId}</p>
 
           <div>
+            {paintingsToCreate.length > 0 && (
+              <button
+                onClick={async () => {
+                  for (let p of paintingsToCreate) {
+                    await createPainting({
+                      canvas: p.events as any[],
+                      word: p.word,
+                      playerId: p.playerId,
+                    });
+                  }
+                  console.log(`Created paintings: ${paintingsToCreate.length}`);
+                  deleteRoomEvents_DEV();
+                }}
+              >
+                создать картины ({paintingsToCreate.length}) и удалить сообщения
+              </button>
+            )}
             <button onClick={deleteRoomEvents_DEV}>
               Удалить все сообщения
             </button>

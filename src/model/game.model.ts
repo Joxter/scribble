@@ -456,16 +456,6 @@ export async function resetDEMO() {
     });
 }
 
-export function createPainting(data: Omit<Painting, "id">) {
-  return db.transact([db.tx.paintings[id()].create(data)]);
-}
-
-export async function getAllPaintings(): Promise<Painting[]> {
-  const res = await db.queryOnce({ paintings: {} });
-
-  return res.data.paintings as Painting[];
-}
-
 export async function getAllPlayers() {
   const res = await db.queryOnce({ players: {} });
 

@@ -12,18 +12,6 @@ export function findLastEventIndex(
   return null;
 }
 
-export function findLastEvent(
-  arr: CanvasAndChatHistory[],
-  cb: (it: CanvasAndChatHistory) => boolean | undefined,
-): CanvasAndChatHistory | null {
-  for (let i = arr.length - 1; i >= 0; i--) {
-    if (cb(arr[i])) {
-      return arr[i];
-    }
-  }
-  return null;
-}
-
 export function getChatEvents(
   chat: CanvasAndChatHistory[],
   allEvents: CanvasAndChatHistory[],

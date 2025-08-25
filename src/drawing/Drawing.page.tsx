@@ -1,7 +1,7 @@
-import React, { useState } from "react";
+import React from "react";
 import { useUnit } from "effector-react";
 import { Canvas } from "./Canvas";
-import { getUrl, randomFrom } from "../utils";
+import { getUrl } from "../utils";
 import { DeveloperTools } from "./DeveloperTools";
 import { Tools } from "./Tools";
 import { ListOfPlayers } from "./ListOfPlayers";
@@ -12,8 +12,6 @@ import {
   newWordSelected,
   $clue,
   $iRevealed,
-  $paintingsToCreate,
-  createPainting,
 } from "../model/game.model";
 import css from "./Page.module.css";
 import { EnterGuess } from "./EnterGuess.tsx";
@@ -26,7 +24,6 @@ export function DrawingPage() {
     //
     [$imDrawing, $imChoosingWord, $clue, $iRevealed],
   );
-  const paintingsToCreate = useUnit($paintingsToCreate);
 
   return (
     <div className={css.page}>
@@ -63,22 +60,6 @@ export function DrawingPage() {
         </div>
       </div>
       <div className={css.players}>
-        <div>
-          <button
-            onClick={async () => {
-              for (let p of paintingsToCreate) {
-                await createPainting({
-                  canvas: p.events as any[],
-                  word: p.word,
-                  playerId: p.playerId,
-                });
-              }
-              console.log(`Created paintings: ${paintingsToCreate.length}`);
-            }}
-          >
-            create paintings {paintingsToCreate.length}
-          </button>
-        </div>
         <ListOfPlayers />
         <GameControls />
         <Messages />
@@ -113,8 +94,6 @@ function ChooseWord({ words }: { words: string[] }) {
 }
 
 function GameControls() {
-  const imDrawing = useUnit($imDrawing);
-
   return (
     <div
       style={

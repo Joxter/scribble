@@ -57,21 +57,11 @@ export function createDrawing({
 
       lines.forEach((it) => {
         const aaa = svgInk(
-          optimizeLine(it.dots).map((it) => new Vec(it[0], it[1])),
+          it.dots.map((it) => new Vec(it[0], it[1])),
           { size: it.width },
         );
 
-        const bbb = getSvgPathFromStroke(
-          getStroke(optimizeLine(it.dots), {
-            ...currentSmoothConf,
-            size: it.width,
-          }),
-        );
-
-        paths.push({
-          d: renderMode === "tldraw" ? aaa : bbb,
-          color: it.color,
-        });
+        paths.push({ d: aaa, color: it.color });
       });
 
       return paths;
@@ -92,19 +82,10 @@ export function createDrawing({
       );
       let newTime = performance.now() - start;
 
-      let start2 = performance.now();
-      const freehand = getSvgPathFromStroke(
-        getStroke(currentLine.dots, {
-          ...currentSmoothConf,
-          size: currentLine.width,
-        }),
-      );
-      let oldTime = performance.now() - start2;
-
       return {
-        d: renderMode === "tldraw" ? tldrAlg : freehand,
+        d: tldrAlg,
         color: currentLine.color,
-        perf: { oldTime, newTime },
+        perf: { newTime },
       };
     },
   );
