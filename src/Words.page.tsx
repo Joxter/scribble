@@ -27,7 +27,7 @@ export function WordsPage() {
   const [selectedLang, setSelectedLang] = useState("RU");
   const [selectedLetter, setSelectedLetter] = useState("А");
   const [newWord, setNewWord] = useState("");
-  const [showHidden, setShowHidden] = useState(false);
+  const [showHidden, setShowHidden] = useState(true);
 
   const letters = selectedLang === "RU" ? ruLetters : enLetters;
 
@@ -280,13 +280,7 @@ function WordsList({
       {filteredWords.length === 0 ? (
         <p>Нет слов</p>
       ) : (
-        <ul
-          style={{
-            paddingLeft: "15px",
-            display: "grid",
-            justifyContent: "start",
-          }}
-        >
+        <ol style={{ paddingLeft: "20px" }}>
           {filteredWords
             .toSorted((a, b) => a.word.localeCompare(b.word))
             .map((word) => {
@@ -295,47 +289,32 @@ function WordsList({
                 <li
                   key={word.id}
                   style={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: "8px",
-                    marginBottom: "4px",
                     textDecoration: isHidden ? "line-through" : "none",
                     opacity: isHidden ? 0.6 : 1,
                     color: isHidden ? "#6c757d" : "inherit",
                   }}
                 >
-                  <span style={{ flex: 1 }}>{word.word}</span>
-                  {isHidden ? (
-                    <button
-                      onClick={() => onWordClick(word.id, true)}
-                      style={{
-                        backgroundColor: "transparent",
-                        color: "#28a745",
-                        border: "none",
-                        cursor: "pointer",
-                      }}
-                      title="Восстановить слово"
-                    >
-                      восстановить
-                    </button>
-                  ) : (
-                    <button
-                      onClick={() => onWordClick(word.id, false)}
-                      style={{
-                        backgroundColor: "transparent",
-                        color: "#dc3545",
-                        border: "none",
-                        cursor: "pointer",
-                      }}
-                      title="Скрыть слово"
-                    >
-                      удалить
-                    </button>
-                  )}
+                  {word.word}
+                  <button
+                    onClick={() => onWordClick(word.id, isHidden)}
+                    style={{
+                      backgroundColor: "transparent",
+                      color: isHidden ? "#28a745" : "#dc3545",
+                      border: "none",
+                      cursor: "pointer",
+                      fontSize: "12px",
+                      padding: "0",
+                      margin: "0",
+                      marginLeft: "8px",
+                    }}
+                    title={isHidden ? "Восстановить слово" : "Скрыть слово"}
+                  >
+                    {isHidden ? "↻" : "✕"}
+                  </button>
                 </li>
               );
             })}
-        </ul>
+        </ol>
       )}
     </div>
   );
