@@ -2,7 +2,21 @@ import React, { useState } from "react";
 import { getUrl } from "./utils.ts";
 import { useUnit } from "effector-react";
 import { ru } from "../dictionaries/ru.ts";
-import { $words, addNewWord, addNewWords } from "./model/words.model.ts";
+import {
+  $words,
+  addNewWord,
+  addNewWords,
+  hideWord,
+  showWord,
+} from "./model/words.model.ts";
+
+type Word = {
+  id: string;
+  word: string;
+  lang: string;
+  category?: string;
+  hidden?: boolean;
+};
 
 const ruLetters = "АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ".split("");
 const enLetters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
@@ -13,15 +27,28 @@ export function WordsPage() {
   const [selectedLang, setSelectedLang] = useState("RU");
   const [selectedLetter, setSelectedLetter] = useState("А");
   const [newWord, setNewWord] = useState("");
+  const [showHidden, setShowHidden] = useState(false);
 
   const letters = selectedLang === "RU" ? ruLetters : enLetters;
 
   const filteredWords = words.filter((word) => {
-    return (
-      word.lang === selectedLang &&
-      word.word[0].toUpperCase().startsWith(selectedLetter)
-    );
+    const matchesLang = word.lang === selectedLang;
+    const matchesLetter = word.word[0].toUpperCase().startsWith(selectedLetter);
+    const isVisible = showHidden ? true : !word.hidden;
+    return matchesLang && matchesLetter && isVisible;
   });
+
+  const handleWordClick = async (wordId: string, isHidden: boolean) => {
+    try {
+      if (isHidden) {
+        await showWord(wordId);
+      } else {
+        await hideWord(wordId);
+      }
+    } catch (error) {
+      console.error("Failed to toggle word visibility:", error);
+    }
+  };
 
   const handleLangChange = (lang: string) => {
     setSelectedLang(lang);
@@ -81,6 +108,24 @@ export function WordsPage() {
         totalWords={words.length}
       />
 
+      <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+        <label
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "4px",
+            cursor: "pointer",
+          }}
+        >
+          <input
+            type="checkbox"
+            checked={showHidden}
+            onChange={(e) => setShowHidden(e.target.checked)}
+          />
+          Показать скрытые слова
+        </label>
+      </div>
+
       <AddWordForm
         selectedLang={selectedLang}
         newWord={newWord}
@@ -97,6 +142,8 @@ export function WordsPage() {
       <WordsList
         filteredWords={filteredWords}
         selectedLetter={selectedLetter}
+        showHidden={showHidden}
+        onWordClick={handleWordClick}
       />
     </div>
   );
@@ -219,9 +266,11 @@ function LetterSelector({
 function WordsList({
   filteredWords,
   selectedLetter,
+  onWordClick,
 }: {
   filteredWords: Word[];
   selectedLetter: string;
+  onWordClick: (wordId: string, isHidden: boolean) => void;
 }) {
   return (
     <div>
@@ -231,14 +280,58 @@ function WordsList({
       {filteredWords.length === 0 ? (
         <p>Нет слов</p>
       ) : (
-        <ul style={{ paddingLeft: "15px" }}>
+        <ul
+          style={{
+            paddingLeft: "15px",
+            display: "grid",
+            justifyContent: "start",
+          }}
+        >
           {filteredWords
-            .map((word) => word.word)
-            .toSorted()
-            .map((word, index) => {
+            .toSorted((a, b) => a.word.localeCompare(b.word))
+            .map((word) => {
+              const isHidden = word.hidden || false;
               return (
-                <li key={index} style={{}}>
-                  {word}
+                <li
+                  key={word.id}
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: "8px",
+                    marginBottom: "4px",
+                    textDecoration: isHidden ? "line-through" : "none",
+                    opacity: isHidden ? 0.6 : 1,
+                    color: isHidden ? "#6c757d" : "inherit",
+                  }}
+                >
+                  <span style={{ flex: 1 }}>{word.word}</span>
+                  {isHidden ? (
+                    <button
+                      onClick={() => onWordClick(word.id, true)}
+                      style={{
+                        backgroundColor: "transparent",
+                        color: "#28a745",
+                        border: "none",
+                        cursor: "pointer",
+                      }}
+                      title="Восстановить слово"
+                    >
+                      восстановить
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => onWordClick(word.id, false)}
+                      style={{
+                        backgroundColor: "transparent",
+                        color: "#dc3545",
+                        border: "none",
+                        cursor: "pointer",
+                      }}
+                      title="Скрыть слово"
+                    >
+                      удалить
+                    </button>
+                  )}
                 </li>
               );
             })}

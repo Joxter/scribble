@@ -3,7 +3,13 @@ import { db } from "../DB.ts";
 import { id } from "@instantdb/core";
 import { Language } from "../types.ts";
 
-type Word = { id: string; word: string; lang: Language; category?: string };
+type Word = {
+  id: string;
+  word: string;
+  lang: Language;
+  category?: string;
+  hidden?: boolean;
+};
 
 const updateWords = createEvent<Word[]>();
 export const $words = createStore<Word[]>([]);
@@ -36,7 +42,16 @@ export function addNewWords(words: string[], lang: string) {
         word: word.trim(),
         lang: "RU",
         category: "",
+        hidden: false,
       });
     }),
   );
+}
+
+export function hideWord(wordId: string) {
+  return db.transact(db.tx.words[wordId].update({ hidden: true }));
+}
+
+export function showWord(wordId: string) {
+  return db.transact(db.tx.words[wordId].update({ hidden: false }));
 }

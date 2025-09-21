@@ -31,6 +31,7 @@ const _schema = i.schema({
       word: i.string().unique().indexed(),
       lang: i.string(),
       category: i.string().optional(),
+      hidden: i.boolean().optional(),
     }),
     curretLine: i.entity({
       // remove "curretLine"
