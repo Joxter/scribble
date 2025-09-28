@@ -67,9 +67,7 @@ export function DrawingPage() {
           </div>
         )}
 
-        <div style={{ display: "flex", justifyContent: "flex-end" }}>
-          <DeveloperTools />
-        </div>
+        <DeveloperTools />
       </div>
       <div className={css.players}>
         <ListOfPlayers />

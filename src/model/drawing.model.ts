@@ -112,6 +112,7 @@ export function createDrawing({
   });
 
   undoClicked.watch(() => {
+    console.log("db.transact undoClicked");
     db.transact(
       db.tx.roomEvent[id()]
         .create({ it: { type: "undo" } })
@@ -196,10 +197,11 @@ export function createCurrentLine(
   combine([$currentLine, $imDrawing, $currentLineID]).watch(
     ([currentLine, imDrawing, lineId]) => {
       if (imDrawing && lineId) {
-        if (loading) {
-          return;
-        }
+        // if (loading) {
+        return;
+        // }
 
+        console.log("db.transact $currentLine");
         loading = true;
         // const start = Date.now();
         db.transact(
@@ -223,17 +225,18 @@ export function createCurrentLine(
   const room = db.joinRoom("drawing", "d12bccaf-efb4-4481-b4e9-b51fc3b3e547");
 
   let i = 0;
-  const myPresence = createEvent();
+  const myPresence = createEvent<any>();
   const onPresence = createEvent<any>();
   const $pres = createStore<any>({});
 
   const unsubscribePresence = room.subscribePresence({}, (ev) => {
-    console.log("presence", ev);
+    // console.log("presence", ev);
     onPresence(ev);
   });
 
-  myPresence.watch(() => {
-    room.publishPresence({ currentLine: i++ });
+  $currentLine.watch((currentLine) => {
+    // console.log("myPresence.watch", arr);
+    room.publishPresence({ currentLine });
   });
 
   $pres.on(onPresence, (s, ev) => ev);
@@ -259,6 +262,7 @@ export function createCurrentLine(
   });
 
   addLine.watch((newLine) => {
+    console.log("db.transact addLine");
     db.transact(
       db.tx.roomEvent[id()]
         .create({
