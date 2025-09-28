@@ -8,6 +8,7 @@ import {
   getAllPaintings,
   deletePainting,
 } from "./model/all-paintings.model.ts";
+import { Link } from "wouter";
 
 export function PaintingsPage() {
   const [paintings, setPaintings] = useState<Painting[]>([]);
@@ -68,7 +69,7 @@ export function PaintingsPage() {
     return (
       <div style={{ padding: "20px" }}>
         <div>
-          <a href={getUrl()}>Главная</a>
+          <Link href={getUrl()}>Главная</Link>
           <h1>Все картины</h1>
         </div>
         <p>Загрузка...</p>
@@ -80,7 +81,7 @@ export function PaintingsPage() {
   return (
     <div style={{ padding: "20px", display: "grid", gap: "20px" }}>
       <div>
-        <a href={getUrl()}>Главная</a>
+        <Link href={getUrl()}>Главная</Link>
         <h1>Все картины</h1>
       </div>
 

@@ -54,7 +54,13 @@ const _schema = i.schema({
       reverse: { on: "curretLine", has: "one", label: "party" },
     },
   },
-  rooms: {},
+  rooms: {
+    drawing: {
+      presence: i.entity({
+        currentLine: i.any().optional(),
+      }),
+    },
+  },
 });
 
 // This helps Typescript display nicer intellisense

@@ -34,7 +34,7 @@ export const $party = restore(setParty, {
   id: "",
 });
 
-const setRoomId = createEvent<string>();
+export const setRoomId = createEvent<string>();
 export const $roomId = restore(setRoomId, URL_ROOM_NAME);
 
 const setPlayer = createEvent<Player>();

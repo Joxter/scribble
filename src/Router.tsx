@@ -1,25 +1,20 @@
 import React from "react";
+import { Route, Switch } from "wouter";
 import { HomePage } from "./Home.page.tsx";
-import { $roomId } from "./model/game.model.ts";
-import { useUnit } from "effector-react";
 import { DrawingPage } from "./drawing/Drawing.page.tsx";
 import { WordsPage } from "./Words.page.tsx";
 import { PaintingsPage } from "./Paintings.page.tsx";
 
 export function Router() {
-  const roomId = useUnit($roomId);
-
   return (
     <div style={{ height: "100%" }}>
-      {roomId === "words" ? (
-        <WordsPage />
-      ) : roomId === "paintings" ? (
-        <PaintingsPage />
-      ) : roomId ? (
-        <DrawingPage />
-      ) : (
-        <HomePage />
-      )}
+      <Switch>
+        <Route path="/scribble/words" component={WordsPage} />
+        <Route path="/scribble/paintings" component={PaintingsPage} />
+        <Route path="/scribble/room/:roomId" component={DrawingPage} />
+        <Route path="/scribble" component={HomePage} />
+        <Route path="/" component={HomePage} />
+      </Switch>
     </div>
   );
 }

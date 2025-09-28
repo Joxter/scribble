@@ -1,5 +1,6 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useUnit } from "effector-react";
+import { Link, useParams } from "wouter";
 import { Canvas } from "./Canvas";
 import { getUrl } from "../utils";
 import { DeveloperTools } from "./DeveloperTools";
@@ -12,6 +13,7 @@ import {
   newWordSelected,
   $clue,
   $iRevealed,
+  setRoomId,
 } from "../model/game.model";
 import css from "./Page.module.css";
 import { EnterGuess } from "./EnterGuess.tsx";
@@ -20,16 +22,26 @@ import { Fps } from "../components/Fps.tsx";
 import { Perf } from "../components/Perf.tsx";
 
 export function DrawingPage() {
+  const params = useParams();
+  const roomId = params.roomId;
+
   const [imDrawing, imChoosingWord, clue, iRevealed] = useUnit(
     //
     [$imDrawing, $imChoosingWord, $clue, $iRevealed],
   );
 
+  // Update the room ID in the store when the URL parameter changes
+  useEffect(() => {
+    if (roomId) {
+      setRoomId(roomId);
+    }
+  }, [roomId]);
+
   return (
     <div className={css.page}>
       <div className={css.header}>
         <div className={css.headerContent}>
-          <a href={getUrl()}>Главная</a>
+          <Link href={getUrl()}>Главная</Link>
           {imDrawing && <h2>{imDrawing}</h2>}
           <Perf />
           <Fps />

@@ -3,6 +3,7 @@ import { useUnit } from "effector-react";
 import { $allParties } from "./model/app";
 import { getUrl } from "./utils.ts";
 import { $player, createNewParty, editPlayerName } from "./model/game.model.ts";
+import { Link } from "wouter";
 
 export function HomePage() {
   const player = useUnit($player);
@@ -24,15 +25,17 @@ export function HomePage() {
 
       <div>
         <p>
-          <a href={getUrl("?words")}>Слова</a>
+          <Link href={getUrl("words")}>Слова</Link>
         </p>
         <p>
-          <a href={getUrl("?paintings")}>Картины</a>
+          <Link href={getUrl("paintings")}>Картины</Link>
         </p>
       </div>
     </div>
   );
 }
+
+console.log(getUrl("paintings"));
 
 export function AllParties() {
   const allParties = useUnit($allParties);
@@ -49,9 +52,9 @@ export function AllParties() {
 
             return (
               <li key={party.id} style={{ marginBottom: "10px" }}>
-                <a href={getUrl("?" + party.id)}>
+                <Link href={getUrl("room/" + party.id)}>
                   {party.name} (игроков: {cnt})
-                </a>
+                </Link>
               </li>
             );
           })}

@@ -8,6 +8,7 @@ import {
   resetDEMO,
 } from "../model/game.model.ts";
 import { createPainting } from "../model/all-paintings.model.ts";
+import { Link } from "wouter";
 
 export function DeveloperTools() {
   const [isCollapsed, setIsCollapsed] = useState(true);
@@ -23,9 +24,9 @@ export function DeveloperTools() {
       {!isCollapsed && (
         <div>
           <div>
-            <a href="https://joxter.github.io/scribble/" target="_blank">
+            <Link href="https://joxter.github.io/scribble/" target="_blank">
               website
-            </a>
+            </Link>
           </div>
           <p>localId: {localId}</p>
 

@@ -9,6 +9,7 @@ import {
   hideWord,
   showWord,
 } from "./model/words.model.ts";
+import { Link } from "wouter";
 
 type Word = {
   id: string;
@@ -80,7 +81,7 @@ export function WordsPage() {
   return (
     <div style={{ padding: "20px", display: "grid", gap: "20px" }}>
       <div>
-        <a href={getUrl()}>Главная</a>
+        <Link href={getUrl()}>Главная</Link>
         <h1>Все слова</h1>
       </div>
 
@@ -142,7 +143,6 @@ export function WordsPage() {
       <WordsList
         filteredWords={filteredWords}
         selectedLetter={selectedLetter}
-        showHidden={showHidden}
         onWordClick={handleWordClick}
       />
     </div>

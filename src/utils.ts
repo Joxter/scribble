@@ -19,15 +19,33 @@ export function liveQuery<T>(store: Store<T>, cb: (val: T) => () => void) {
 }
 
 export const URL_ROOM_NAME = (() => {
+  const pathname = window.location.pathname;
+
+  // Handle new routing structure: /scribble/room/roomId
+  const roomMatch = pathname.match(/\/scribble\/room\/([^\/]+)/);
+  if (roomMatch) {
+    return roomMatch[1];
+  }
+
+  // Handle special routes
+  if (pathname.endsWith("/words")) {
+    return "words";
+  }
+  if (pathname.endsWith("/paintings")) {
+    return "paintings";
+  }
+
+  // Legacy support: extract ID from query parameters
   const search = window.location.search.slice(1);
   if (search) return search;
 
-  // For GitHub Pages: extract ID from pathname like /scribble/some-id
-  const pathname = window.location.pathname;
+  // Legacy support: extract ID from pathname like /scribble/some-id (not room/)
   const basePath = "/scribble/";
   if (pathname.startsWith(basePath)) {
     const id = pathname.slice(basePath.length);
-    return id || "";
+    if (id && !id.includes("/")) {
+      return id;
+    }
   }
 
   return "";
@@ -134,11 +152,15 @@ export function average(A: VecLike, B: VecLike) {
 }
 
 export function getBasePath(): string {
-  return window.location.pathname.includes("/scribble/") ? "/scribble/" : "/";
+  return window.location.pathname.includes("/scribble") ? "/scribble/" : "/";
 }
 
-export function getUrl(partyId?: string): string {
-  return `${getBasePath()}${partyId || ""}`;
+export function getUrl(path?: string): string {
+  const basePath = getBasePath();
+  if (!path) {
+    return basePath.endsWith("/") ? basePath.slice(0, -1) : basePath;
+  }
+  return `${basePath}${path}`;
 }
 
 type LegacyPaint = {
