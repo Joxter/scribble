@@ -5,6 +5,7 @@ import {
   $paintingsToCreate,
   $party,
   deleteRoomEvents_DEV,
+  pres,
   resetDEMO,
 } from "../model/game.model.ts";
 import { createPainting } from "../model/all-paintings.model.ts";
@@ -15,12 +16,16 @@ export function DeveloperTools() {
   const localId = useUnit($localId);
   const party = useUnit($party);
   const paintingsToCreate = useUnit($paintingsToCreate);
+  const presVal = useUnit(pres.$pres);
 
   return (
     <div>
       <button onClick={() => setIsCollapsed(!isCollapsed)}>
         Dev {isCollapsed ? "▼" : "▲"}
       </button>
+
+      <button onClick={() => pres.myPresence()}>myPresence </button>
+      <pre>{JSON.stringify(presVal, null, 2)}</pre>
       {!isCollapsed && (
         <div>
           <div>

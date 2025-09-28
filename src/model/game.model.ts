@@ -124,6 +124,7 @@ export const {
   lineExtended,
   lineEnded,
   $lineExtendedCount,
+  ...pres
 } = createCurrentLine($roomId, $imDrawing);
 
 export const $renderMode = createStore<"normal" | "polyline" | "tldraw">(

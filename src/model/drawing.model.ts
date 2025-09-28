@@ -9,9 +9,8 @@ import {
 import { CanvasAndChatHistory, CurrentLine, LineEvent } from "../types.ts";
 import { colors, smoothConf, widths } from "../config.ts";
 import { svgInk } from "../freehand/svgInk.ts";
-import { getSvgPathFromStroke, liveQuery, optimizeLine } from "../utils.ts";
+import { liveQuery } from "../utils.ts";
 import { Vec } from "../freehand/Vec.ts";
-import getStroke from "perfect-freehand";
 import { findLastEventIndex } from "./utils.ts";
 import { db } from "../DB.ts";
 import { id } from "@instantdb/core";
@@ -221,6 +220,24 @@ export function createCurrentLine(
     },
   );
 
+  const room = db.joinRoom("drawing", "d12bccaf-efb4-4481-b4e9-b51fc3b3e547");
+
+  let i = 0;
+  const myPresence = createEvent();
+  const onPresence = createEvent<any>();
+  const $pres = createStore<any>({});
+
+  const unsubscribePresence = room.subscribePresence({}, (ev) => {
+    console.log("presence", ev);
+    onPresence(ev);
+  });
+
+  myPresence.watch(() => {
+    room.publishPresence({ currentLine: i++ });
+  });
+
+  $pres.on(onPresence, (s, ev) => ev);
+
   liveQuery($roomId, (roomId) => {
     if (!roomId) return () => {};
 
@@ -264,5 +281,7 @@ export function createCurrentLine(
     lineExtended,
     lineEnded,
     $lineExtendedCount,
+    $pres,
+    myPresence,
   };
 }
