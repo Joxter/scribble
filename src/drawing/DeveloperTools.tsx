@@ -25,9 +25,9 @@ export function DeveloperTools() {
       </button>
 
       <button onClick={() => pres.myPresence()}>myPresence </button>
-      <pre>{JSON.stringify(presVal, null, 2)}</pre>
       {!isCollapsed && (
-        <div>
+        <div style={{ maxWidth: "100%", overflow: "scroll" }}>
+          <pre>{JSON.stringify(presVal, null, 2)}</pre>
           <div>
             <Link href="https://joxter.github.io/scribble/" target="_blank">
               website
