@@ -59,6 +59,11 @@ const _schema = i.schema({
       presence: i.entity({
         currentLine: i.any().optional(),
       }),
+      topics: {
+        sendCurrentLine: i.entity({
+          currentLineTopic: i.any().optional(),
+        }),
+      },
     },
   },
 });

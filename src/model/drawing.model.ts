@@ -222,43 +222,35 @@ export function createCurrentLine(
     },
   );
 
-  const room = db.joinRoom("drawing", "d12bccaf-efb4-4481-b4e9-b51fc3b3e547");
+  const myTopic = createEvent<any>();
+  const onTopic = createEvent<any>();
+  const $topic = createStore<any>({});
 
-  let i = 0;
-  const myPresence = createEvent<any>();
-  const onPresence = createEvent<any>();
-  const $pres = createStore<any>({});
-
-  const unsubscribePresence = room.subscribePresence({}, (ev) => {
-    // console.log("presence", ev);
-    onPresence(ev);
-  });
-
-  $currentLine.watch((currentLine) => {
-    // console.log("myPresence.watch", arr);
-    room.publishPresence({ currentLine });
-  });
-
-  $pres.on(onPresence, (s, ev) => ev);
+  $topic.on(onTopic, (s, ev) => ev);
 
   liveQuery($roomId, (roomId) => {
     if (!roomId) return () => {};
 
-    return db.subscribeQuery(
-      { party: { $: { where: { id: roomId } }, currentLine: {} } },
-      (resp) => {
-        if (resp.error) console.error(resp.error);
-        if (resp.data) {
-          const party = resp.data.party[0];
-          if (party?.currentLine) {
-            setCurrentLineID(party.currentLine.id);
-            if (!$imDrawing.getState()) {
-              currentLineChanged(party.currentLine);
-            }
-          }
-        }
-      },
-    );
+    const room = db.joinRoom("drawing", roomId);
+
+    const uns = $currentLine.watch((currentLine) => {
+      if ($imDrawing.getState()) {
+        room.publishTopic("sendCurrentLine", { currentLineTopic: currentLine });
+      }
+    });
+
+    const unsubscribeTopic = room.subscribeTopic("sendCurrentLine", (ev) => {
+      if (!$imDrawing.getState()) {
+        console.log("currentLineChanged", ev.currentLineTopic);
+        currentLineChanged(ev.currentLineTopic);
+      }
+    });
+
+    return () => {
+      uns();
+      unsubscribeTopic();
+      room.leaveRoom();
+    };
   });
 
   addLine.watch((newLine) => {
@@ -285,7 +277,7 @@ export function createCurrentLine(
     lineExtended,
     lineEnded,
     $lineExtendedCount,
-    $pres,
-    myPresence,
+    $topic,
+    myTopic,
   };
 }

@@ -16,7 +16,7 @@ export function DeveloperTools() {
   const localId = useUnit($localId);
   const party = useUnit($party);
   const paintingsToCreate = useUnit($paintingsToCreate);
-  const presVal = useUnit(pres.$pres);
+  const [topicVal] = useUnit([pres.$topic]);
 
   return (
     <div>
@@ -24,10 +24,11 @@ export function DeveloperTools() {
         Dev {isCollapsed ? "▼" : "▲"}
       </button>
 
-      <button onClick={() => pres.myPresence()}>myPresence </button>
+      <div style={{ display: "flex", gap: "8px" }}>
+        <button onClick={() => pres.myTopic()}>myTopic</button>
+      </div>
       {!isCollapsed && (
         <div style={{ maxWidth: "90vw", overflow: "scroll" }}>
-          <pre>{JSON.stringify(presVal?.user?.currentLine)}</pre>
           {/*<pre>{JSON.stringify(presVal)}</pre>*/}
           <div>
             <Link href="https://joxter.github.io/scribble/" target="_blank">
