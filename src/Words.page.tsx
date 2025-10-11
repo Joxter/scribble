@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import { getUrl } from "./utils.ts";
 import { useUnit } from "effector-react";
 import { ru } from "../dictionaries/ru.ts";
 import {
@@ -9,7 +8,8 @@ import {
   hideWord,
   showWord,
 } from "./model/words.model.ts";
-import { Link } from "wouter";
+import { PageLayout } from "./components/PageLayout.tsx";
+import css from "./Words.module.css";
 
 type Word = {
   id: string;
@@ -79,45 +79,33 @@ export function WordsPage() {
     .slice(0, 100);
 
   return (
-    <div style={{ padding: "20px", display: "grid", gap: "20px" }}>
-      <div>
-        <Link href={getUrl()}>Главная</Link>
-        <h1>Все слова</h1>
-      </div>
+    <PageLayout>
+      <div className={css.container}>
+        {newWords.length > 0 && (
+          <div>
+            <button
+              onClick={() => {
+                addNewWords(newWords, "RU")
+                  .then(() => {
+                    console.log(`Добавлено ${newWords.length} новых слов`);
+                  })
+                  .catch((err) => {
+                    console.error(err);
+                  });
+              }}
+            >
+              ADD <b>RU</b> {newWords.length}
+            </button>
+          </div>
+        )}
 
-      {newWords.length > 0 && (
-        <div>
-          <button
-            onClick={() => {
-              addNewWords(newWords, "RU")
-                .then(() => {
-                  console.log(`Добавлено ${newWords.length} новых слов`);
-                })
-                .catch((err) => {
-                  console.error(err);
-                });
-            }}
-          >
-            ADD <b>RU</b> {newWords.length}
-          </button>
-        </div>
-      )}
+        <LangSelector
+          selectedLang={selectedLang}
+          onLangChange={handleLangChange}
+          totalWords={words.length}
+        />
 
-      <LangSelector
-        selectedLang={selectedLang}
-        onLangChange={handleLangChange}
-        totalWords={words.length}
-      />
-
-      <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-        <label
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "4px",
-            cursor: "pointer",
-          }}
-        >
+        <label className={css.checkboxLabel}>
           <input
             type="checkbox"
             checked={showHidden}
@@ -125,64 +113,48 @@ export function WordsPage() {
           />
           Показать скрытые слова
         </label>
+
+        <AddWordForm
+          selectedLang={selectedLang}
+          newWord={newWord}
+          onWordChange={setNewWord}
+          onSubmit={handleAddWord}
+        />
+
+        <LetterSelector
+          letters={letters}
+          selectedLetter={selectedLetter}
+          onLetterChange={setSelectedLetter}
+        />
+
+        <WordsList
+          filteredWords={filteredWords}
+          selectedLetter={selectedLetter}
+          onWordClick={handleWordClick}
+        />
       </div>
-
-      <AddWordForm
-        selectedLang={selectedLang}
-        newWord={newWord}
-        onWordChange={setNewWord}
-        onSubmit={handleAddWord}
-      />
-
-      <LetterSelector
-        letters={letters}
-        selectedLetter={selectedLetter}
-        onLetterChange={setSelectedLetter}
-      />
-
-      <WordsList
-        filteredWords={filteredWords}
-        selectedLetter={selectedLetter}
-        onWordClick={handleWordClick}
-      />
-    </div>
+    </PageLayout>
   );
 }
 
-function LangSelector({
-  selectedLang,
-  onLangChange,
-  totalWords,
-}: {
+type LangSelectorProps = {
   selectedLang: string;
   onLangChange: (lang: string) => void;
   totalWords: number;
-}) {
+};
+
+function LangSelector({ selectedLang, onLangChange, totalWords }: LangSelectorProps) {
   return (
-    <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+    <div className={css.langSelector}>
       <button
         onClick={() => onLangChange("RU")}
-        style={{
-          padding: "8px 16px",
-          backgroundColor: selectedLang === "RU" ? "#007bff" : "#f8f9fa",
-          color: selectedLang === "RU" ? "white" : "black",
-          border: "1px solid #dee2e6",
-          borderRadius: "4px",
-          cursor: "pointer",
-        }}
+        className={`${css.langButton} ${selectedLang === "RU" ? css.langButtonActive : css.langButtonInactive}`}
       >
         RU
       </button>
       <button
         onClick={() => onLangChange("EN")}
-        style={{
-          padding: "8px 16px",
-          backgroundColor: selectedLang === "EN" ? "#007bff" : "#f8f9fa",
-          color: selectedLang === "EN" ? "white" : "black",
-          border: "1px solid #dee2e6",
-          borderRadius: "4px",
-          cursor: "pointer",
-        }}
+        className={`${css.langButton} ${selectedLang === "EN" ? css.langButtonActive : css.langButtonInactive}`}
       >
         EN
       </button>
@@ -191,87 +163,58 @@ function LangSelector({
   );
 }
 
-function AddWordForm({
-  selectedLang,
-  newWord,
-  onWordChange,
-  onSubmit,
-}: {
+type AddWordFormProps = {
   selectedLang: string;
   newWord: string;
   onWordChange: (word: string) => void;
   onSubmit: (e: React.FormEvent) => void;
-}) {
+};
+
+function AddWordForm({ selectedLang, newWord, onWordChange, onSubmit }: AddWordFormProps) {
   return (
-    <div>
-      <form
-        onSubmit={onSubmit}
-        style={{
-          display: "grid",
-          gridTemplateColumns: "1fr 130px",
-          gap: "4px",
-          maxWidth: "300px",
-        }}
-      >
-        <input
-          type="text"
-          placeholder="Слово"
-          value={newWord}
-          onChange={(e) => onWordChange(e.target.value)}
-          style={{}}
-        />
-        <button type="submit" disabled={!newWord.trim()}>
-          Добавить {selectedLang}
-        </button>
-      </form>
-    </div>
+    <form onSubmit={onSubmit} className={css.addWordForm}>
+      <input
+        type="text"
+        placeholder="Слово"
+        value={newWord}
+        onChange={(e) => onWordChange(e.target.value)}
+      />
+      <button type="submit" disabled={!newWord.trim()}>
+        Добавить {selectedLang}
+      </button>
+    </form>
   );
 }
 
-function LetterSelector({
-  letters,
-  selectedLetter,
-  onLetterChange,
-}: {
+type LetterSelectorProps = {
   letters: string[];
   selectedLetter: string;
   onLetterChange: (letter: string) => void;
-}) {
+};
+
+function LetterSelector({ letters, selectedLetter, onLetterChange }: LetterSelectorProps) {
   return (
-    <div>
-      <div style={{ display: "flex", flexWrap: "wrap", gap: "4px" }}>
-        {letters.map((letter) => (
-          <button
-            key={letter}
-            onClick={() => onLetterChange(letter)}
-            style={{
-              padding: "4px 8px",
-              backgroundColor:
-                selectedLetter === letter ? "#007bff" : "#f8f9fa",
-              color: selectedLetter === letter ? "white" : "black",
-              border: "1px solid #dee2e6",
-              borderRadius: "4px",
-              cursor: "pointer",
-              minWidth: "30px",
-            }}
-          >
-            {letter}
-          </button>
-        ))}
-      </div>
+    <div className={css.letterSelector}>
+      {letters.map((letter) => (
+        <button
+          key={letter}
+          onClick={() => onLetterChange(letter)}
+          className={`${css.letterButton} ${selectedLetter === letter ? css.letterButtonActive : css.letterButtonInactive}`}
+        >
+          {letter}
+        </button>
+      ))}
     </div>
   );
 }
 
-function WordsList({
-  filteredWords,
-  selectedLetter,
-  onWordClick,
-}: {
+type WordsListProps = {
   filteredWords: Word[];
   selectedLetter: string;
   onWordClick: (wordId: string, isHidden: boolean) => void;
-}) {
+};
+
+function WordsList({ filteredWords, selectedLetter, onWordClick }: WordsListProps) {
   return (
     <div>
       <h3>
@@ -280,7 +223,7 @@ function WordsList({
       {filteredWords.length === 0 ? (
         <p>Нет слов</p>
       ) : (
-        <ol style={{ paddingLeft: "20px" }}>
+        <ol className={css.wordsList}>
           {filteredWords
             .toSorted((a, b) => a.word.localeCompare(b.word))
             .map((word) => {
@@ -288,25 +231,12 @@ function WordsList({
               return (
                 <li
                   key={word.id}
-                  style={{
-                    textDecoration: isHidden ? "line-through" : "none",
-                    opacity: isHidden ? 0.6 : 1,
-                    color: isHidden ? "#6c757d" : "inherit",
-                  }}
+                  className={`${css.wordItem} ${isHidden ? css.wordItemHidden : ""}`}
                 >
                   {word.word}
                   <button
                     onClick={() => onWordClick(word.id, isHidden)}
-                    style={{
-                      backgroundColor: "transparent",
-                      color: isHidden ? "#28a745" : "#dc3545",
-                      border: "none",
-                      cursor: "pointer",
-                      fontSize: "12px",
-                      padding: "0",
-                      margin: "0",
-                      marginLeft: "8px",
-                    }}
+                    className={`${css.wordToggleButton} ${isHidden ? css.wordToggleButtonShow : css.wordToggleButtonHide}`}
                     title={isHidden ? "Восстановить слово" : "Скрыть слово"}
                   >
                     {isHidden ? "↻" : "✕"}
