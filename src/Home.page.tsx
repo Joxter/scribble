@@ -1,9 +1,8 @@
 import React, { useState } from "react";
 import { useUnit } from "effector-react";
-import { $allParties } from "./model/app";
-import { getUrl, newRandomRoomName } from "./utils.ts";
-import { $player, createNewParty, editPlayerName } from "./model/game.model.ts";
-import { Link } from "wouter";
+import { newRandomRoomName } from "./utils.ts";
+import { $player, createNewParty } from "./model/game.model.ts";
+import { PageLayout } from "./components/PageLayout.tsx";
 import css from "./Home.module.css";
 
 export function HomePage() {
@@ -12,16 +11,9 @@ export function HomePage() {
   if (!player.id) return null;
 
   return (
-    <div className={css.container}>
-      <h1 className={css.title}>Drawinchi!</h1>
+    <PageLayout>
       <CreateNewParty />
-
-      <div className={css.footer}>
-        <Link href={getUrl("allparties")}>Все комнаты</Link>
-        <Link href={getUrl("words")}>Слова</Link>
-        <Link href={getUrl("paintings")}>Картины</Link>
-      </div>
-    </div>
+    </PageLayout>
   );
 }
 
