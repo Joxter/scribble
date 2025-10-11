@@ -15,6 +15,7 @@ Before you write ANY code you read ALL of instant-rules.md to understand how to 
 
 ## React rules
 - Always use `type` for props
+- Use `type Props = {...}` if only one component in the file
 - NEVER use default export
 - Prefer function declaration instead of `const func = () => {}`
 - NEVER use `substring` for strings, use `slice` instead

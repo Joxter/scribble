@@ -12,7 +12,7 @@ export function PageLayout({ children }: Props) {
     <div className={css.container}>
       <header className={css.header}>
         <Link href={getUrl("")}>
-          <h1 className={css.title}>Drawinchi!</h1>
+          <h1 className={css.title}>Drawinchi</h1>
         </Link>
       </header>
 

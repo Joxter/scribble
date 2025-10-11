@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import { getUrl } from "./utils.ts";
 import { getAllPlayers } from "./model/game.model.ts";
 import { Painting, Player } from "./types.ts";
 import { ReadOnlyCanvas } from "./components/ReadOnlyCanvas.tsx";
@@ -8,7 +7,8 @@ import {
   getAllPaintings,
   deletePainting,
 } from "./model/all-paintings.model.ts";
-import { Link } from "wouter";
+import { PageLayout } from "./components/PageLayout.tsx";
+import css from "./Paintings.module.css";
 
 export function PaintingsPage() {
   const [paintings, setPaintings] = useState<Painting[]>([]);
@@ -67,41 +67,24 @@ export function PaintingsPage() {
 
   if (loading) {
     return (
-      <div style={{ padding: "20px" }}>
-        <div>
-          <Link href={getUrl()}>Главная</Link>
-          <h1>Все картины</h1>
+      <PageLayout>
+        <div className={css.container}>
+          <p>Загрузка...</p>
         </div>
-        <p>Загрузка...</p>
-      </div>
+      </PageLayout>
     );
   }
   const deleteDisabled = deleting || selectedPaintings.size === 0;
 
   return (
-    <div style={{ padding: "20px", display: "grid", gap: "20px" }}>
-      <div>
-        <Link href={getUrl()}>Главная</Link>
-        <h1>Все картины</h1>
-      </div>
-
-      <div style={{ display: "grid", gap: "16px" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+    <PageLayout>
+      <div className={css.container}>
+        <div className={css.header}>
           <h3>Картины ({paintings.length}):</h3>
           <button
             onClick={handleDeleteSelected}
             disabled={deleteDisabled}
-            style={{
-              backgroundColor: "#dc3545",
-              color: "white",
-              pointerEvents: deleteDisabled ? "none" : "initial",
-              border: "none",
-              borderRadius: "4px",
-              padding: "8px 16px",
-              cursor: deleteDisabled ? "not-allowed" : "pointer",
-              fontSize: "14px",
-              opacity: deleteDisabled ? 0.6 : 1,
-            }}
+            className={`${css.deleteButton} ${deleteDisabled ? css.deleteButtonDisabled : ""}`}
           >
             {deleting ? `Удаление...` : `Удалить ${selectedPaintings.size}`}
           </button>
@@ -109,13 +92,7 @@ export function PaintingsPage() {
         {paintings.length === 0 ? (
           <p>Нет картин</p>
         ) : (
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fill, minmax(250px, 1fr))",
-              gap: "24px",
-            }}
-          >
+          <div className={css.paintingsGrid}>
             {paintings.map((painting) => {
               return (
                 <PaintingCard
@@ -132,21 +109,23 @@ export function PaintingsPage() {
           </div>
         )}
       </div>
-    </div>
+    </PageLayout>
   );
 }
+
+type Props = {
+  painting: Painting;
+  author: Player;
+  selected: boolean;
+  onSelectionChange: (selected: boolean) => void;
+};
 
 function PaintingCard({
   painting,
   author,
   selected,
   onSelectionChange,
-}: {
-  painting: Painting;
-  author: Player;
-  selected: boolean;
-  onSelectionChange: (selected: boolean) => void;
-}) {
+}: Props) {
   const lines = doEventsUndo(painting.canvas);
   const allEventsCnt = painting.canvas.length;
   const linesAfterUndo = lines.length;
@@ -156,13 +135,7 @@ function PaintingCard({
 
   return (
     <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        lineHeight: "1",
-        gap: "8px",
-        position: "relative",
-      }}
+      className={css.paintingCard}
       onClick={() => {
         const str = JSON.stringify(
           lines.map((it) => {
@@ -175,24 +148,20 @@ function PaintingCard({
         console.log(str.length);
       }}
     >
-      <label style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+      <label className={css.paintingLabel}>
         <input
           type="checkbox"
           checked={selected}
           onChange={(e) => onSelectionChange(e.target.checked)}
-          style={{ cursor: "pointer" }}
+          className={css.paintingCheckbox}
         />
-        <h4 style={{ margin: 0, fontSize: "18px", fontWeight: "bold" }}>
-          {painting.word}
-        </h4>
+        <h4 className={css.paintingTitle}>{painting.word}</h4>
       </label>
       <ReadOnlyCanvas canvas={painting.canvas} size={200} />
 
-      <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
-        <p style={{ margin: 0, color: "#6c757d", fontSize: "14px" }}>
-          Автор: {author.name}
-        </p>
-        <p style={{ margin: 0, color: "#6c757d", fontSize: "14px" }}>
+      <div className={css.paintingInfo}>
+        <p className={css.paintingMeta}>Автор: {author.name}</p>
+        <p className={css.paintingMeta}>
           Линий {linesAfterUndo}
           {allEventsCnt !== linesAfterUndo ? `(${allEventsCnt})` : ""}, точек{" "}
           {totalDots}
