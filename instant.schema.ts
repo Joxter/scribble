@@ -4,19 +4,15 @@ import { i } from "@instantdb/core";
 
 const _schema = i.schema({
   entities: {
-    // room ?
     party: i.entity({
-      name: i.string().unique().indexed(),
-      players: i.any().optional(),
+      name: i.string().unique().indexed(), // url
+      // players: i.any().optional(),
       gameState: i.any().optional(),
+      status: i.string(), // prepare in-progress finished
     }),
     roomEvent: i.entity({
       it: i.any(),
     }),
-    // roomEvent: i.entity({
-    //   type: i.string(),
-    //   payload: i.any(),
-    // }),
     players: i.entity({
       localId: i.string().unique().indexed(),
       name: i.string(),
@@ -33,12 +29,11 @@ const _schema = i.schema({
       category: i.string().optional(),
       hidden: i.boolean().optional(),
     }),
-    curretLine: i.entity({
-      // remove "curretLine"
-      color: i.string(),
-      dots: i.any(),
-      width: i.number(),
-    }),
+    // curretLine: i.entity({
+    //   color: i.string(),
+    //   dots: i.any(),
+    //   width: i.number(),
+    // }),
   },
   links: {
     partyRoomEvents: {
@@ -46,21 +41,21 @@ const _schema = i.schema({
       reverse: { on: "roomEvent", has: "one", label: "party" },
     },
     partyPlayers: {
-      forward: { on: "party", has: "many", label: "players2" },
+      forward: { on: "party", has: "many", label: "players" },
       reverse: { on: "players", has: "many", label: "parties" },
     },
-    partyCurrentLine: {
-      forward: { on: "party", has: "one", label: "currentLine" },
-      reverse: { on: "curretLine", has: "one", label: "party" },
-    },
+    // partyCurrentLine: {
+    //   forward: { on: "party", has: "one", label: "currentLine" },
+    //   reverse: { on: "curretLine", has: "one", label: "party" },
+    // },
   },
   rooms: {
-    drawing: {
+    party: {
       presence: i.entity({
-        currentLine: i.any().optional(),
+        user: i.any().optional(),
       }),
       topics: {
-        sendCurrentLine: i.entity({
+        currentCanvas: i.entity({
           currentLineTopic: i.any().optional(),
         }),
       },
