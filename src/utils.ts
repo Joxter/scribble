@@ -1,6 +1,7 @@
 import { VecLike } from "./freehand/Vec";
 import { Store } from "effector";
 import { CanvasAndChatHistory, Game, GameParams } from "./types.ts";
+import { words } from "../dictionaries/ru-300-chatgpt.ts";
 
 export const canvasSize = 600;
 
@@ -86,42 +87,17 @@ export function fix2(n: number | string) {
   return n;
 }
 
-/**
- * @deprecated just remove
- */
-export function optimizeLine<T extends [number, number, ...any[]]>(
-  points: T[],
-  threshold: number = 0,
-): T[] {
-  if (points.length <= 1 || !threshold) {
-    return points;
-  }
+export function newRandomRoomName() {
+  const arr: string[] = [];
 
-  const optimized: T[] = [points[0]]; // Always keep the first point
-
-  for (let i = 1; i < points.length; i++) {
-    const currentPoint = points[i];
-    const lastKeptPoint = optimized[optimized.length - 1];
-
-    // Calculate Euclidean distance between points
-    const dx = currentPoint[0] - lastKeptPoint[0];
-    const dy = currentPoint[1] - lastKeptPoint[1];
-    const distance = Math.sqrt(dx * dx + dy * dy);
-
-    // Keep the point if it's far enough from the last kept point
-    if (distance >= threshold) {
-      optimized.push(currentPoint);
+  while (arr.length < 3) {
+    const w = randomFrom(words);
+    if (!arr.includes(w)) {
+      arr.push(w);
     }
   }
 
-  // Always keep the last point if it wasn't already kept
-  const lastPoint = points[points.length - 1];
-  const lastOptimizedPoint = optimized[optimized.length - 1];
-  if (lastPoint !== lastOptimizedPoint) {
-    optimized.push(lastPoint);
-  }
-
-  return optimized;
+  return arr.join("-");
 }
 
 export function clamp(n: number, min: number, max: number): number;

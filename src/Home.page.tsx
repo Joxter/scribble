@@ -1,162 +1,82 @@
 import React, { useState } from "react";
 import { useUnit } from "effector-react";
 import { $allParties } from "./model/app";
-import { getUrl } from "./utils.ts";
+import { getUrl, newRandomRoomName } from "./utils.ts";
 import { $player, createNewParty, editPlayerName } from "./model/game.model.ts";
 import { Link } from "wouter";
+import css from "./Home.module.css";
 
 export function HomePage() {
   const player = useUnit($player);
 
-  return (
-    <div
-      style={{
-        padding: "20px",
-        display: "grid",
-        alignContent: "center",
-        gap: "16px",
-      }}
-    >
-      {player && player.name && <EditPlayerName name={player.name} />}
-      <div>
-        <AllParties />
-        <CreateNewParty />
-      </div>
-
-      <div>
-        <p>
-          <Link href={getUrl("words")}>Слова</Link>
-        </p>
-        <p>
-          <Link href={getUrl("paintings")}>Картины</Link>
-        </p>
-      </div>
-    </div>
-  );
-}
-
-console.log(getUrl("paintings"));
-
-export function AllParties() {
-  const allParties = useUnit($allParties);
+  if (!player.id) return null;
 
   return (
-    <div>
-      <h2>Все комнаты</h2>
-      {allParties.length === 0 ? (
-        <p>No parties found</p>
-      ) : (
-        <ul style={{ listStyle: "none", padding: 0 }}>
-          {allParties.map((party) => {
-            const cnt = party.players2?.length || 0;
+    <div className={css.container}>
+      <h1 className={css.title}>Drawinchi!</h1>
+      <CreateNewParty />
 
-            return (
-              <li key={party.id} style={{ marginBottom: "10px" }}>
-                <Link href={getUrl("room/" + party.id)}>
-                  {party.name} (игроков: {cnt})
-                </Link>
-              </li>
-            );
-          })}
-        </ul>
-      )}
+      <div className={css.footer}>
+        <Link href={getUrl("allparties")}>Все комнаты</Link>
+        <Link href={getUrl("words")}>Слова</Link>
+        <Link href={getUrl("paintings")}>Картины</Link>
+      </div>
     </div>
   );
 }
 
 function CreateNewParty() {
-  const [newPartyName, setNewPartyName] = useState("");
-  const [isCreating, setIsCreating] = useState(false);
+  const player = useUnit($player);
+  const [roomCode, setRoomCode] = useState("");
+  const [name, setName] = useState(player.name);
 
-  const handleCreateParty = async () => {
-    if (!newPartyName.trim()) return;
+  const [newPartyName, setNewPartyName] = useState(newRandomRoomName().trim());
 
-    setIsCreating(true);
+  const handleCreateRoom = async () => {
     try {
-      await createNewParty(newPartyName.trim());
-      setNewPartyName("");
+      await createNewParty(newPartyName);
     } catch (error) {
       console.error("Failed to create party:", error);
-    } finally {
-      setIsCreating(false);
     }
   };
 
   return (
-    <form
-      style={{
-        margin: "8px 0",
-        display: "grid",
-        gridTemplateColumns: "1fr 100px",
-        gap: "8px",
-        maxWidth: "300px",
-      }}
-      onSubmit={(ev) => {
-        ev.preventDefault();
-        handleCreateParty();
-      }}
-    >
-      <input
-        type="text"
-        value={newPartyName}
-        onChange={(e) => setNewPartyName(e.target.value)}
-        disabled={isCreating}
-        placeholder="комната"
-      />
-      <button type="submit" disabled={!newPartyName.trim() || isCreating}>
-        Создать
-      </button>
-    </form>
-  );
-}
-
-function EditPlayerName(props: { name: string }) {
-  const [name, setName] = useState(props.name);
-  const [isCreating, setIsCreating] = useState(false);
-
-  const handleCreateParty = async () => {
-    if (!name.trim()) return;
-
-    setIsCreating(true);
-    try {
-      await editPlayerName(name.trim());
-      setName(name.trim());
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setIsCreating(false);
-    }
-  };
-
-  return (
-    <div>
-      <p>Имя</p>
-      <form
-        style={{
-          margin: "8px 0",
-          display: "grid",
-          gridTemplateColumns: "1fr min-content",
-          gap: "8px",
-          maxWidth: "300px",
-        }}
-        onSubmit={(ev) => {
-          ev.preventDefault();
-          handleCreateParty();
-        }}
-      >
+    <div className={css.form}>
+      <div className={css.field}>
+        <label>Имя</label>
         <input
           type="text"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          disabled={isCreating}
         />
-        <button
-          type="submit"
-          disabled={!name.trim() || isCreating || name === props.name}
-        >
-          Сохранить
-        </button>
-      </form>
+      </div>
+
+      <div className={css.field}>
+        <label>Комната</label>
+        <div className={css.roomCodeRow}>
+          <input
+            type="text"
+            value={roomCode}
+            onChange={(e) => setRoomCode(e.target.value)}
+          />
+          <button
+            onClick={() => {
+              alert("todo");
+            }}
+            className={css.joinButton}
+          >
+            Войти
+          </button>
+        </div>
+      </div>
+
+      <div className={css.divider}>
+        <span>или</span>
+      </div>
+
+      <button onClick={handleCreateRoom} className={css.createButton}>
+        Создать новую игру
+      </button>
     </div>
   );
 }
