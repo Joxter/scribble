@@ -6,6 +6,7 @@ import {
   leaveParty,
   $compiledGameStateAndPaints,
   $roomId,
+  closeRoom,
 } from "../model/game.model.ts";
 import { Player } from "../types.ts";
 import pencilSvg from "./Pencil.svg";
@@ -55,6 +56,14 @@ export function ListOfPlayers() {
           </button>
         )}
       </p>
+      <button
+        type="button"
+        onClick={() => {
+          closeRoom(party.id);
+        }}
+      >
+        закрыть
+      </button>
 
       <div
         style={{

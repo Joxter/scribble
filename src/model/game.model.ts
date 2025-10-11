@@ -356,6 +356,10 @@ export async function joinParty(partyId: string) {
   return await db.transact([db.tx.players[localId].link({ parties: partyId })]);
 }
 
+export async function closeRoom(partyId: string) {
+  return await db.transact([db.tx.party[partyId].delete()]);
+}
+
 export async function leaveParty(partyId: string) {
   const localId = await db.getLocalId("guest");
 
