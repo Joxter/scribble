@@ -13,3 +13,8 @@ Before you write ANY code you read ALL of instant-rules.md to understand how to 
 - Do NOT use SASS or SCSS
 - Import CSS modules like: `import css from './ComponentName.module.css'`
 
+## React rules
+- Always use `type` for props
+- NEVER use default export
+- Prefer function declaration instead of `const func = () => {}`
+- NEVER use `substring` for strings, use `slice` instead
