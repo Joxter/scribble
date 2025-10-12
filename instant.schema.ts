@@ -6,12 +6,8 @@ const _schema = i.schema({
   entities: {
     party: i.entity({
       name: i.string().unique().indexed(), // url
-      // players: i.any().optional(),
       gameState: i.any().optional(),
       status: i.string(), // prepare in-progress finished
-    }),
-    roomEvent: i.entity({
-      it: i.any(),
     }),
     players: i.entity({
       localId: i.string().unique().indexed(),
@@ -36,10 +32,10 @@ const _schema = i.schema({
     // }),
   },
   links: {
-    partyRoomEvents: {
-      forward: { on: "party", has: "many", label: "roomEvents" },
-      reverse: { on: "roomEvent", has: "one", label: "party" },
-    },
+    // partyRoomEvents: {
+    //   forward: { on: "party", has: "many", label: "roomEvents" },
+    //   reverse: { on: "roomEvent", has: "one", label: "party" },
+    // },
     partyPlayers: {
       forward: { on: "party", has: "many", label: "players" },
       reverse: { on: "players", has: "many", label: "parties" },

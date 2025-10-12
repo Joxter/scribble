@@ -31,6 +31,8 @@ const setParty = createEvent<Party>();
 export const $party = restore(setParty, {
   gameState: { drawing: "" },
   name: "",
+  players: [],
+  status: "prepare",
   id: "",
 });
 
@@ -178,6 +180,7 @@ $allRoomEvents.on(historyUpdated, (_, { history }) => history);
 $renderMode.on(renderModeChanged, (_, mode) => mode);
 $debugMode.on(debugModeToggled, (_, enabled) => enabled);
 
+/*
 liveQuery($roomId, (roomId) => {
   if (!roomId) return () => {};
 
@@ -193,7 +196,9 @@ liveQuery($roomId, (roomId) => {
     },
   );
 });
+*/
 
+/*
 liveQuery($roomId, (roomId) => {
   if (!roomId) return () => {};
 
@@ -212,7 +217,9 @@ liveQuery($roomId, (roomId) => {
     },
   );
 });
+*/
 
+/*
 sample({
   source: [$localId, $roomId, $compiledGameStateAndPaints] as const,
   clock: guessSubmitted,
@@ -230,7 +237,9 @@ sample({
     db.tx.roomEvent[id()].create({ it: event }).link({ party: roomId }),
   );
 });
+*/
 
+/*
 sample({
   source: [$localId, $roomId, $wordsRu] as const,
   clock: chooseWordClicked_DEV,
@@ -251,6 +260,7 @@ sample({
     db.tx.roomEvent[id()].create({ it: event }).link({ party: roomId }),
   );
 });
+*/
 
 // sample({
 //   source: [$imServer, $roomId, $words, $localId] as const,
@@ -282,6 +292,7 @@ sample({
 //   }
 // });
 
+/*
 sample({
   source: [$localId, $roomId] as const,
   clock: newWordSelected,
@@ -298,7 +309,9 @@ sample({
     db.tx.roomEvent[id()].create({ it: event }).link({ party: roomId }),
   );
 });
+*/
 
+/*
 deleteRoomEvents_DEV.watch(async () => {
   const { roomEvent } = await db
     .queryOnce({ roomEvent: { $: { where: { party: $roomId.getState() } } } })
@@ -311,6 +324,7 @@ deleteRoomEvents_DEV.watch(async () => {
     db.transact(roomEvent.map((event) => db.tx.roomEvent[event.id].delete()));
   }
 });
+*/
 
 sample({ source: $party, clock: makeWeDraw_DEV }).watch((party) => {
   db.transact(
@@ -323,13 +337,13 @@ sample({ source: $party, clock: makeWeDraw_DEV }).watch((party) => {
   );
 });
 
+/*
 export async function createNewParty(name: string) {
   const partyId = id();
 
   await db.transact([
     db.tx.party[partyId].create({
       name,
-      players: [],
       gameState: { drawing: "" },
     }),
     db.tx.curretLine[partyId]
@@ -341,6 +355,7 @@ export async function createNewParty(name: string) {
       .link({ party: partyId }),
   ]);
 }
+*/
 
 export async function editPlayerName(name: string) {
   const localId = await db.getLocalId("guest");
@@ -401,55 +416,56 @@ liveQuery($localId, (localId) => {
 });
 
 export async function deleteAllPartiesAndLines() {
-  let allParties = await db
-    .queryOnce({ party: {} })
-    .then((it) => it.data.party);
-  console.log(`allParties.len`, allParties.length);
-
-  let currentLines = await db
-    .queryOnce({ curretLine: {} })
-    .then((it) => it.data.curretLine);
-  console.log(`curretLines.len`, currentLines.length);
-
-  return db.transact([
-    ...allParties.map((it) => db.tx.party[it.id].delete()),
-    ...currentLines.map((it) => db.tx.curretLine[it.id].delete()),
-  ]);
+  alert("deleted");
+  // let allParties = await db
+  //   .queryOnce({ party: {} })
+  //   .then((it) => it.data.party);
+  // console.log(`allParties.len`, allParties.length);
+  //
+  // let currentLines = await db
+  //   .queryOnce({ curretLine: {} })
+  //   .then((it) => it.data.curretLine);
+  // console.log(`curretLines.len`, currentLines.length);
+  //
+  // return db.transact([
+  //   ...allParties.map((it) => db.tx.party[it.id].delete()),
+  //   ...currentLines.map((it) => db.tx.curretLine[it.id].delete()),
+  // ]);
 }
 
 export async function resetDEMO() {
   throw new Error("Not implemented");
   console.log("------- RESET All -------");
-
-  return deleteAllPartiesAndLines()
-    .then(() => {
-      console.log(`DELETED`);
-      return db.transact([
-        db.tx.party[$roomId.getState()].create({
-          name: "Алиска",
-          players: [],
-          gameState: { drawing: "" },
-        }),
-      ]);
-    })
-    .then(() => {
-      console.log(`Created party`, $roomId.getState());
-      return db.transact([
-        db.tx.curretLine[id()]
-          .create({
-            dots: [],
-            width: 8,
-            color: "#34495e",
-          })
-          .link({ party: "DEMO_ID" }),
-      ]);
-    })
-    .then(() => {
-      console.log("OK, will reload in 3 sec");
-      setTimeout(() => {
-        window.location.reload();
-      }, 3000);
-    });
+  //
+  // return deleteAllPartiesAndLines()
+  //   .then(() => {
+  //     console.log(`DELETED`);
+  //     return db.transact([
+  //       db.tx.party[$roomId.getState()].create({
+  //         name: "Алиска",
+  //         players: [],
+  //         gameState: { drawing: "" },
+  //       }),
+  //     ]);
+  //   })
+  //   .then(() => {
+  //     console.log(`Created party`, $roomId.getState());
+  //     return db.transact([
+  //       db.tx.curretLine[id()]
+  //         .create({
+  //           dots: [],
+  //           width: 8,
+  //           color: "#34495e",
+  //         })
+  //         .link({ party: "DEMO_ID" }),
+  //     ]);
+  //   })
+  //   .then(() => {
+  //     console.log("OK, will reload in 3 sec");
+  //     setTimeout(() => {
+  //       window.location.reload();
+  //     }, 3000);
+  //   });
 }
 
 export async function getAllPlayers() {

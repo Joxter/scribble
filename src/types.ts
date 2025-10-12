@@ -53,8 +53,9 @@ export type Player = {
 
 export type Party = {
   id: string;
-  players2?: Player[];
   name: string;
+  players: Player[];
+  status: "prepare" | "in-progress" | "finished";
   gameState: {
     drawing: string;
   };

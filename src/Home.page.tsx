@@ -1,23 +1,30 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useUnit } from "effector-react";
-import { newRandomRoomName } from "./utils.ts";
-import { $player, createNewParty } from "./model/game.model.ts";
+import { getUrl, newRandomRoomName } from "./utils.ts";
+import { $player } from "./model/game.model.ts";
 import { PageLayout } from "./components/PageLayout.tsx";
 import cssModule from "./Home.module.css";
-import { css } from "@linaria/core";
-
-const title = css`
-  color: red;
-`;
+import { useLocation } from "wouter";
+import { createNewParty, getMyParty } from "./model/game-new.model.ts";
 
 export function HomePage() {
   const player = useUnit($player);
+  const [location, navigate] = useLocation();
+
+  useEffect(() => {
+    getMyParty()
+      .then(() => {
+        navigate(getUrl("current-party"));
+      })
+      .catch((err) => {
+        console.error(err);
+      });
+  }, []);
 
   if (!player.id) return null;
 
   return (
     <PageLayout>
-      <p className={title}>title red</p>
       <CreateNewParty />
     </PageLayout>
   );

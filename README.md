@@ -4,14 +4,15 @@ A real-time collaborative drawing application built with React and InstantDB. Cr
 
 ## TODO
 - [x] установил и настроил линарию!
-- [ ] Создание комнат в статусе подготовки, создатель - host
+- [x] (WIP) Создание комнат в статусе подготовки
+  -  [ ] создатель - host
 - [ ] Подключение других игроков по имени
 - [ ] При подключении к комнате предлагают выбрать своё имя
 - [ ] Внутри комнаты можно менять своё имя
-- [ ] Внутри комнаты есть кнопка "Начать", но она ПОКА НЕ РАБОТАЕТ
+- [x] Внутри комнаты есть кнопка "Начать", но она ПОКА НЕ РАБОТАЕТ
 - [ ] В списке всех комнат видно название комнаты и её статус
 
-## Features
+ ## Features
 
 - **Real-time Collaboration**: Multiple users can draw simultaneously with instant synchronization
 - **Smooth Drawing**: Powered by `perfect-freehand` for natural, pressure-sensitive strokes

@@ -19,6 +19,20 @@ export function liveQuery<T>(store: Store<T>, cb: (val: T) => () => void) {
   });
 }
 
+export function queryToStore<T>(store: Store<T>, cb: (val: T) => () => void) {
+  let prev: any;
+
+  let unsub = () => {};
+
+  store.watch((val) => {
+    if (val !== prev) {
+      unsub();
+      unsub = cb(val);
+      prev = val;
+    }
+  });
+}
+
 export const URL_ROOM_NAME = (() => {
   const pathname = window.location.pathname;
 
