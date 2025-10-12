@@ -6,7 +6,12 @@ import { PageLayout } from "./components/PageLayout.tsx";
 import { TextField } from "./components/TextField.tsx";
 import cssModule from "./Home.module.css";
 import { useLocation } from "wouter";
-import { createNewParty, getMyParty } from "./model/game-new.model.ts";
+import {
+  createNewParty,
+  getMyParty,
+  getPartyByName,
+  joinToParty,
+} from "./model/game-new.model.ts";
 import { Button } from "./components/Button.tsx";
 
 export function HomePage() {
@@ -15,8 +20,10 @@ export function HomePage() {
 
   useEffect(() => {
     getMyParty()
-      .then(() => {
-        navigate(getUrl("current-party"));
+      .then((party) => {
+        if (party) {
+          navigate(getUrl("current-party"));
+        }
       })
       .catch((err) => {
         console.error(err);
@@ -38,6 +45,7 @@ function CreateNewParty() {
   const [name, setName] = useState(player.name);
 
   const [newPartyName, setNewPartyName] = useState(newRandomRoomName().trim());
+  const [location, navigate] = useLocation();
 
   const handleCreateRoom = async () => {
     try {
@@ -52,22 +60,24 @@ function CreateNewParty() {
       <TextField label="Имя" value={name} onChange={setName} />
 
       <div className={cssModule.field}>
-        <label>Комната</label>
-        <div className={cssModule.roomCodeRow}>
-          <input
-            type="text"
-            value={roomCode}
-            onChange={(e) => setRoomCode(e.target.value)}
-          />
-          <button
-            onClick={() => {
-              alert("todo");
-            }}
-            className={cssModule.joinButton}
-          >
+        <form
+          onSubmit={(ev) => {
+            ev.preventDefault();
+            getPartyByName(roomCode).then((party) => {
+              if (party) {
+                return joinToParty(party.id).then(() => {
+                  navigate(getUrl("current-party"));
+                });
+              }
+            });
+          }}
+          className={cssModule.roomCodeRow}
+        >
+          <TextField label="Комната" value={roomCode} onChange={setRoomCode} />
+          <button type="submit" className={cssModule.joinButton}>
             Войти
           </button>
-        </div>
+        </form>
       </div>
 
       <div className={cssModule.divider}>

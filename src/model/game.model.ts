@@ -1,28 +1,15 @@
 import { combine, createEvent, createStore, restore, sample } from "effector";
-import {
-  CanvasAndChatHistory,
-  ChoosingWord,
-  GuessEvent,
-  NewWord,
-  Party,
-  Player,
-} from "../types.ts";
-import {
-  eventsToGameState,
-  isRevealed,
-  liveQuery,
-  randomFrom,
-  URL_ROOM_NAME,
-} from "../utils.ts";
+import { CanvasAndChatHistory, Party, Player } from "../types.ts";
+import { eventsToGameState, liveQuery, URL_ROOM_NAME } from "../utils.ts";
 import { db } from "../DB.ts";
-import { id } from "@instantdb/core";
 import { getUsername } from "../code-worlds.ts";
-import { $wordsRu } from "./words.model.ts";
 import { createCurrentLine, createDrawing } from "./drawing.model.ts";
 import { getChatEvents } from "./utils.ts";
+import { editPlayerName } from "../db-things.ts";
 
 const setLocalId = createEvent<string>();
 export const $localId = restore(setLocalId, "");
+$localId.watch((v) => console.log("$localId", v));
 
 db.getLocalId("guest").then((a) => setLocalId(a));
 getPlayer();
@@ -387,7 +374,7 @@ export async function getPlayer(limit = 3) {
   if (player) return player;
 
   const randomName = getUsername();
-  // await editPlayerName(randomName);
+  await editPlayerName(randomName);
 
   return getPlayer(limit - 1);
 }

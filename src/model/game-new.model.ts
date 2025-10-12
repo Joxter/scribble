@@ -37,18 +37,20 @@ liveQuery($localId, (localId) => {
   return db.subscribeQuery(
     {
       party: {
-        $: { where: { status: "prepare" } },
-        players: {
-          $: { where: { id: localId } },
+        $: {
+          where: {
+            and: [{ status: "prepare" }, { "players.id": localId }],
+          },
         },
+        players: {},
       },
     },
     (resp) => {
       if (resp.data) {
-        const party = resp.data.party[0];
+        const party = resp.data.party?.[0];
 
         if (party) {
-          newPartyLoaded(resp.data.party[0]);
+          newPartyLoaded(party);
           return;
         }
       }
@@ -86,6 +88,46 @@ export async function createNewParty(name: string) {
         status: "prepare",
       })
       .link({ players: localId }),
+  ]);
+
+  return res;
+}
+
+export async function getPartyByName(name: string) {
+  const {
+    data: { party },
+  } = await db.queryOnce({
+    party: {
+      $: { where: { status: "prepare", name } },
+    },
+  });
+
+  return (party && party[0]) || null;
+}
+
+export async function joinToParty(partyId: string) {
+  const localId = await db.getLocalId("guest");
+
+  const res = await db.transact([
+    db.tx.party[partyId].link({ players: localId }),
+  ]);
+
+  return res;
+}
+
+export async function kickPlayer(partyId: string, playerId: string) {
+  const res = await db.transact([
+    db.tx.party[partyId].unlink({ players: playerId }),
+  ]);
+
+  return res;
+}
+
+export async function leaveParty(partyId: string) {
+  const localId = await db.getLocalId("guest");
+
+  const res = await db.transact([
+    db.tx.party[partyId].unlink({ players: localId }),
   ]);
 
   return res;

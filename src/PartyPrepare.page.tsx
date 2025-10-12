@@ -14,6 +14,8 @@ export function PartyPrepare() {
   const localId = useUnit($localId);
   const [name, setName] = useState(player.name);
 
+  // console.log(party);
+
   useEffect(() => {
     if (player.name) {
       setName(player.name);
@@ -40,7 +42,7 @@ export function PartyPrepare() {
     <PageLayout>
       <div>
         <h1>Комната "{party.name}"</h1>
-        <p>Ждем всех игроков [поделиться]</p>
+        <p>Ждем всех игроков [поделиться] {party.id}</p>
         <br />
         <form
           style={{
@@ -67,7 +69,7 @@ export function PartyPrepare() {
         <p>Игроки: </p>
         <ul>
           {party.players.map((p) => {
-            return <li>{p.name}</li>;
+            return <li key={p.id}>{p.name}</li>;
           })}
         </ul>
         <p>TODO: кнопка выйти</p>
