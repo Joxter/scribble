@@ -5,6 +5,7 @@ import { DrawingPage } from "./drawing/Drawing.page.tsx";
 import { WordsPage } from "./Words.page.tsx";
 import { PaintingsPage } from "./Paintings.page.tsx";
 import { PartyPrepare } from "./PartyPrepare.page.tsx";
+import { AllPartiesPage } from "./AllParties.page.tsx";
 
 export function Router() {
   return (
@@ -12,6 +13,7 @@ export function Router() {
       <Switch>
         <Route path="/scribble/words" component={WordsPage} />
         <Route path="/scribble/paintings" component={PaintingsPage} />
+        <Route path="/scribble/all-rooms" component={AllPartiesPage} />
         <Route path="/scribble/room/:roomId" component={DrawingPage} />
         <Route path="/scribble/current-party" component={PartyPrepare} />
         <Route path="/scribble" component={HomePage} />
