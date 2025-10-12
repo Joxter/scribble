@@ -15,8 +15,11 @@
   "description": "",
   "dependencies": {
     "@instantdb/core": "^0.20.12",
+    "@linaria/core": "^6.3.0",
+    "@linaria/react": "^6.3.0",
     "@types/react-dom": "^19.1.6",
     "@vitejs/plugin-react": "^4.6.0",
+    "@wyw-in-js/babel-preset": "^0.7.0",
     "effector": "^23.4.1",
     "effector-react": "^23.3.0",
     "lazy-brush": "^2.0.2",
@@ -30,6 +33,11 @@
     "wouter": "^3.7.1"
   },
   "devDependencies": {
+    "@babel/preset-react": "^7.27.1",
+    "@babel/preset-typescript": "^7.27.1",
+    "@linaria/vite": "^5.0.4",
+    "@wyw-in-js/transform": "^0.7.0",
+    "@wyw-in-js/vite": "^0.7.0",
     "gh-pages": "^6.2.0"
   }
 }

@@ -3,7 +3,12 @@ import { useUnit } from "effector-react";
 import { newRandomRoomName } from "./utils.ts";
 import { $player, createNewParty } from "./model/game.model.ts";
 import { PageLayout } from "./components/PageLayout.tsx";
-import css from "./Home.module.css";
+import cssModule from "./Home.module.css";
+import { css } from "@linaria/core";
+
+const title = css`
+  color: red;
+`;
 
 export function HomePage() {
   const player = useUnit($player);
@@ -12,6 +17,7 @@ export function HomePage() {
 
   return (
     <PageLayout>
+      <p className={title}>title red</p>
       <CreateNewParty />
     </PageLayout>
   );
@@ -33,8 +39,8 @@ function CreateNewParty() {
   };
 
   return (
-    <div className={css.form}>
-      <div className={css.field}>
+    <div className={cssModule.form}>
+      <div className={cssModule.field}>
         <label>Имя</label>
         <input
           type="text"
@@ -43,9 +49,9 @@ function CreateNewParty() {
         />
       </div>
 
-      <div className={css.field}>
+      <div className={cssModule.field}>
         <label>Комната</label>
-        <div className={css.roomCodeRow}>
+        <div className={cssModule.roomCodeRow}>
           <input
             type="text"
             value={roomCode}
@@ -55,18 +61,18 @@ function CreateNewParty() {
             onClick={() => {
               alert("todo");
             }}
-            className={css.joinButton}
+            className={cssModule.joinButton}
           >
             Войти
           </button>
         </div>
       </div>
 
-      <div className={css.divider}>
+      <div className={cssModule.divider}>
         <span>или</span>
       </div>
 
-      <button onClick={handleCreateRoom} className={css.createButton}>
+      <button onClick={handleCreateRoom} className={cssModule.createButton}>
         Создать новую игру
       </button>
     </div>
