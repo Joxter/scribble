@@ -10,9 +10,9 @@ function createParties() {
   const allPartiesLoaded = createEvent<Party[]>();
   const $allParties = restore(allPartiesLoaded, []);
 
-  $allParties.watch((allParties) => {
-    console.log("allParties", allParties);
-  });
+  // $allParties.watch((allParties) => {
+  //   console.log("allParties", allParties);
+  // });
 
   db.subscribeQuery({ party: { players: {} } }, (resp) => {
     if (resp.error) console.error(resp.error);

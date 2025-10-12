@@ -6,31 +6,6 @@
   max-width: 320px;
 }
 
-.field {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.field label {
-  font-size: 12px;
-  font-weight: 500;
-  color: #374151;
-}
-
-.field input {
-  padding: 8px 12px;
-  font-size: 14px;
-  border: 1px solid #d1d5db;
-  border-radius: 4px;
-  outline: none;
-  transition: outline 0.2s;
-}
-
-.field input:focus {
-  outline: 2px solid #3b82f6;
-}
-
 .roomCodeRow {
   display: flex;
   gap: 4px;
@@ -75,15 +50,3 @@
   color: #6b7280;
 }
 
-.createButton {
-  width: 100%;
-  padding: 8px 12px;
-  font-size: 14px;
-  background-color: #3b82f6;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: background-color 0.2s;
-  font-weight: 500;
-}

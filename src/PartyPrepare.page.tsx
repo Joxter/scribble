@@ -1,13 +1,24 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { PageLayout } from "./components/PageLayout.tsx";
 import { useUnit } from "effector-react/effector-react.mjs";
-import { $localId } from "./model/game.model.ts";
+import { $localId, $player } from "./model/game.model.ts";
 import { $newParty } from "./model/game-new.model.ts";
+import { css } from "@linaria/core";
+import { TextField } from "./components/TextField.tsx";
+import { Button } from "./components/Button.tsx";
+import { editPlayerName } from "./db-things.ts";
 
 export function PartyPrepare() {
   const party = useUnit($newParty);
+  const player = useUnit($player);
   const localId = useUnit($localId);
-  console.log(party);
+  const [name, setName] = useState(player.name);
+
+  useEffect(() => {
+    if (player.name) {
+      setName(player.name);
+    }
+  }, [player]);
 
   if (!party.id) {
     return (
@@ -31,8 +42,27 @@ export function PartyPrepare() {
         <h1>Комната "{party.name}"</h1>
         <p>Ждем всех игроков [поделиться]</p>
         <br />
-        <p>TODO: моё имя (инпут)</p>
-        <p>TODO: кнопка выйти</p>
+        <form
+          style={{
+            maxWidth: "200px",
+            display: "grid",
+            gap: "4px",
+            gridTemplateColumns: "1fr min-content",
+          }}
+          onSubmit={(ev) => {
+            ev.preventDefault();
+
+            const n = name.trim();
+            if (n !== player.name) {
+              editPlayerName(n);
+            } else {
+              setName(n);
+            }
+          }}
+        >
+          <TextField maxLen={30} label="Имя" onChange={setName} value={name} />
+          <Button type="submit">ОК</Button>
+        </form>
         <br />
         <p>Игроки: </p>
         <ul>
@@ -40,6 +70,7 @@ export function PartyPrepare() {
             return <li>{p.name}</li>;
           })}
         </ul>
+        <p>TODO: кнопка выйти</p>
         <button
           onClick={() => {
             console.log("ещё не готово");

@@ -357,14 +357,6 @@ export async function createNewParty(name: string) {
 }
 */
 
-export async function editPlayerName(name: string) {
-  const localId = await db.getLocalId("guest");
-
-  return await db.transact([
-    db.tx.players[localId].update({ name, localId, avatar: "" }),
-  ]);
-}
-
 export async function joinParty(partyId: string) {
   const localId = await db.getLocalId("guest");
 
@@ -395,7 +387,7 @@ export async function getPlayer(limit = 3) {
   if (player) return player;
 
   const randomName = getUsername();
-  await editPlayerName(randomName);
+  // await editPlayerName(randomName);
 
   return getPlayer(limit - 1);
 }

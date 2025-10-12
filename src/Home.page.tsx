@@ -3,9 +3,11 @@ import { useUnit } from "effector-react";
 import { getUrl, newRandomRoomName } from "./utils.ts";
 import { $player } from "./model/game.model.ts";
 import { PageLayout } from "./components/PageLayout.tsx";
+import { TextField } from "./components/TextField.tsx";
 import cssModule from "./Home.module.css";
 import { useLocation } from "wouter";
 import { createNewParty, getMyParty } from "./model/game-new.model.ts";
+import { Button } from "./components/Button.tsx";
 
 export function HomePage() {
   const player = useUnit($player);
@@ -47,14 +49,7 @@ function CreateNewParty() {
 
   return (
     <div className={cssModule.form}>
-      <div className={cssModule.field}>
-        <label>Имя</label>
-        <input
-          type="text"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-        />
-      </div>
+      <TextField label="Имя" value={name} onChange={setName} />
 
       <div className={cssModule.field}>
         <label>Комната</label>
@@ -79,9 +74,7 @@ function CreateNewParty() {
         <span>или</span>
       </div>
 
-      <button onClick={handleCreateRoom} className={cssModule.createButton}>
-        Создать новую игру
-      </button>
+      <Button onClick={handleCreateRoom}>Создать новую игру</Button>
     </div>
   );
 }

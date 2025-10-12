@@ -7,11 +7,9 @@ If the Instant MCP is available use the tools to create apps and manage schema.
 Before you write ANY code you read ALL of instant-rules.md to understand how to use InstantDB in your code.
 
 ## CSS Styling Rules
-- NEVER use Tailwind CSS classes
-- Use inline styles for simple styling
-- For complex styling, create CSS modules with filename pattern: `<component-name>.module.css`
-- Do NOT use SASS or SCSS
-- Import CSS modules like: `import css from './ComponentName.module.css'`
+- Use linaria and tagged template literal `css` for styling
+- Inline styles for simple styling is OK
+- Don't use `rem`
 
 ## React rules
 - Always use `type` for props
