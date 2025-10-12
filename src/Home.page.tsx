@@ -6,13 +6,9 @@ import { PageLayout } from "./components/PageLayout.tsx";
 import { TextField } from "./components/TextField.tsx";
 import cssModule from "./Home.module.css";
 import { useLocation } from "wouter";
-import {
-  createNewParty,
-  getMyParty,
-  getPartyByName,
-  joinToParty,
-} from "./model/game-new.model.ts";
+import { createNewParty, getMyParty } from "./model/game-new.model.ts";
 import { Button } from "./components/Button.tsx";
+import { editPlayerName, getPartyByName, joinToParty } from "./db-things.ts";
 
 export function HomePage() {
   const player = useUnit($player);
@@ -63,6 +59,7 @@ function CreateNewParty() {
         <form
           onSubmit={(ev) => {
             ev.preventDefault();
+            editPlayerName(name.trim());
             getPartyByName(roomCode).then((party) => {
               if (party) {
                 return joinToParty(party.id).then(() => {

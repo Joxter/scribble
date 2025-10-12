@@ -6,13 +6,17 @@ import { $newParty } from "./model/game-new.model.ts";
 import { css } from "@linaria/core";
 import { TextField } from "./components/TextField.tsx";
 import { Button } from "./components/Button.tsx";
-import { editPlayerName } from "./db-things.ts";
+import { editPlayerName, leaveParty } from "./db-things.ts";
+import { useLocation } from "wouter";
+import { getUrl } from "./utils.ts";
 
 export function PartyPrepare() {
   const party = useUnit($newParty);
   const player = useUnit($player);
   const localId = useUnit($localId);
   const [name, setName] = useState(player.name);
+
+  const [location, navigate] = useLocation();
 
   // console.log(party);
 
@@ -69,10 +73,24 @@ export function PartyPrepare() {
         <p>Игроки: </p>
         <ul>
           {party.players.map((p) => {
-            return <li key={p.id}>{p.name}</li>;
+            return (
+              <li key={p.id}>
+                {p.name}{" "}
+                {p.id === localId && (
+                  <button
+                    onClick={() => {
+                      leaveParty(party.id).then(() => {
+                        navigate(getUrl(""));
+                      });
+                    }}
+                  >
+                    выйти
+                  </button>
+                )}
+              </li>
+            );
           })}
         </ul>
-        <p>TODO: кнопка выйти</p>
         <button
           onClick={() => {
             console.log("ещё не готово");
