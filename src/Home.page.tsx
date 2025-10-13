@@ -6,9 +6,14 @@ import { PageLayout } from "./components/PageLayout.tsx";
 import { TextField } from "./components/TextField.tsx";
 import cssModule from "./Home.module.css";
 import { useLocation } from "wouter";
-import { createNewParty, getMyParty } from "./model/game-new.model.ts";
+import { getMyParty } from "./model/game-new.model.ts";
 import { Button } from "./components/Button.tsx";
-import { editPlayerName, getPartyByName, joinToParty } from "./db-things.ts";
+import {
+  createNewParty,
+  editPlayerName,
+  getPartyByName,
+  joinToParty,
+} from "./db-things.ts";
 
 export function HomePage() {
   const player = useUnit($player);

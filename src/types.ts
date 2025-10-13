@@ -1,3 +1,5 @@
+import { AppSchema } from "../instant.schema.ts";
+
 export type PartyOLD = {
   players: { id: string; name: string }[];
   id: string;
@@ -51,11 +53,26 @@ export type Player = {
   avatar: string;
 };
 
+export type Prettify<T> = {
+  [K in keyof T]: T[K];
+} & {};
+
+export type ValueOf<T> = T[keyof T];
+
+// export type PartyAttrs = Prettify<AppSchema["entities"]["party"]["attrs"]>;
+
+export const GAME_STATUS = {
+  prepare: "prepare",
+  inProgress: "in-progress",
+  finished: "finished",
+} as const;
+
 export type Party = {
   id: string;
   name: string;
+  host: string;
   players: Player[];
-  status: "prepare" | "in-progress" | "finished";
+  status: ValueOf<typeof GAME_STATUS>;
   gameState: {
     drawing: string;
   };

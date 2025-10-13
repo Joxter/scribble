@@ -6,8 +6,9 @@ const _schema = i.schema({
   entities: {
     party: i.entity({
       name: i.string().unique().indexed(), // url
+      host: i.string().optional(), //
       gameState: i.any().optional(),
-      status: i.string(), // prepare in-progress finished
+      status: i.string(), // GAME_STATUS
     }),
     players: i.entity({
       localId: i.string().unique().indexed(),

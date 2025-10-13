@@ -24,6 +24,7 @@ export async function getMyParty() {
 export const $newParty = createStore<Party>({
   gameState: { drawing: "" },
   name: "",
+  host: "",
   status: "prepare",
   players: [],
   id: "",
@@ -50,7 +51,7 @@ liveQuery($localId, (localId) => {
         const party = resp.data.party?.[0];
 
         if (party) {
-          newPartyLoaded(party);
+          newPartyLoaded(party as Party);
           return;
         }
       }
@@ -59,36 +60,3 @@ liveQuery($localId, (localId) => {
     },
   );
 });
-
-export async function createNewParty(name: string) {
-  const partyId = id();
-  const localId = await db.getLocalId("guest");
-
-  // Check if player already has a link to a party with status "prepare"
-  const { players } = await db
-    .queryOnce({
-      players: {
-        $: { where: { id: localId } },
-        parties: { $: { where: { status: "prepare" } } },
-      },
-    })
-    .then((it) => it.data);
-
-  if (players[0]?.parties && players[0].parties.length > 0) {
-    throw new Error(
-      "Player already has a party in prepare status. Please finish or leave that party first.",
-    );
-  }
-
-  const res = await db.transact([
-    db.tx.party[partyId]
-      .create({
-        name,
-        gameState: { drawing: "" },
-        status: "prepare",
-      })
-      .link({ players: localId }),
-  ]);
-
-  return res;
-}

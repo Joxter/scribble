@@ -6,7 +6,12 @@ import { $newParty } from "./model/game-new.model.ts";
 import { css } from "@linaria/core";
 import { TextField } from "./components/TextField.tsx";
 import { Button } from "./components/Button.tsx";
-import { editPlayerName, leaveParty } from "./db-things.ts";
+import {
+  closeParty,
+  editPlayerName,
+  kickPlayer,
+  leaveParty,
+} from "./db-things.ts";
 import { useLocation } from "wouter";
 import { getUrl } from "./utils.ts";
 
@@ -42,10 +47,16 @@ export function PartyPrepare() {
     );
   }
 
+  const hostName =
+    party.players.find((p) => p.id === party.host)?.name || party.host;
+
   return (
     <PageLayout>
       <div>
         <h1>Комната "{party.name}"</h1>
+        <p>
+          хост: <b>{hostName}</b>
+        </p>
         <p>Ждем всех игроков [поделиться] {party.id}</p>
         <br />
         <form
@@ -87,6 +98,15 @@ export function PartyPrepare() {
                     выйти
                   </button>
                 )}
+                {p.id !== localId && hostName && (
+                  <button
+                    onClick={() => {
+                      kickPlayer(party.id, p.id);
+                    }}
+                  >
+                    кикнуть
+                  </button>
+                )}
               </li>
             );
           })}
@@ -97,6 +117,15 @@ export function PartyPrepare() {
           }}
         >
           Начать игру!
+        </button>
+        <br />
+        <br />
+        <button
+          onClick={() => {
+            closeParty(party.id);
+          }}
+        >
+          закрыть игру
         </button>
       </div>
     </PageLayout>
