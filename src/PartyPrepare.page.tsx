@@ -6,11 +6,13 @@ import { $newParty } from "./model/game-new.model.ts";
 import { css } from "@linaria/core";
 import { TextField } from "./components/TextField.tsx";
 import { Button } from "./components/Button.tsx";
+import { Select } from "./components/Select.tsx";
 import {
   closeParty,
   editPlayerName,
   kickPlayer,
   leaveParty,
+  updateGameParams,
 } from "./db-things.ts";
 import { useLocation } from "wouter";
 import { getUrl } from "./utils.ts";
@@ -82,7 +84,53 @@ export function PartyPrepare() {
           <Button type="submit">ОК</Button>
         </form>
         <br />
+        <p>Настройки: </p>
+        <div
+          style={{
+            display: "grid",
+            gap: "8px",
+            gridTemplateColumns: "1fr 1fr",
+            maxWidth: "400px",
+          }}
+        >
+          <Select
+            label="Количество раундов"
+            value={party.gameParams.rounds}
+            onChange={(value) => {
+              updateGameParams(party.id, {
+                ...party.gameParams,
+                rounds: value,
+              });
+            }}
+            options={[
+              { value: 3, label: "3 раунда" },
+              { value: 5, label: "5 раундов" },
+              { value: 7, label: "7 раундов" },
+              { value: 10, label: "10 раундов" },
+            ]}
+            disabled={!imHost}
+          />
+          <Select
+            label="Слов на выбор"
+            value={party.gameParams.wordSuggestions}
+            onChange={(value) => {
+              updateGameParams(party.id, {
+                ...party.gameParams,
+                wordSuggestions: value,
+              });
+            }}
+            options={[
+              { value: 2, label: "2 слова" },
+              { value: 3, label: "3 слова" },
+              { value: 4, label: "4 слова" },
+              { value: 5, label: "5 слов" },
+            ]}
+            disabled={!imHost}
+          />
+        </div>
+        <br />
         <p>Игроки: </p>
+        <br />
         <ul>
           {party.players.map((p) => {
             return (

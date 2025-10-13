@@ -59,6 +59,17 @@ export async function closeParty(partyId: string) {
   return res;
 }
 
+export async function updateGameParams(
+  partyId: string,
+  params: { rounds?: number; wordSuggestions?: number },
+) {
+  const res = await db.transact([
+    db.tx.party[partyId].update({ gameParams: params }),
+  ]);
+
+  return res;
+}
+
 export async function createNewParty(name: string) {
   const partyId = id();
   const localId = await db.getLocalId("guest");
