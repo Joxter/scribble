@@ -17,6 +17,9 @@ A real-time collaborative drawing application built with React and InstantDB. Cr
 - [ ] параметры новой игры
   - [ ] количество раундов
   - [ ] количество слов на выбор
+
+
+Backlog:
 - [ ] если хост вышел из комнаты, то им назначается кто-то другой (с минимальным id?)
 
  ## Features

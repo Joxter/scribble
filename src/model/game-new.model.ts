@@ -4,6 +4,7 @@ import { Party } from "../types.ts";
 import { liveQuery } from "../utils.ts";
 import { id } from "@instantdb/core";
 import { $localId } from "./game.model.ts";
+import { newParty } from "./utils.ts";
 
 export async function getMyParty() {
   const localId = await db.getLocalId("guest");
@@ -21,14 +22,7 @@ export async function getMyParty() {
   return players[0]?.parties?.[0] || null;
 }
 
-export const $newParty = createStore<Party>({
-  gameState: { drawing: "" },
-  name: "",
-  host: "",
-  status: "prepare",
-  players: [],
-  id: "",
-});
+export const $newParty = createStore<Party>(newParty());
 export const newPartyLoaded = createEvent<Party>();
 $newParty.on(newPartyLoaded, (_, party) => party);
 

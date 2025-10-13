@@ -112,22 +112,26 @@ export function PartyPrepare() {
             );
           })}
         </ul>
-        <button
-          onClick={() => {
-            console.log("ещё не готово");
-          }}
-        >
-          Начать игру!
-        </button>
-        <br />
-        <br />
-        <button
-          onClick={() => {
-            closeParty(party.id);
-          }}
-        >
-          закрыть игру
-        </button>
+        {imHost && (
+          <div>
+            <button
+              onClick={() => {
+                console.log("ещё не готово");
+              }}
+            >
+              Начать игру!
+            </button>
+            <br />
+            <br />
+            <button
+              onClick={() => {
+                closeParty(party.id);
+              }}
+            >
+              закрыть игру
+            </button>
+          </div>
+        )}
       </div>
     </PageLayout>
   );

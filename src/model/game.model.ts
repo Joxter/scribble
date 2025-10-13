@@ -4,7 +4,7 @@ import { eventsToGameState, liveQuery, URL_ROOM_NAME } from "../utils.ts";
 import { db } from "../DB.ts";
 import { getUsername } from "../code-worlds.ts";
 import { createCurrentLine, createDrawing } from "./drawing.model.ts";
-import { getChatEvents } from "./utils.ts";
+import { getChatEvents, newParty } from "./utils.ts";
 import { editPlayerName } from "../db-things.ts";
 
 const setLocalId = createEvent<string>();
@@ -15,14 +15,7 @@ db.getLocalId("guest").then((a) => setLocalId(a));
 getPlayer();
 
 const setParty = createEvent<Party>();
-export const $party = restore(setParty, {
-  gameState: { drawing: "" },
-  name: "",
-  host: "",
-  players: [],
-  status: "prepare",
-  id: "",
-});
+export const $party = restore(setParty, newParty());
 
 export const setRoomId = createEvent<string>();
 export const $roomId = restore(setRoomId, URL_ROOM_NAME);

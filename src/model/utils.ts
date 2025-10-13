@@ -1,4 +1,9 @@
-import { CanvasAndChatHistory, LineEvent } from "../types.ts";
+import {
+  CanvasAndChatHistory,
+  GAME_STATUS,
+  LineEvent,
+  Party,
+} from "../types.ts";
 
 export function findLastEventIndex(
   arr: CanvasAndChatHistory[],
@@ -10,6 +15,21 @@ export function findLastEventIndex(
     }
   }
   return null;
+}
+
+export function newParty(): Party {
+  return {
+    gameState: { drawing: "" },
+    name: "",
+    host: "",
+    gameParams: {
+      rounds: 5,
+      wordSuggestions: 3,
+    },
+    status: GAME_STATUS.prepare,
+    players: [],
+    id: "",
+  };
 }
 
 export function getChatEvents(

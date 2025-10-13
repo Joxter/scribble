@@ -8,6 +8,11 @@ const _schema = i.schema({
       name: i.string().unique().indexed(), // url
       host: i.string().optional(), //
       gameState: i.any().optional(),
+      // gameParams: {
+      //   rounds: number,
+      //   wordSuggestions: number // количество слов на выбор
+      // }
+      gameParams: i.any().optional(),
       status: i.string(), // GAME_STATUS
     }),
     players: i.entity({

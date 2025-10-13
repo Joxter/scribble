@@ -76,6 +76,10 @@ export type Party = {
   gameState: {
     drawing: string;
   };
+  gameParams: {
+    rounds: number;
+    wordSuggestions: number; // количество слов на выбор
+  };
 };
 
 type ChatAndLines = {
