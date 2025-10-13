@@ -49,6 +49,7 @@ export function PartyPrepare() {
 
   const hostName =
     party.players.find((p) => p.id === party.host)?.name || party.host;
+  const imHost = localId === party.host;
 
   return (
     <PageLayout>
@@ -98,7 +99,7 @@ export function PartyPrepare() {
                     выйти
                   </button>
                 )}
-                {p.id !== localId && hostName && (
+                {p.id !== localId && imHost && (
                   <button
                     onClick={() => {
                       kickPlayer(party.id, p.id);
