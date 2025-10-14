@@ -1,13 +1,14 @@
 import { useUnit } from "effector-react";
 import { $party, $allChatEvents } from "../model/game.model.ts";
 import { useAutoScroll } from "../hooks/useAutoScroll";
+import { $newParty } from "../model/game-new.model.ts";
 
 export function Messages() {
-  const [events, { players2 }] = useUnit([$allChatEvents, $party]);
+  const [events, { players }] = useUnit([$allChatEvents, $newParty]);
   const scrollRef = useAutoScroll(events);
 
   const playersMap = Object.fromEntries(
-    (players2 || []).map((it) => {
+    players.map((it) => {
       return [it.id, it.name];
     }),
   );

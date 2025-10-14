@@ -47,54 +47,10 @@ export const $compiledGameStateAndPaints = combine($allRoomEvents, (events) => {
   );
 });
 
-export const $paintingsToCreate = $compiledGameStateAndPaints.map(
-  (it) => it[1],
-);
-
-export const $imDrawing = combine(
-  $compiledGameStateAndPaints,
-  $localId,
-  ([{ state }], localId) => {
-    return state.state === "drawing" && state.playerId === localId
-      ? state.word
-      : "";
-  },
-);
-
-export const $iRevealed = combine(
-  $compiledGameStateAndPaints,
-  $localId,
-  ([{ state }], localId) => {
-    return state.state === "drawing" &&
-      state.revealed.find((it) => it.playerId === localId)
-      ? state.word
-      : "";
-  },
-);
-
-export const $clue = combine(
-  $compiledGameStateAndPaints,
-  $localId,
-  ([{ state }], localId) => {
-    if (state.state === "drawing") {
-      return state.word.replace(/\S/g, "_");
-    }
-
-    return null;
-  },
-);
-
-export const $imChoosingWord = combine(
-  $compiledGameStateAndPaints,
-  $localId,
-  ([{ state }], localId) => {
-    if (state.state === "choosing-word") {
-      return state.words.split("|");
-    }
-
-    return null;
-  },
-);
+export const $imDrawing = createStore(false);
+export const $imChoosingWord = createStore<string[] | null>(null);
+export const $iRevealed = createStore("");
+export const $clue = createStore<string | null>(null);
 
 // todo USE IT for EverybodyRevealed and other stuf
 export const $imServer = $imDrawing;

@@ -1,69 +1,22 @@
 import { useUnit } from "effector-react";
-import {
-  $party,
-  $localId,
-  joinParty,
-  leaveParty,
-  $compiledGameStateAndPaints,
-  $roomId,
-  closeRoom,
-} from "../model/game.model.ts";
 import { Player } from "../types.ts";
 import pencilSvg from "./Pencil.svg";
-import { $allParties } from "../model/app.ts";
+import { $newParty } from "../model/game-new.model.ts";
 
 export function ListOfPlayers() {
-  const party = useUnit($party);
-  const localId = useUnit($localId);
-  const allParties = useUnit($allParties);
-  const roomId = useUnit($roomId);
-  const [gameState] = useUnit($compiledGameStateAndPaints);
+  const party = useUnit($newParty);
 
-  const players = party.players2 || [];
+  const stablePlayers = party.gameState.players.map((id) => {
+    return party.players.find((p) => p.id === id)!;
+  });
 
-  const joined = !!players.find((p: Player) => p.localId === localId);
-  const drawingId =
-    gameState.state.state === "drawing" ? gameState.state.playerId : "";
+  const drawingId = "not implemented, take something from gameState";
 
   return (
     <div>
-      <p>
-        Комната "
-        {
-          allParties.find((it) => {
-            return it.id === roomId;
-          })?.name
-        }
-        {`" `}
-        <br />
-        {joined ? (
-          <button
-            type="button"
-            onClick={() => {
-              leaveParty(party.id);
-            }}
-          >
-            уйти
-          </button>
-        ) : (
-          <button
-            type="button"
-            onClick={() => {
-              joinParty(party.id);
-            }}
-          >
-            зайти
-          </button>
-        )}
-      </p>
-      <button
-        type="button"
-        onClick={() => {
-          closeRoom(party.id);
-        }}
-      >
-        закрыть
-      </button>
+      <p>Комната "{party.name}"</p>
+      <br />
+      <p>Игроки:</p>
 
       <div
         style={{
@@ -72,8 +25,7 @@ export function ListOfPlayers() {
           gap: "4px",
         }}
       >
-        {players.length === 0 ? <p>никого нет</p> : null}
-        {players?.map((player: Player) => {
+        {stablePlayers?.map((player: Player) => {
           const isDrawingPlayer = player.id === drawingId;
 
           return (

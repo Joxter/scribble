@@ -75,6 +75,7 @@ export type Party = {
   status: ValueOf<typeof GAME_STATUS>;
   gameState: {
     drawing: string;
+    players: string[]; // localIds
   };
   gameParams: {
     rounds: number;

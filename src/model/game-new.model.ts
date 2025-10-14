@@ -1,8 +1,7 @@
 import { db } from "../DB.ts";
 import { createEvent, createStore } from "effector";
-import { Party } from "../types.ts";
+import { GAME_STATUS, Party } from "../types.ts";
 import { liveQuery } from "../utils.ts";
-import { id } from "@instantdb/core";
 import { $localId } from "./game.model.ts";
 import { newParty } from "./utils.ts";
 
@@ -34,7 +33,20 @@ liveQuery($localId, (localId) => {
       party: {
         $: {
           where: {
-            and: [{ status: "prepare" }, { "players.id": localId }],
+            or: [
+              {
+                and: [
+                  { status: GAME_STATUS.prepare },
+                  { "players.id": localId },
+                ],
+              },
+              {
+                and: [
+                  { status: GAME_STATUS.inProgress },
+                  { "players.id": localId },
+                ],
+              },
+            ],
           },
         },
         players: {},

@@ -17,6 +17,8 @@ import {
 } from "./db-things.ts";
 import { useLocation } from "wouter";
 import { getUrl } from "./utils.ts";
+import { GAME_STATUS } from "./types.ts";
+import { DrawingPage } from "./Drawing.page.tsx";
 
 export function PartyPrepare() {
   const party = useUnit($newParty);
@@ -40,6 +42,10 @@ export function PartyPrepare() {
         <p>группа не найдена</p>
       </PageLayout>
     );
+  }
+
+  if (party.status === GAME_STATUS.inProgress) {
+    return <DrawingPage />;
   }
 
   if (party.status !== "prepare") {

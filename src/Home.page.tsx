@@ -6,7 +6,7 @@ import { PageLayout } from "./components/PageLayout.tsx";
 import { TextField } from "./components/TextField.tsx";
 import cssModule from "./Home.module.css";
 import { useLocation } from "wouter";
-import { getMyParty } from "./model/game-new.model.ts";
+import { $newParty } from "./model/game-new.model.ts";
 import { Button } from "./components/Button.tsx";
 import {
   createNewParty,
@@ -14,22 +14,21 @@ import {
   getPreparePartyByName,
   joinToParty,
 } from "./db-things.ts";
+import { GAME_STATUS } from "./types.ts";
 
 export function HomePage() {
+  const party = useUnit($newParty);
   const player = useUnit($player);
   const [location, navigate] = useLocation();
 
   useEffect(() => {
-    getMyParty()
-      .then((party) => {
-        if (party) {
-          navigate(getUrl("current-party"));
-        }
-      })
-      .catch((err) => {
-        console.error(err);
-      });
-  }, []);
+    if (
+      party.status === GAME_STATUS.prepare ||
+      party.status === GAME_STATUS.inProgress
+    ) {
+      navigate(getUrl("current-party"));
+    }
+  }, [party]);
 
   if (!player.id) return null;
 
