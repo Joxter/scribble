@@ -1,6 +1,7 @@
 import { db } from "./DB.ts";
 import { GAME_STATUS, Party } from "./types.ts";
 import { id } from "@instantdb/core";
+import { $newParty } from "./model/game-new.model.ts";
 
 export async function editPlayerName(name: string) {
   const localId = await db.getLocalId("guest");
@@ -49,6 +50,28 @@ export async function joinToParty(partyId: string) {
   ]);
 
   return res;
+}
+
+export async function startParty(_party: Party) {
+  const partyId = _party.id;
+
+  const party = await getPartyById(partyId);
+  if (!party) throw new Error(`Party not found '${partyId}'`);
+
+  if (party.status !== GAME_STATUS.prepare)
+    throw new Error(`Can't start to party in '${party.status}' status`);
+
+  const res = await db.transact([
+    db.tx.party[partyId].update({
+      status: GAME_STATUS.inProgress,
+      gameState: {
+        ...party.gameState,
+        players: _party.players.map((p) => p.id),
+      },
+    }),
+  ]);
+
+  return;
 }
 
 export async function kickPlayer(partyId: string, playerId: string) {

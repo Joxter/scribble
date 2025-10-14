@@ -25,6 +25,7 @@ export function newParty(): Party {
     gameParams: {
       rounds: 5,
       wordSuggestions: 3,
+      drawTime: 60,
     },
     status: GAME_STATUS.prepare,
     players: [],

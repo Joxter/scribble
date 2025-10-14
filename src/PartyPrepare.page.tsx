@@ -12,6 +12,7 @@ import {
   editPlayerName,
   kickPlayer,
   leaveParty,
+  startParty,
   updateGameParams,
 } from "./db-things.ts";
 import { useLocation } from "wouter";
@@ -182,7 +183,7 @@ export function PartyPrepare() {
           <div>
             <button
               onClick={() => {
-                console.log("ещё не готово");
+                startParty(party);
               }}
             >
               Начать игру!
