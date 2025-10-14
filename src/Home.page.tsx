@@ -11,7 +11,7 @@ import { Button } from "./components/Button.tsx";
 import {
   createNewParty,
   editPlayerName,
-  getPartyByName,
+  getPreparePartyByName,
   joinToParty,
 } from "./db-things.ts";
 
@@ -65,7 +65,7 @@ function CreateNewParty() {
           onSubmit={(ev) => {
             ev.preventDefault();
             editPlayerName(name.trim());
-            getPartyByName(roomCode).then((party) => {
+            getPreparePartyByName(roomCode).then((party) => {
               if (party) {
                 return joinToParty(party.id).then(() => {
                   navigate(getUrl("current-party"));

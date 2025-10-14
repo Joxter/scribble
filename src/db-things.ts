@@ -10,7 +10,7 @@ export async function editPlayerName(name: string) {
   ]);
 }
 
-export async function getPartyByName(name: string) {
+export async function getPreparePartyByName(name: string) {
   const {
     data: { party },
   } = await db.queryOnce({
@@ -22,8 +22,27 @@ export async function getPartyByName(name: string) {
   return (party && party[0]) || null;
 }
 
+export async function getPartyById(partyId: string) {
+  const {
+    data: { party },
+  } = await db.queryOnce({
+    party: { $: { where: { id: partyId } } },
+  });
+
+  return party[0] || null;
+}
+
 export async function joinToParty(partyId: string) {
   const localId = await db.getLocalId("guest");
+
+  const party = await getPartyById(partyId);
+  if (!party) {
+    throw new Error(`Party not found '${partyId}'`);
+  }
+
+  if (party.status !== GAME_STATUS.prepare) {
+    throw new Error(`Can't join to party in '${party.status}' status`);
+  }
 
   const res = await db.transact([
     db.tx.party[partyId].link({ players: localId }),
