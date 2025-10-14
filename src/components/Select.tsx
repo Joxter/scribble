@@ -1,11 +1,11 @@
 import React from "react";
 import { css } from "@linaria/core";
 
-type Props = {
+type Props<T> = {
   label?: string;
-  value: number;
-  onChange: (value: number) => void;
-  options: { value: number; label: string }[];
+  value: T;
+  onChange: (value: T) => void;
+  options: { value: T; label: string }[];
   disabled?: boolean;
 };
 
@@ -42,17 +42,30 @@ const root = css`
   }
 `;
 
-export function Select({ label, value, onChange, options, disabled }: Props) {
+export function Select<T extends string | number>({
+  label,
+  value,
+  onChange,
+  options,
+  disabled,
+}: Props<T>) {
   return (
     <div className={root}>
       {label && <label>{label}</label>}
       <select
-        value={value}
-        onChange={(e) => onChange(Number(e.target.value))}
+        value={String(value)}
+        onChange={(e) => {
+          const selectedOption = options.find(
+            (opt) => String(opt.value) === e.target.value,
+          );
+          if (selectedOption) {
+            onChange(selectedOption.value);
+          }
+        }}
         disabled={disabled}
       >
         {options.map((option) => (
-          <option key={option.value} value={option.value}>
+          <option key={String(option.value)} value={String(option.value)}>
             {option.label}
           </option>
         ))}

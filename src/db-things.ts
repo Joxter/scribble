@@ -1,7 +1,6 @@
 import { db } from "./DB.ts";
-import { GAME_STATUS } from "./types.ts";
+import { GAME_STATUS, Party } from "./types.ts";
 import { id } from "@instantdb/core";
-import { newParty } from "./model/utils.ts";
 
 export async function editPlayerName(name: string) {
   const localId = await db.getLocalId("guest");
@@ -61,7 +60,7 @@ export async function closeParty(partyId: string) {
 
 export async function updateGameParams(
   partyId: string,
-  params: { rounds?: number; wordSuggestions?: number },
+  params: Partial<Party["gameParams"]>,
 ) {
   const res = await db.transact([
     db.tx.party[partyId].update({ gameParams: params }),
@@ -92,8 +91,13 @@ export async function createNewParty(name: string) {
 
   const res = await db.transact([
     db.tx.party[partyId]
-      //
-      .create(newParty())
+      .create({
+        gameState: { drawing: "" },
+        name: name,
+        host: localId,
+        gameParams: { rounds: 5, wordSuggestions: 3 },
+        status: GAME_STATUS.prepare,
+      })
       .link({ players: localId }),
   ]);
 

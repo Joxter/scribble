@@ -84,13 +84,14 @@ export function PartyPrepare() {
           <Button type="submit">ОК</Button>
         </form>
         <br />
-        <p>Настройки: </p>
         <div
           style={{
             display: "grid",
             gap: "8px",
-            gridTemplateColumns: "1fr 1fr",
-            maxWidth: "400px",
+            padding: "8px",
+            borderRadius: "4px",
+            backgroundColor: "#bddcf3",
+            maxWidth: "200px",
           }}
         >
           <Select
@@ -124,6 +125,23 @@ export function PartyPrepare() {
               { value: 3, label: "3 слова" },
               { value: 4, label: "4 слова" },
               { value: 5, label: "5 слов" },
+            ]}
+            disabled={!imHost}
+          />
+          <Select
+            label="Время"
+            value={party.gameParams.drawTime || 60}
+            onChange={(value) => {
+              updateGameParams(party.id, {
+                ...party.gameParams,
+                drawTime: value,
+              });
+            }}
+            options={[
+              { value: 10, label: "10 секунд" },
+              { value: 30, label: "30 секунд" },
+              { value: 60, label: "60 секунд" },
+              { value: 90, label: "90 секунд" },
             ]}
             disabled={!imHost}
           />

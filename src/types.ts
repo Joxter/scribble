@@ -79,6 +79,7 @@ export type Party = {
   gameParams: {
     rounds: number;
     wordSuggestions: number; // количество слов на выбор
+    drawTime: number; // максимальное время на рисунок (сек)
   };
 };
 
