@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useUnit } from "effector-react";
-import { getUrl, newRandomRoomName } from "./utils.ts";
+import { getUrl, newRandomWords } from "./utils.ts";
 import { $player } from "./model/game.model.ts";
 import { PageLayout } from "./components/PageLayout.tsx";
 import { TextField } from "./components/TextField.tsx";
@@ -17,18 +17,7 @@ import {
 import { GAME_STATUS } from "./types.ts";
 
 export function HomePage() {
-  const party = useUnit($newParty);
   const player = useUnit($player);
-  const [location, navigate] = useLocation();
-
-  useEffect(() => {
-    if (
-      party.status === GAME_STATUS.prepare ||
-      party.status === GAME_STATUS.inProgress
-    ) {
-      navigate(getUrl("current-party"));
-    }
-  }, [party]);
 
   if (!player.id) return null;
 
@@ -44,7 +33,7 @@ function CreateNewParty() {
   const [roomCode, setRoomCode] = useState("");
   const [name, setName] = useState(player.name);
 
-  const [newPartyName, setNewPartyName] = useState(newRandomRoomName().trim());
+  const [newPartyName, setNewPartyName] = useState(newRandomWords(3).join("-"));
   const [location, navigate] = useLocation();
 
   const handleCreateRoom = async () => {

@@ -101,17 +101,17 @@ export function fix2(n: number | string) {
   return n;
 }
 
-export function newRandomRoomName() {
+export function newRandomWords(count: number) {
   const arr: string[] = [];
 
-  while (arr.length < 3) {
+  while (arr.length < count) {
     const w = randomFrom(words);
     if (!arr.includes(w)) {
       arr.push(w);
     }
   }
 
-  return arr.join("-");
+  return arr;
 }
 
 export function clamp(n: number, min: number, max: number): number;

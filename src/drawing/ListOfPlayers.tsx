@@ -2,6 +2,7 @@ import { useUnit } from "effector-react";
 import { Player } from "../types.ts";
 import pencilSvg from "./Pencil.svg";
 import { $newParty } from "../model/game-new.model.ts";
+import { closeParty } from "../db-things.ts";
 
 export function ListOfPlayers() {
   const party = useUnit($newParty);
@@ -14,7 +15,16 @@ export function ListOfPlayers() {
 
   return (
     <div>
-      <p>Комната "{party.name}"</p>
+      <p>
+        Комната "{party.name}"{" "}
+        <button
+          onClick={() => {
+            closeParty(party.id);
+          }}
+        >
+          close
+        </button>
+      </p>
       <br />
       <p>Игроки:</p>
 

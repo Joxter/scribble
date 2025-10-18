@@ -62,6 +62,7 @@ export type ValueOf<T> = T[keyof T];
 // export type PartyAttrs = Prettify<AppSchema["entities"]["party"]["attrs"]>;
 
 export const GAME_STATUS = {
+  nothing: "nothing",
   prepare: "prepare",
   inProgress: "in-progress",
   finished: "finished",
@@ -74,8 +75,12 @@ export type Party = {
   players: Player[];
   status: ValueOf<typeof GAME_STATUS>;
   gameState: {
-    drawing: string;
     players: string[]; // localIds
+    innerState: {
+      state: "choosing-word";
+      playerId: string;
+      words: string;
+    };
   };
   gameParams: {
     rounds: number;

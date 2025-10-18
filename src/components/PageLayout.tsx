@@ -19,6 +19,7 @@ export function PageLayout({ children }: Props) {
       <main className={css.content}>{children}</main>
 
       <footer className={css.footer}>
+        <Link href={getUrl("")}>Главная</Link>
         <Link href={getUrl("all-rooms")}>Все комнаты</Link>
         <Link href={getUrl("words")}>Слова</Link>
         <Link href={getUrl("paintings")}>Картины</Link>

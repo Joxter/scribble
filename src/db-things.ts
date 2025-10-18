@@ -1,7 +1,7 @@
 import { db } from "./DB.ts";
 import { GAME_STATUS, Party } from "./types.ts";
 import { id } from "@instantdb/core";
-import { $newParty } from "./model/game-new.model.ts";
+import { newRandomWords } from "./utils.ts";
 
 export async function editPlayerName(name: string) {
   const localId = await db.getLocalId("guest");
@@ -61,12 +61,19 @@ export async function startParty(_party: Party) {
   if (party.status !== GAME_STATUS.prepare)
     throw new Error(`Can't start to party in '${party.status}' status`);
 
+  const players = _party.players.map((p) => p.id);
+
   const res = await db.transact([
     db.tx.party[partyId].update({
       status: GAME_STATUS.inProgress,
       gameState: {
         ...party.gameState,
-        players: _party.players.map((p) => p.id),
+        players: players,
+        innerState: {
+          state: "choosing-word",
+          playerId: players[0],
+          words: newRandomWords(3),
+        },
       },
     }),
   ]);

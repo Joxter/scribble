@@ -19,15 +19,11 @@ export function findLastEventIndex(
 
 export function newParty(): Party {
   return {
-    gameState: { drawing: "" },
+    gameState: { players: [], innerState: {} as any },
     name: "",
     host: "",
-    gameParams: {
-      rounds: 5,
-      wordSuggestions: 3,
-      drawTime: 60,
-    },
-    status: GAME_STATUS.prepare,
+    gameParams: { rounds: 5, wordSuggestions: 3, drawTime: 60 },
+    status: GAME_STATUS.nothing,
     players: [],
     id: "",
   };
