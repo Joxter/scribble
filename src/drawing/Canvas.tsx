@@ -2,9 +2,7 @@ import React, { useState, useRef, useEffect, useCallback, memo } from "react";
 import { useUnit } from "effector-react";
 import { canvasSize } from "../utils";
 import {
-  $currentLine,
   $debugMode,
-  $imDrawing,
   $polylinePaths,
   $rawPath,
   $renderMode,
@@ -12,9 +10,9 @@ import {
   lineExtended,
   $svgCanvasPaths,
   $svgCurrentLine,
-  addLine,
   lineEnded,
 } from "../model/game.model.ts";
+import { $imDrawing } from "../model/game-new.model.ts";
 
 const PIXEL_RATIO = window.devicePixelRatio || 1;
 

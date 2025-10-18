@@ -112,12 +112,12 @@ export function createDrawing({
   });
 
   undoClicked.watch(() => {
-    console.log("db.transact undoClicked");
-    db.transact(
-      db.tx.roomEvent[id()]
-        .create({ it: { type: "undo" } })
-        .link({ party: $roomId.getState() }),
-    );
+    console.log("undoClicked, not implemented");
+    // db.transact(
+    //   db.tx.roomEvent[id()]
+    //     .create({ it: { type: "undo" } })
+    //     .link({ party: $roomId.getState() }),
+    // );
   });
 
   return {
@@ -205,11 +205,12 @@ export function createCurrentLine(
         loading = true;
         // const start = Date.now();
         db.transact(
-          db.tx.curretLine[lineId].update({
-            width: currentLine.width,
-            dots: currentLine.dots,
-            color: currentLine.color,
-          }),
+          [],
+          // db.tx.curretLine[lineId].update({
+          //   width: currentLine.width,
+          //   dots: currentLine.dots,
+          //   color: currentLine.color,
+          // }),
         )
           // .then(() => {
           //   return delay(1000);
@@ -229,8 +230,9 @@ export function createCurrentLine(
   $topic.on(onTopic, (s, ev) => ev);
 
   liveQuery($roomId, (roomId) => {
-    if (!roomId) return () => {};
+    if (!roomId || true) return () => {};
 
+    /*
     const room = db.joinRoom("drawing", roomId);
 
     const uns = $currentLine.watch((currentLine) => {
@@ -251,22 +253,23 @@ export function createCurrentLine(
       unsubscribeTopic();
       room.leaveRoom();
     };
+    */
   });
 
   addLine.watch((newLine) => {
-    console.log("db.transact addLine");
-    db.transact(
-      db.tx.roomEvent[id()]
-        .create({
-          it: {
-            type: "line",
-            dots: newLine.dots,
-            color: newLine.color,
-            width: newLine.width,
-          },
-        })
-        .link({ party: $roomId.getState() }),
-    );
+    console.warn("todo addLine");
+    // db.transact(
+    //   db.tx.roomEvent[id()]
+    //     .create({
+    //       it: {
+    //         type: "line",
+    //         dots: newLine.dots,
+    //         color: newLine.color,
+    //         width: newLine.width,
+    //       },
+    //     })
+    //     .link({ party: $roomId.getState() }),
+    // );
   });
 
   return {

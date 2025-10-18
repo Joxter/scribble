@@ -79,7 +79,7 @@ export type Party = {
     innerState: {
       state: "choosing-word";
       playerId: string;
-      words: string;
+      words: string[];
     };
   };
   gameParams: {

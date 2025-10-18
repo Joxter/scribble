@@ -47,13 +47,8 @@ export const $compiledGameStateAndPaints = combine($allRoomEvents, (events) => {
   );
 });
 
-export const $imDrawing = createStore(false);
-export const $imChoosingWord = createStore<string[] | null>(null);
 export const $iRevealed = createStore("");
 export const $clue = createStore<string | null>(null);
-
-// todo USE IT for EverybodyRevealed and other stuf
-export const $imServer = $imDrawing;
 
 export const {
   currentLineChanged,
@@ -64,7 +59,7 @@ export const {
   lineEnded,
   $lineExtendedCount,
   ...pres
-} = createCurrentLine($roomId, $imDrawing);
+} = createCurrentLine($roomId, createStore(false) /*$imDrawing*/);
 
 export const $renderMode = createStore<"normal" | "polyline" | "tldraw">(
   "tldraw",
@@ -262,17 +257,6 @@ deleteRoomEvents_DEV.watch(async () => {
   }
 });
 */
-
-sample({ source: $party, clock: makeWeDraw_DEV }).watch((party) => {
-  db.transact(
-    db.tx.party[party.id].update({
-      gameState: {
-        ...party.gameState,
-        drawing: party.gameState.drawing,
-      },
-    }),
-  );
-});
 
 /*
 export async function createNewParty(name: string) {

@@ -77,6 +77,7 @@ export async function startParty(_party: Party) {
       },
     }),
   ]);
+  // todo add message "started! X выбирает слово"
 
   return;
 }

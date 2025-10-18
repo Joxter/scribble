@@ -1,5 +1,5 @@
 import { db } from "../DB.ts";
-import { createEvent, createStore } from "effector";
+import { combine, createEvent, createStore } from "effector";
 import { GAME_STATUS, Party } from "../types.ts";
 import { liveQuery } from "../utils.ts";
 import { $localId } from "./game.model.ts";
@@ -24,6 +24,34 @@ export async function getMyParty() {
 export const $newParty = createStore<Party>(newParty());
 export const newPartyLoaded = createEvent<Party>();
 $newParty.on(newPartyLoaded, (_, party) => party);
+
+export const $imDrawing = $newParty.map((p) => {
+  // return p.status === GAME_STATUS.inProgress &&p.gameState.innerState.state
+  return false;
+});
+
+export const $choosingWord = combine($localId, $newParty, (localId, p) => {
+  if (p.status !== GAME_STATUS.inProgress) return { choose: false };
+
+  if (p.gameState.innerState.state === "choosing-word") {
+    if (localId === p.gameState.innerState.playerId) {
+      return {
+        choose: true,
+        iam: true,
+        who: p.gameState.innerState.playerId,
+        words: p.gameState.innerState.words,
+      };
+    }
+    return {
+      choose: true,
+      iam: false,
+      who: p.gameState.innerState.playerId,
+      words: [],
+    };
+  }
+
+  return { choose: false };
+});
 
 liveQuery($localId, (localId) => {
   if (!localId) return () => {};

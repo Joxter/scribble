@@ -5,8 +5,6 @@ import { DeveloperTools } from "./drawing/DeveloperTools.tsx";
 import { Tools } from "./drawing/Tools.tsx";
 import { ListOfPlayers } from "./drawing/ListOfPlayers.tsx";
 import {
-  $imChoosingWord,
-  $imDrawing,
   chooseWordClicked_DEV,
   newWordSelected,
   $clue,
@@ -17,7 +15,11 @@ import css from "./drawing/Page.module.css";
 import { EnterGuess } from "./drawing/EnterGuess.tsx";
 import { Messages } from "./drawing/Messages.tsx";
 import { Fps } from "./components/Fps.tsx";
-import { $newParty } from "./model/game-new.model.ts";
+import {
+  $choosingWord,
+  $imDrawing,
+  $newParty,
+} from "./model/game-new.model.ts";
 import { PageLayout } from "./components/PageLayout.tsx";
 
 export function DrawingPage() {
@@ -25,10 +27,12 @@ export function DrawingPage() {
 
   const roomId = party.id;
 
-  const [imDrawing, imChoosingWord, clue, iRevealed] = useUnit(
-    //
-    [$imDrawing, $imChoosingWord, $clue, $iRevealed],
-  );
+  const [imDrawing, choosingWord, clue, iRevealed] = useUnit([
+    $imDrawing,
+    $choosingWord,
+    $clue,
+    $iRevealed,
+  ]);
 
   // Update the room ID in the store when the URL parameter changes
   useEffect(() => {
@@ -51,9 +55,13 @@ export function DrawingPage() {
         </div>
 
         <div className={css.canvasSection}>
-          {imChoosingWord ? (
+          {choosingWord.choose && choosingWord.iam ? (
             <div style={{ width: "100%", aspectRatio: "1" }}>
-              <ChooseWord words={imChoosingWord} />
+              <ChooseWord words={choosingWord.words} />
+            </div>
+          ) : choosingWord.choose && !choosingWord.iam ? (
+            <div style={{ width: "100%", aspectRatio: "1" }}>
+              <p>{choosingWord.who} выбирает</p>
             </div>
           ) : (
             <Canvas />
