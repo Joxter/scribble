@@ -1,6 +1,6 @@
 import { db } from "../DB.ts";
 import { combine, createEvent, createStore, sample } from "effector";
-import { GAME_STATUS, UserMessageEvent, Party } from "../types.ts";
+import { GAME_STATUS, UserMessageEvent, Party, NewWord } from "../types.ts";
 import { liveQuery } from "../utils.ts";
 import { $localId } from "./game.model.ts";
 import { newParty } from "./utils.ts";
@@ -31,10 +31,24 @@ export const $allChatEvents = createStore<Party["roomEvents"]>([]);
 $allChatEvents.on(newPartyLoaded, (_, party) => party.roomEvents);
 
 export const messageSent = createEvent<{ guess: string }>();
+export const newWordSelected = createEvent<string>();
 
-export const $imDrawing = $newParty.map((p) => {
-  // return p.status === GAME_STATUS.inProgress &&p.gameState.innerState.state
-  return false;
+export const $drawing = combine($localId, $newParty, (loadId, p) => {
+  if (
+    p.status === GAME_STATUS.inProgress &&
+    p.gameState.innerState.state === "drawing"
+  ) {
+    const s = p.gameState.innerState;
+
+    return {
+      drawing: true,
+      iam: loadId === s.playerId,
+      who: s.playerId,
+      word: s.word,
+    };
+  }
+
+  return { drawing: false };
 });
 
 export const $choosingWord = combine($localId, $newParty, (localId, p) => {
@@ -101,6 +115,35 @@ liveQuery($localId, (localId) => {
       console.log(resp);
     },
   );
+});
+
+sample({
+  source: [$localId, $newParty] as const,
+  clock: newWordSelected,
+  fn: (a, b) => [a, b] as const,
+}).watch(([[localId, party], word]) => {
+  const event: Omit<NewWord, "id"> = {
+    type: "new-selected-word",
+    payload: { playerId: localId, word },
+  };
+
+  // todo create paint? (topic ? )
+  db.transact([
+    db.tx.roomEvent[id()]
+      //
+      .create(event)
+      .link({ party: party.id }),
+    db.tx.party[party.id].update({
+      gameState: {
+        ...party.gameState,
+        innerState: {
+          state: "drawing",
+          playerId: localId,
+          word: word,
+        },
+      },
+    }),
+  ]);
 });
 
 sample({

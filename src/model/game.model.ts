@@ -74,8 +74,6 @@ export const renderModeChanged = createEvent<
 >();
 export const debugModeToggled = createEvent<boolean>();
 export const makeWeDraw_DEV = createEvent<any>();
-export const chooseWordClicked_DEV = createEvent<any>();
-export const newWordSelected = createEvent<string>();
 
 export const deleteRoomEvents_DEV = createEvent<any>();
 
@@ -142,29 +140,6 @@ liveQuery($roomId, (roomId) => {
 });
 */
 
-/*
-sample({
-  source: [$localId, $roomId, $wordsRu] as const,
-  clock: chooseWordClicked_DEV,
-}).watch(([localId, roomId, words]) => {
-  const event: Omit<ChoosingWord, "id"> = {
-    type: "choosing-word",
-    playerId: localId,
-    words: [
-      randomFrom(words).word,
-      randomFrom(words).word,
-      randomFrom(words).word,
-      randomFrom(words).word,
-      randomFrom(words).word,
-    ].join("|"),
-  };
-
-  db.transact(
-    db.tx.roomEvent[id()].create({ it: event }).link({ party: roomId }),
-  );
-});
-*/
-
 // sample({
 //   source: [$imServer, $roomId, $words, $localId] as const,
 //   clock: $compiledGameStateAndPaints,
@@ -194,25 +169,6 @@ sample({
 //     }
 //   }
 // });
-
-/*
-sample({
-  source: [$localId, $roomId] as const,
-  clock: newWordSelected,
-  fn: (a, b) => [a, b] as const,
-}).watch(([[localId, roomId], word]) => {
-  const event: Omit<NewWord, "id"> = {
-    type: "new-word",
-    playerId: localId,
-    word,
-    // todo create paint add `paintId` here
-  };
-
-  db.transact(
-    db.tx.roomEvent[id()].create({ it: event }).link({ party: roomId }),
-  );
-});
-*/
 
 /*
 deleteRoomEvents_DEV.watch(async () => {

@@ -50,8 +50,8 @@ export function Messages() {
           );
         }
 
-        if (ev.type === "new-word") {
-          let { word } = ev;
+        if (ev.type === "new-selected-word") {
+          let { word } = ev.payload;
           return (
             <p key={key} style={{ fontStyle: "italic" }}>
               Слово выбрано!{" "}

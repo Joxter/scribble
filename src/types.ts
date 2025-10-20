@@ -76,11 +76,9 @@ export type Party = {
   status: ValueOf<typeof GAME_STATUS>;
   gameState: {
     players: string[]; // localIds
-    innerState: {
-      state: "choosing-word";
-      playerId: string;
-      words: string[];
-    };
+    innerState:
+      | { state: "choosing-word"; playerId: string; words: string[] }
+      | { state: "drawing"; playerId: string; word: string };
   };
   roomEvents: AllChatMessages[];
   gameParams: {
@@ -90,7 +88,7 @@ export type Party = {
   };
 };
 
-type AllChatMessages = UserMessageEvent;
+type AllChatMessages = UserMessageEvent | NewWord;
 
 type ChatAndLines = {
   history: CanvasAndChatHistory[]; // чат и линии
@@ -153,10 +151,9 @@ export type DrawingTimeout = {
 };
 
 export type NewWord = {
-  type: "new-word";
+  type: "new-selected-word"; // todo "new-word-selected"
   id: string;
-  playerId: string;
-  word: string;
+  payload: { playerId: string; word: string };
 };
 
 export type ChoosingWord = {

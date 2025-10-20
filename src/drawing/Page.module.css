@@ -32,13 +32,6 @@
   grid-area: header;
 }
 
-.headerContent {
-  display: flex;
-  gap: 32px;
-  align-items: center;
-  flex-wrap: wrap;
-}
-
 .canvasSection {
   grid-area: canvas;
   width: 100%;

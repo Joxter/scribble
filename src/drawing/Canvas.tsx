@@ -12,7 +12,7 @@ import {
   $svgCurrentLine,
   lineEnded,
 } from "../model/game.model.ts";
-import { $imDrawing } from "../model/game-new.model.ts";
+import { $drawing } from "../model/game-new.model.ts";
 
 const PIXEL_RATIO = window.devicePixelRatio || 1;
 
@@ -129,7 +129,9 @@ const CurrentLine = memo(() => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isDrawing, setIsDrawing] = useState(false);
 
-  const imDrawing = useUnit($imDrawing);
+  const drawing = useUnit($drawing);
+  const imDrawing = drawing.iam || false;
+
   const svgCurrentLine = useUnit($svgCurrentLine);
 
   useEffect(() => {
