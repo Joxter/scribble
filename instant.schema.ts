@@ -15,6 +15,10 @@ const _schema = i.schema({
       gameParams: i.any().optional(),
       status: i.string(), // GAME_STATUS
     }),
+    roomEvent: i.entity({
+      type: i.string(),
+      payload: i.any(),
+    }),
     players: i.entity({
       localId: i.string().unique().indexed(),
       name: i.string(),
@@ -38,10 +42,10 @@ const _schema = i.schema({
     // }),
   },
   links: {
-    // partyRoomEvents: {
-    //   forward: { on: "party", has: "many", label: "roomEvents" },
-    //   reverse: { on: "roomEvent", has: "one", label: "party" },
-    // },
+    partyRoomEvents: {
+      forward: { on: "party", has: "many", label: "roomEvents" },
+      reverse: { on: "roomEvent", has: "one", label: "party" },
+    },
     partyPlayers: {
       forward: { on: "party", has: "many", label: "players" },
       reverse: { on: "players", has: "many", label: "parties" },

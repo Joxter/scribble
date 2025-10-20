@@ -69,13 +69,13 @@ export function DrawingPage() {
         </div>
         <div className={css.footer}>
           {imDrawing && <Tools />}
-          {!imDrawing && clue && (
+          {!imDrawing ? (
             <div style={{ padding: "4px 12px" }}>
               <div style={{ display: "flex", justifyContent: "center" }}>
                 <EnterGuess clue={clue} revealed={iRevealed} />
               </div>
             </div>
-          )}
+          ) : null}
 
           <DeveloperTools />
         </div>

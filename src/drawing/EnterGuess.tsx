@@ -1,18 +1,15 @@
 import React, { useState } from "react";
-import { guessSubmitted } from "../model/game.model.ts";
+import { messageSent } from "../model/game-new.model.ts";
 
-export function EnterGuess({
-  revealed,
-  clue,
-}: {
-  clue: string;
-  revealed: string;
-}) {
+export function EnterGuess(
+  { revealed, clue }: { clue: string | null; revealed: string },
+  //
+) {
   const [guess, setGuess] = useState("");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    guessSubmitted({ guess: guess.trim() });
+    messageSent({ guess: guess.trim() });
     setGuess("");
   };
 
@@ -21,7 +18,7 @@ export function EnterGuess({
   };
 
   const clueCnt = clue
-    .split(" ")
+    ?.split(" ")
     .map((it) => it.length)
     .join(" ");
 
@@ -30,9 +27,10 @@ export function EnterGuess({
       <div
         style={{
           display: "grid",
-          gridTemplateColumns: revealed
-            ? `1fr min-content`
-            : `calc(${clue.length * 10}px + ${(clue.length - 1) * 3}px + 10px) min-content`,
+          gridTemplateColumns:
+            revealed || !clue
+              ? `1fr min-content`
+              : `calc(${clue.length * 10}px + ${(clue.length - 1) * 3}px + 10px) min-content`,
           gap: "0px 8px",
           fontFamily: "monospace",
           letterSpacing: "2px",

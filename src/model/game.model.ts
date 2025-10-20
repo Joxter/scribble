@@ -29,14 +29,6 @@ export const $player = restore(setPlayer, {
 });
 
 export const $allRoomEvents = createStore<CanvasAndChatHistory[]>([]);
-export const $allChatEvents = createStore<CanvasAndChatHistory[]>([]);
-
-sample({
-  source: $allChatEvents,
-  clock: $allRoomEvents,
-  fn: (chat, allEvents) => getChatEvents(chat, allEvents),
-  target: $allChatEvents,
-});
 
 export const $compiledGameStateAndPaints = combine($allRoomEvents, (events) => {
   return eventsToGameState(
@@ -85,7 +77,6 @@ export const makeWeDraw_DEV = createEvent<any>();
 export const chooseWordClicked_DEV = createEvent<any>();
 export const newWordSelected = createEvent<string>();
 
-export const guessSubmitted = createEvent<{ guess: string }>();
 export const deleteRoomEvents_DEV = createEvent<any>();
 
 export const historyUpdated = createEvent<{
@@ -147,26 +138,6 @@ liveQuery($roomId, (roomId) => {
         historyUpdated({ history: resp.data.roomEvent.map((a) => a.it) });
       }
     },
-  );
-});
-*/
-
-/*
-sample({
-  source: [$localId, $roomId, $compiledGameStateAndPaints] as const,
-  clock: guessSubmitted,
-  fn: (a, b) => [a, b] as const,
-}).watch(([[localId, roomId, [gameState]], { guess }]) => {
-  const event: Omit<GuessEvent, "id"> = {
-    type: "guess",
-    text: guess,
-    player: localId,
-    // @ts-ignore
-    isRevealed: isRevealed(gameState.state.word, guess),
-  };
-
-  db.transact(
-    db.tx.roomEvent[id()].create({ it: event }).link({ party: roomId }),
   );
 });
 */

@@ -1,7 +1,6 @@
 import { useUnit } from "effector-react";
-import { $party, $allChatEvents } from "../model/game.model.ts";
 import { useAutoScroll } from "../hooks/useAutoScroll";
-import { $newParty } from "../model/game-new.model.ts";
+import { $allChatEvents, $newParty } from "../model/game-new.model.ts";
 
 export function Messages() {
   const [events, { players }] = useUnit([$allChatEvents, $newParty]);
@@ -35,18 +34,18 @@ export function Messages() {
     >
       {events.slice(-50).map((ev, i) => {
         const key = ev.type + i;
-        if (ev.type === "guess") {
-          let { text, player, isRevealed } = ev;
+        if (ev.type === "user-message") {
+          let { text, playerId, isRevealed } = ev.payload;
           if (isRevealed === "revealed") {
             return (
               <p key={key} style={{ fontStyle: "italic", color: "green" }}>
-                <b>{playersMap[player]} отгадал слово!</b>
+                <b>{playersMap[playerId]} отгадал слово!</b>
               </p>
             );
           }
           return (
             <p key={key} style={{}}>
-              <b>{playersMap[player]}:</b> {text}
+              <b>{playersMap[playerId]}:</b> {text}
             </p>
           );
         }

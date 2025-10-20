@@ -82,12 +82,15 @@ export type Party = {
       words: string[];
     };
   };
+  roomEvents: AllChatMessages[];
   gameParams: {
     rounds: number;
     wordSuggestions: number; // количество слов на выбор
     drawTime: number; // максимальное время на рисунок (сек)
   };
 };
+
+type AllChatMessages = UserMessageEvent;
 
 type ChatAndLines = {
   history: CanvasAndChatHistory[]; // чат и линии
@@ -104,7 +107,7 @@ export type GameParams = {
 
 export type Game = {
   playerIds: string[];
-  messages: (NewWord | ChoosingWord | GuessEvent)[];
+  messages: (NewWord | ChoosingWord | UserMessageEvent)[];
   paintings: { id: string; name: string; playerId: string }[];
   params: GameParams;
   state:
@@ -134,12 +137,14 @@ export type Game = {
 const LANGS = ["RU", "EN"] as const;
 export type Language = (typeof LANGS)[number];
 
-export type GuessEvent = {
-  type: "guess";
+export type UserMessageEvent = {
   id: string;
-  player: string;
-  text: string;
-  isRevealed: "almost" | "revealed" | "none";
+  type: "user-message";
+  payload: {
+    playerId: string;
+    text: string;
+    isRevealed: "almost" | "revealed" | "none";
+  };
 };
 
 export type DrawingTimeout = {
@@ -173,4 +178,4 @@ export type CanvasAndChatHistory =
   | { type: "undo" }
   | NewWord
   | ChoosingWord
-  | GuessEvent;
+  | UserMessageEvent;
