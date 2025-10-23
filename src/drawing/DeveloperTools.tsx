@@ -7,13 +7,19 @@ import {
   resetDEMO,
 } from "../model/game.model.ts";
 import { Link } from "wouter";
-import { $currentLine, $newParty } from "../model/game-new.model.ts";
+import {
+  $currentLine,
+  $logi,
+  $logiSmol,
+  $newParty,
+} from "../model/game-new.model.ts";
 
 export function DeveloperTools() {
   const [isCollapsed, setIsCollapsed] = useState(true);
   const localId = useUnit($localId);
   const party = useUnit($newParty);
   const currentLine = useUnit($currentLine);
+  const logiSmol = useUnit($logiSmol);
 
   return (
     <div>
@@ -23,6 +29,11 @@ export function DeveloperTools() {
 
       {!isCollapsed && (
         <div style={{ maxWidth: "90vw", overflow: "scroll" }}>
+          <div style={{ display: "grid" }}>
+            {logiSmol.map((v, i) => {
+              return <p key={i}>{JSON.stringify(v)}</p>;
+            })}
+          </div>
           <pre>dots: {currentLine.dots.length}</pre>
           <pre>{JSON.stringify(currentLine)}</pre>
           <pre>{JSON.stringify(party.gameState, null, 2)}</pre>

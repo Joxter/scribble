@@ -38,6 +38,36 @@ $allChatEvents.on(newPartyLoaded, (_, party) => party.roomEvents);
 export const messageSent = createEvent<{ guess: string }>();
 export const newWordSelected = createEvent<string>();
 
+export const log = createEvent<any>();
+export const $logi = createStore<any[]>([]);
+$logi.on(log, (s, l) => [...s, l]);
+export const $logiSmol = $logi.map((logs) => {
+  if (logs.length === 0) return [];
+
+  const merged: string[] = [];
+  let currentLog: any = null;
+  let count = 0;
+
+  for (const log of logs) {
+    if (typeof log === "string" && log === currentLog) {
+      count++;
+    } else {
+      if (currentLog !== null) {
+        merged.push(count > 1 ? `${currentLog} ${count}` : currentLog);
+      }
+      currentLog = log;
+      count = 1;
+    }
+  }
+
+  // Don't forget the last entry
+  if (currentLog !== null) {
+    merged.push(count > 1 ? `${currentLog} ${count}` : currentLog);
+  }
+
+  return merged;
+});
+
 export const $drawing = combine($localId, $newParty, (loadId, p) => {
   if (
     p.status === GAME_STATUS.inProgress &&
@@ -113,15 +143,23 @@ export const $choosingWord = combine($localId, $newParty, (localId, p) => {
 });
 
 liveQuery($localId, (roomId) => {
+  if (!roomId) return () => [];
+
+  log(`join.. ${roomId}`);
   const room = db.joinRoom("party", roomId);
+  log(`joined`);
 
   const uns = $currentLine.watch((currentLine) => {
     if ($imDrawing.getState()) {
+      log(`publishTopic`);
+      console.log("publishTopic");
       room.publishTopic("currentCanvas", { currentLineTopic: currentLine });
     }
   });
 
   const unsubscribeTopic = room.subscribeTopic("currentCanvas", (ev) => {
+    // console.log("currentCanvas", ev);
+    log(`currentCanvas`);
     if (!$imDrawing.getState()) {
       console.log("currentLineChanged", ev.currentLineTopic);
       currentLineChanged(ev.currentLineTopic);
