@@ -7,12 +7,13 @@ import {
   resetDEMO,
 } from "../model/game.model.ts";
 import { Link } from "wouter";
-import { $newParty } from "../model/game-new.model.ts";
+import { $currentLine, $newParty } from "../model/game-new.model.ts";
 
 export function DeveloperTools() {
   const [isCollapsed, setIsCollapsed] = useState(true);
   const localId = useUnit($localId);
   const party = useUnit($newParty);
+  const currentLine = useUnit($currentLine);
 
   return (
     <div>
@@ -22,6 +23,8 @@ export function DeveloperTools() {
 
       {!isCollapsed && (
         <div style={{ maxWidth: "90vw", overflow: "scroll" }}>
+          <pre>dots: {currentLine.dots.length}</pre>
+          <pre>{JSON.stringify(currentLine)}</pre>
           <pre>{JSON.stringify(party.gameState, null, 2)}</pre>
           <div>
             <Link href="https://joxter.github.io/scribble/" target="_blank">

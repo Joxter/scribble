@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback, memo } from "react";
 import { useUnit } from "effector-react";
-import { canvasSize } from "../utils";
+import { canvasSize, toFixed } from "../utils";
 import {
   $drawing,
   $polylinePaths,
@@ -39,8 +39,8 @@ function getEventCoordinates(e: CanvasEvent, canvas: HTMLCanvasElement) {
     "touches" in e ? (e.touches[0] || e.changedTouches[0]).clientY : e.clientY;
 
   return {
-    x: (clientX - rect.left) * scale,
-    y: (clientY - rect.top) * scale,
+    x: toFixed((clientX - rect.left) * scale),
+    y: toFixed((clientY - rect.top) * scale),
   };
 }
 
