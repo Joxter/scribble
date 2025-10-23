@@ -5,6 +5,11 @@ import { liveQuery } from "../utils.ts";
 import { $localId } from "./game.model.ts";
 import { newParty } from "./utils.ts";
 import { id } from "@instantdb/core";
+import { createCurrentLine, createDrawing } from "./drawing.model.ts";
+
+export const $renderMode = createStore<"normal" | "polyline" | "tldraw">(
+  "tldraw",
+);
 
 export async function getMyParty() {
   const localId = await db.getLocalId("guest");
@@ -51,6 +56,39 @@ export const $drawing = combine($localId, $newParty, (loadId, p) => {
   return { drawing: false };
 });
 
+const $roomId = $newParty.map((p) => {
+  return p.id;
+});
+
+const $imDrawing = $drawing.map((t) => {
+  return t.drawing && t.iam;
+});
+
+export const {
+  currentLineChanged,
+  $currentLine,
+  addLine,
+  lineStarted,
+  lineExtended,
+  lineEnded,
+  $lineExtendedCount,
+  ...pres
+} = createCurrentLine($roomId, $imDrawing);
+
+export const {
+  undoClicked,
+  $svgCanvasPaths,
+  $rawPath,
+  $polylinePaths,
+  $svgCurrentLine,
+  $smoothConf,
+  setSmoothConf,
+} = createDrawing({
+  $allRoomEvents: createStore([]),
+  $renderMode,
+  $currentLine,
+});
+
 export const $choosingWord = combine($localId, $newParty, (localId, p) => {
   if (p.status !== GAME_STATUS.inProgress) return { choose: false };
 
@@ -72,6 +110,29 @@ export const $choosingWord = combine($localId, $newParty, (localId, p) => {
   }
 
   return { choose: false };
+});
+
+liveQuery($localId, (roomId) => {
+  const room = db.joinRoom("party", roomId);
+
+  const uns = $currentLine.watch((currentLine) => {
+    if ($imDrawing.getState()) {
+      room.publishTopic("currentCanvas", { currentLineTopic: currentLine });
+    }
+  });
+
+  const unsubscribeTopic = room.subscribeTopic("currentCanvas", (ev) => {
+    if (!$imDrawing.getState()) {
+      console.log("currentLineChanged", ev.currentLineTopic);
+      currentLineChanged(ev.currentLineTopic);
+    }
+  });
+
+  return () => {
+    uns();
+    unsubscribeTopic();
+    room.leaveRoom();
+  };
 });
 
 liveQuery($localId, (localId) => {

@@ -229,33 +229,6 @@ export function createCurrentLine(
 
   $topic.on(onTopic, (s, ev) => ev);
 
-  liveQuery($roomId, (roomId) => {
-    if (!roomId || true) return () => {};
-
-    /*
-    const room = db.joinRoom("drawing", roomId);
-
-    const uns = $currentLine.watch((currentLine) => {
-      if ($imDrawing.getState()) {
-        room.publishTopic("sendCurrentLine", { currentLineTopic: currentLine });
-      }
-    });
-
-    const unsubscribeTopic = room.subscribeTopic("sendCurrentLine", (ev) => {
-      if (!$imDrawing.getState()) {
-        console.log("currentLineChanged", ev.currentLineTopic);
-        currentLineChanged(ev.currentLineTopic);
-      }
-    });
-
-    return () => {
-      uns();
-      unsubscribeTopic();
-      room.leaveRoom();
-    };
-    */
-  });
-
   addLine.watch((newLine) => {
     console.warn("todo addLine");
     // db.transact(

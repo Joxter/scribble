@@ -1,12 +1,12 @@
 import { WidthSelector } from "../components/WidthSelector.tsx";
-import {
-  undoClicked,
-  $currentLine,
-  currentLineChanged,
-} from "../model/game.model.ts";
 import arrowArcLeftSrc from "./ArrowArcLeft.svg";
 import { ColorSelector } from "../components/ColorSelector.tsx";
 import { useStoreMap } from "effector-react";
+import {
+  $currentLine,
+  currentLineChanged,
+  undoClicked,
+} from "../model/game-new.model.ts";
 
 export function Tools() {
   const width = useStoreMap($currentLine, (s) => s.width);

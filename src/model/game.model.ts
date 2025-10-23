@@ -42,31 +42,6 @@ export const $compiledGameStateAndPaints = combine($allRoomEvents, (events) => {
 export const $iRevealed = createStore("");
 export const $clue = createStore<string | null>(null);
 
-export const {
-  currentLineChanged,
-  $currentLine,
-  addLine,
-  lineStarted,
-  lineExtended,
-  lineEnded,
-  $lineExtendedCount,
-  ...pres
-} = createCurrentLine($roomId, createStore(false) /*$imDrawing*/);
-
-export const $renderMode = createStore<"normal" | "polyline" | "tldraw">(
-  "tldraw",
-);
-
-export const {
-  undoClicked,
-  $svgCanvasPaths,
-  $rawPath,
-  $polylinePaths,
-  $svgCurrentLine,
-  $smoothConf,
-  setSmoothConf,
-} = createDrawing({ $allRoomEvents, $renderMode, $currentLine });
-
 export const $debugMode = createStore(false);
 
 export const renderModeChanged = createEvent<
@@ -98,7 +73,6 @@ sample({
 
 $allRoomEvents.on(historyUpdated, (_, { history }) => history);
 
-$renderMode.on(renderModeChanged, (_, mode) => mode);
 $debugMode.on(debugModeToggled, (_, enabled) => enabled);
 
 /*
