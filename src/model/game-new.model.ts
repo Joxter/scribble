@@ -142,11 +142,11 @@ export const $choosingWord = combine($localId, $newParty, (localId, p) => {
   return { choose: false };
 });
 
-liveQuery($localId, (roomId) => {
-  if (!roomId) return () => [];
+liveQuery($newParty, (party) => {
+  if (!party.id) return () => [];
 
-  log(`join.. ${roomId}`);
-  const room = db.joinRoom("party", roomId);
+  log(`join.. ${party.id}`);
+  const room = db.joinRoom("party", party.id);
   log(`joined`);
 
   const uns = $currentLine.watch((currentLine) => {
