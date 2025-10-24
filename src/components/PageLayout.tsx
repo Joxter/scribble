@@ -2,6 +2,7 @@ import React from "react";
 import { Link } from "wouter";
 import { css } from "@linaria/core";
 import { getUrl } from "../utils.ts";
+import { BUILD_INFO } from "../config.ts";
 
 type Props = {
   children: React.ReactNode;
@@ -53,6 +54,9 @@ const footer = css`
 `;
 
 export function PageLayout({ children }: Props) {
+  const buildDate = new Date(BUILD_INFO.buildTimestamp);
+  const timeAgo = Date.now() - BUILD_INFO.buildTimestamp;
+
   return (
     <div className={container}>
       <header className={header}>
@@ -68,6 +72,7 @@ export function PageLayout({ children }: Props) {
         <Link href={getUrl("all-rooms")}>Все комнаты</Link>
         <Link href={getUrl("words")}>Слова</Link>
         <Link href={getUrl("paintings")}>Картины</Link>
+        <p>build {timeAgo / (1000 * 60)} min ago</p>
       </footer>
     </div>
   );

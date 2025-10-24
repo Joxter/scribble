@@ -1,5 +1,17 @@
 // export const DEMO_ID = "f259a402-be81-4806-ba5b-86a4814fb9b1";
 
+// Build information injected at build time
+declare const __BUILD_TIME__: string;
+declare const __BUILD_TIMESTAMP__: string;
+
+export const BUILD_INFO = {
+  buildTime: typeof __BUILD_TIME__ !== "undefined" ? __BUILD_TIME__ : "dev",
+  buildTimestamp:
+    typeof __BUILD_TIMESTAMP__ !== "undefined"
+      ? parseInt(__BUILD_TIMESTAMP__)
+      : Date.now(),
+};
+
 const easingFunctions = {
   cubic: (t: number) =>
     t < 0.5 ? 4 * t * t * t : (t - 1) * (2 * t - 2) * (2 * t - 2) + 1,
