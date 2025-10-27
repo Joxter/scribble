@@ -5,7 +5,7 @@ import { liveQuery } from "../utils.ts";
 import { $localId } from "./game.model.ts";
 import { newParty } from "./utils.ts";
 import { id } from "@instantdb/core";
-import { createCurrentLine, createDrawing } from "./drawing.model.ts";
+import { createCurrentLine } from "./drawing.model.ts";
 
 export const $renderMode = createStore<"normal" | "polyline" | "tldraw">(
   "tldraw",
@@ -95,29 +95,20 @@ const $imDrawing = $drawing.map((t) => {
 });
 
 export const {
-  currentLineChanged,
-  $currentLine,
+  lineParamsChanged,
+  // $currentLine,
   addLine,
+  $currentLineParams,
   lineStarted,
+  somebodyDrawing,
+  // lineEnded,
   lineExtended,
-  lineEnded,
   $lineExtendedCount,
-  ...pres
-} = createCurrentLine($roomId, $imDrawing);
-
-export const {
   undoClicked,
   $svgCanvasPaths,
-  $rawPath,
+  $currentDrawing,
   $polylinePaths,
-  $svgCurrentLine,
-  $smoothConf,
-  setSmoothConf,
-} = createDrawing({
-  $allRoomEvents: createStore([]),
-  $renderMode,
-  $currentLine,
-});
+} = createCurrentLine($roomId, $imDrawing, $renderMode);
 
 export const $choosingWord = combine($localId, $newParty, (localId, p) => {
   if (p.status !== GAME_STATUS.inProgress) return { choose: false };
@@ -149,11 +140,11 @@ liveQuery($newParty, (party) => {
   const room = db.joinRoom("party", party.id);
   log(`joined`);
 
-  const uns = $currentLine.watch((currentLine) => {
+  const uns = $currentDrawing.watch((currentDrawing) => {
     if ($imDrawing.getState()) {
       log(`publishTopic`);
       console.log("publishTopic");
-      room.publishTopic("currentCanvas", { currentLineTopic: currentLine });
+      room.publishTopic("currentCanvas", { currentDrawing });
     }
   });
 
@@ -161,8 +152,8 @@ liveQuery($newParty, (party) => {
     // console.log("currentCanvas", ev);
     log(`currentCanvas`);
     if (!$imDrawing.getState()) {
-      console.log("currentLineChanged", ev.currentLineTopic);
-      currentLineChanged(ev.currentLineTopic);
+      console.log("somebodyDrawing", ev.currentDrawing);
+      somebodyDrawing(ev.currentDrawing);
     }
   });
 

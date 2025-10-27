@@ -33,11 +33,13 @@ export type PartyOLD = {
   };
 };
 
-export type CurrentLine = {
+export type CanvasLine = {
   dots: [x: number, y: number][];
   color: string;
   width: number;
 };
+
+export type CurrentCanvas = CanvasLine[];
 
 export type Painting = {
   canvas: (LineEvent | { type: "undo" })[];

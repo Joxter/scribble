@@ -1,16 +1,15 @@
 import { WidthSelector } from "../components/WidthSelector.tsx";
 import arrowArcLeftSrc from "./ArrowArcLeft.svg";
 import { ColorSelector } from "../components/ColorSelector.tsx";
-import { useStoreMap } from "effector-react";
+import { useStoreMap, useUnit } from "effector-react";
 import {
-  $currentLine,
-  currentLineChanged,
+  $currentLineParams,
+  lineParamsChanged,
   undoClicked,
 } from "../model/game-new.model.ts";
 
 export function Tools() {
-  const width = useStoreMap($currentLine, (s) => s.width);
-  const color = useStoreMap($currentLine, (s) => s.color);
+  const { width, color } = useUnit($currentLineParams);
 
   return (
     <div
@@ -35,13 +34,13 @@ export function Tools() {
 
         <WidthSelector
           value={width}
-          onChange={(width) => currentLineChanged({ width })}
+          onChange={(width) => lineParamsChanged({ width })}
         />
       </div>
       <div>
         <ColorSelector
           value={color}
-          onChange={(color) => currentLineChanged({ color })}
+          onChange={(color) => lineParamsChanged({ color })}
         />
       </div>
     </div>

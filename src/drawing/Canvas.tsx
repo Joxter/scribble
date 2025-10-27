@@ -2,13 +2,12 @@ import React, { useState, useRef, useEffect, useCallback, memo } from "react";
 import { useUnit } from "effector-react";
 import { canvasSize, toFixed } from "../utils";
 import {
+  $currentDrawing,
   $drawing,
   $polylinePaths,
-  $rawPath,
   $renderMode,
   $svgCanvasPaths,
-  $svgCurrentLine,
-  lineEnded,
+  // lineEnded,
   lineExtended,
   lineStarted,
 } from "../model/game-new.model.ts";
@@ -132,7 +131,7 @@ const CurrentLine = memo(() => {
   const drawing = useUnit($drawing);
   const imDrawing = drawing.iam || false;
 
-  const svgCurrentLine = useUnit($svgCurrentLine);
+  const svgCurrentLine = useUnit($svgCanvasPaths).at(-1);
 
   useEffect(() => {
     const canvas = canvasRef.current!;
@@ -172,8 +171,6 @@ const CurrentLine = memo(() => {
       if (!imDrawing || !isDrawing) return;
       e.preventDefault();
 
-      const { x, y } = getEventCoordinates(e, canvasRef.current!);
-      lineEnded([x, y]);
       setIsDrawing(false);
     },
     [imDrawing, isDrawing],
@@ -196,7 +193,7 @@ const CurrentLine = memo(() => {
 });
 
 const DebugOverlay = memo(() => {
-  const linesRaw = useUnit($rawPath);
+  const linesRaw = useUnit($currentDrawing);
 
   const debugOverlayStyle = {
     position: "absolute" as const,

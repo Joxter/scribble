@@ -62,7 +62,7 @@ const _schema = i.schema({
       }),
       topics: {
         currentCanvas: i.entity({
-          currentLineTopic: i.any().optional(),
+          currentDrawing: i.any().optional(),
         }),
       },
     },

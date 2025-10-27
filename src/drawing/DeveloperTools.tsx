@@ -8,7 +8,7 @@ import {
 } from "../model/game.model.ts";
 import { Link } from "wouter";
 import {
-  $currentLine,
+  $currentDrawing,
   $logi,
   $logiSmol,
   $newParty,
@@ -18,7 +18,7 @@ export function DeveloperTools() {
   const [isCollapsed, setIsCollapsed] = useState(true);
   const localId = useUnit($localId);
   const party = useUnit($newParty);
-  const currentLine = useUnit($currentLine);
+  const currentDrawing = useUnit($currentDrawing);
   const logiSmol = useUnit($logiSmol);
 
   return (
@@ -34,8 +34,9 @@ export function DeveloperTools() {
               return <p key={i}>{JSON.stringify(v)}</p>;
             })}
           </div>
-          <pre>dots: {currentLine.dots.length}</pre>
-          <pre>{JSON.stringify(currentLine)}</pre>
+          <p>dots.len: {currentDrawing.at(-1)?.dots.length}</p>
+          <p>color: {currentDrawing.at(-1)?.color}</p>
+          <p>width: {currentDrawing.at(-1)?.width}</p>
           <pre>{JSON.stringify(party.gameState, null, 2)}</pre>
           <div>
             <Link href="https://joxter.github.io/scribble/" target="_blank">

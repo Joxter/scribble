@@ -72,7 +72,7 @@ export function PageLayout({ children }: Props) {
         <Link href={getUrl("all-rooms")}>Все комнаты</Link>
         <Link href={getUrl("words")}>Слова</Link>
         <Link href={getUrl("paintings")}>Картины</Link>
-        <p>build {timeAgo / (1000 * 60)} min ago</p>
+        <p>build {(timeAgo / (1000 * 60)).toFixed(1)} min ago</p>
       </footer>
     </div>
   );
