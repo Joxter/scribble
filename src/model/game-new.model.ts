@@ -22,7 +22,6 @@ export async function getMyParty() {
       },
     })
     .then((it) => it.data);
-  // console.log(players[0]);
 
   return players[0]?.parties?.[0] || null;
 }
@@ -96,19 +95,15 @@ const $imDrawing = $drawing.map((t) => {
 
 export const {
   lineParamsChanged,
-  // $currentLine,
-  addLine,
   $currentLineParams,
   lineStarted,
-  somebodyDrawing,
-  // lineEnded,
   lineExtended,
-  $lineExtendedCount,
+  somebodyDrawing,
   undoClicked,
   $svgCanvasPaths,
   $currentDrawing,
   $polylinePaths,
-} = createCurrentLine($roomId, $imDrawing, $renderMode);
+} = createCurrentLine();
 
 export const $choosingWord = combine($localId, $newParty, (localId, p) => {
   if (p.status !== GAME_STATUS.inProgress) return { choose: false };

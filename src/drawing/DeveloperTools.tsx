@@ -1,15 +1,9 @@
 import React, { useState } from "react";
 import { useUnit } from "effector-react";
-import {
-  $localId,
-  $party,
-  deleteRoomEvents_DEV,
-  resetDEMO,
-} from "../model/game.model.ts";
+import { $localId } from "../model/game.model.ts";
 import { Link } from "wouter";
 import {
   $currentDrawing,
-  $logi,
   $logiSmol,
   $newParty,
 } from "../model/game-new.model.ts";
@@ -45,14 +39,6 @@ export function DeveloperTools() {
           </div>
           <p>localId: {localId}</p>
 
-          <div>
-            <button onClick={deleteRoomEvents_DEV}>
-              Удалить все сообщения
-            </button>
-            <br />
-            <br />
-            <button onClick={resetDEMO}>перезагрузить всю комнату</button>
-          </div>
           <pre style={{ maxWidth: "300px" }}>
             {JSON.stringify(party, null, 2)}
           </pre>

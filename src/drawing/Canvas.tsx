@@ -7,7 +7,6 @@ import {
   $polylinePaths,
   $renderMode,
   $svgCanvasPaths,
-  // lineEnded,
   lineExtended,
   lineStarted,
 } from "../model/game-new.model.ts";
