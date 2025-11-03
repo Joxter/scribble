@@ -1,6 +1,11 @@
 import { VecLike } from "./freehand/Vec";
 import { Store } from "effector";
-import { CanvasAndChatHistory, Game, GameParams } from "./types.ts";
+import {
+  CanvasAndChatHistory,
+  Game,
+  GameParams,
+  UserMessageEvent,
+} from "./types.ts";
 import { words } from "../dictionaries/ru-300-chatgpt.ts";
 
 export const canvasSize = 600;
@@ -153,113 +158,77 @@ export function getUrl(path?: string): string {
   return `${basePath}${path}`;
 }
 
-type LegacyPaint = {
-  events: CanvasAndChatHistory[];
-  word: string;
-  playerId: string;
-};
+/*
+const examples = [
+  ["", ""],
+  [" ", " "],
+  ["", " "],
+  ["носорог", "НОСОРОГ"],
+  ["носорог", "rino"],
+  ["носорог", "носорогг"],
+  ["носорог", "носорогг"],
+  ["носорог", "новоног"],
+  ["носорог", "нового"],
+  ["носорог", "носоро"],
+  ["носорог", "носорогносорог"],
+  ["носорог", "носорогносорог"],
+];
 
-export function eventsToGameState(
-  events: CanvasAndChatHistory[],
-  playerIds: string[],
-  params: GameParams,
-  words: string,
-): [Game, LegacyPaint[]] {
-  if (playerIds.length === 0) {
-    throw new Event(`Can't play without players`);
+examples.forEach(([a, b]) => {
+  console.log([a, b], compareWords(a, b), calcRevelead(a, b));
+});
+*/
+
+export function calcRevealed(
+  secret: string,
+  guess: string,
+): UserMessageEvent["payload"]["isRevealed"] {
+  const mistakes = levenshteinDistance(
+    secret.toLowerCase().trim(),
+    guess.toLowerCase().trim(),
+  );
+
+  if (mistakes === 0) {
+    return "revealed";
   }
 
-  let gameState: Game = {
-    playerIds,
-    params,
-    messages: [],
-    paintings: [],
-    state: { state: "choosing-word", playerId: playerIds[0], words },
-  };
-
-  const paintings: LegacyPaint[] = [];
-  const paintCntByPlayer: Record<string, string[]> = {};
-
-  events.forEach((event) => {
-    if (event.type === "line" || event.type === "undo") {
-      paintings.at(-1)?.events.push(event);
-      return;
-    }
-
-    if (
-      event.type === "guess" ||
-      event.type === "choosing-word" ||
-      event.type === "new-word"
-    ) {
-      if (event.type === "guess" && gameState.state.state === "drawing") {
-        // @ts-ignore
-        const res = isRevealed(gameState.state.word, event.text);
-        if (event.isRevealed === "revealed") {
-          gameState.state.revealed.push({
-            playerId: event.player,
-          });
-        }
-      }
-      gameState.messages.push(event);
-    }
-
-    if (event.type === "choosing-word") {
-      gameState = {
-        ...gameState,
-        state: {
-          state: "choosing-word",
-          playerId: event.playerId,
-          words: event.words,
-        },
-      };
-    } else if (event.type === "new-word") {
-      if (!paintCntByPlayer[event.playerId])
-        paintCntByPlayer[event.playerId] = [];
-
-      paintings.push({
-        events: [],
-        playerId: event.playerId,
-        word: event.word,
-      });
-
-      paintCntByPlayer[event.playerId].push(event.playerId); // todo
-      gameState = {
-        ...gameState,
-        state: {
-          state: "drawing",
-          playerId: event.playerId,
-          word: event.word,
-          revealed: [],
-        },
-      };
-    }
-
-    if (
-      false &&
-      Object.values(paintCntByPlayer).every(
-        (paintIds) => paintIds.length >= gameState.params.rounds,
-      )
-    ) {
-      gameState = {
-        ...gameState,
-        state: { state: "results" },
-      };
-    }
-  });
-
-  return [gameState, paintings];
+  return mistakes <= Math.ceil(secret.length / 4) ? "almost" : "none";
 }
 
-export function isRevealed(
-  hiddenWord: string,
-  guess: string,
-): "almost" | "revealed" | "none" {
-  hiddenWord = hiddenWord.replace(/\S/g, "").toLowerCase();
-  guess = hiddenWord.replace(/\S/g, "").toLowerCase();
+export function compareWords(secret: string, guess: string): number {
+  return levenshteinDistance(
+    secret.toLowerCase().trim(),
+    guess.toLowerCase().trim(),
+  );
+}
 
-  if (hiddenWord === guess) return "revealed";
-  // todo add Levenshtein distance here
-  return "none";
+function levenshteinDistance(str1: string, str2: string): number {
+  const len1 = str1.length;
+  const len2 = str2.length;
+
+  const matrix: number[][] = Array(len1 + 1)
+    .fill(null)
+    .map(() => Array(len2 + 1).fill(0));
+
+  for (let i = 0; i <= len1; i++) {
+    matrix[i][0] = i;
+  }
+  for (let j = 0; j <= len2; j++) {
+    matrix[0][j] = j;
+  }
+
+  for (let i = 1; i <= len1; i++) {
+    for (let j = 1; j <= len2; j++) {
+      const cost = str1[i - 1] === str2[j - 1] ? 0 : 1;
+      matrix[i][j] = Math.min(
+        matrix[i - 1][j] + 1, // deletion
+        matrix[i][j - 1] + 1, // insertion
+        matrix[i - 1][j - 1] + cost, // substitution
+      );
+    }
+  }
+
+  return matrix[len1][len2];
 }
 
 export function delay(ms: number) {

@@ -1,6 +1,6 @@
-import { combine, createEvent, createStore, restore, sample } from "effector";
+import { createEvent, createStore, restore, sample } from "effector";
 import { CanvasAndChatHistory, Party, Player } from "../types.ts";
-import { eventsToGameState, liveQuery, URL_ROOM_NAME } from "../utils.ts";
+import { liveQuery, URL_ROOM_NAME } from "../utils.ts";
 import { db } from "../DB.ts";
 import { getUsername } from "../code-worlds.ts";
 import { newParty } from "./utils.ts";
@@ -28,15 +28,6 @@ export const $player = restore(setPlayer, {
 });
 
 export const $allRoomEvents = createStore<CanvasAndChatHistory[]>([]);
-
-export const $compiledGameStateAndPaints = combine($allRoomEvents, (events) => {
-  return eventsToGameState(
-    events,
-    ["foo"],
-    { lang: "RU", rounds: 1000, suggestions: 3, canvasSize: 600 },
-    "foo|bar|baz",
-  );
-});
 
 export const $iRevealed = createStore("");
 export const $clue = createStore<string | null>(null);

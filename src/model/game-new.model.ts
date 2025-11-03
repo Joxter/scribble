@@ -1,7 +1,7 @@
 import { db } from "../DB.ts";
 import { combine, createEvent, createStore, sample } from "effector";
 import { GAME_STATUS, UserMessageEvent, Party, NewWord } from "../types.ts";
-import { liveQuery } from "../utils.ts";
+import { calcRevealed, compareWords, liveQuery } from "../utils.ts";
 import { $localId } from "./game.model.ts";
 import { newParty } from "./utils.ts";
 import { id } from "@instantdb/core";
@@ -236,20 +236,22 @@ sample({
   clock: messageSent,
   fn: (a, b) => [a, b] as const,
 }).watch(([[localId, party], { guess }]) => {
-  const data: Omit<UserMessageEvent, "id"> = {
+  const gameState = party.gameState.innerState;
+  const secretWord = gameState.state === "drawing" ? gameState.word : null;
+
+  const event: Omit<UserMessageEvent, "id"> = {
     type: "user-message",
     payload: {
       text: guess,
       playerId: localId,
-      // TODO isRevealed: isRevealed(gameState.state.word, guess),
-      isRevealed: "none",
+      isRevealed: secretWord ? calcRevealed(secretWord, guess) : "none",
     },
   };
 
   db.transact(
     db.tx.roomEvent[id()]
       //
-      .create(data)
+      .create(event)
       .link({ party: party.id }),
   );
 });

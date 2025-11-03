@@ -6,8 +6,8 @@ import { Tools } from "./drawing/Tools.tsx";
 import { ListOfPlayers } from "./drawing/ListOfPlayers.tsx";
 import { $clue, $iRevealed, setRoomId } from "./model/game.model.ts";
 import css from "./drawing/Page.module.css";
-import { EnterGuess } from "./drawing/EnterGuess.tsx";
-import { Messages } from "./drawing/Messages.tsx";
+import { GameInputField } from "./drawing/GameInputField.tsx";
+import { ChatMessages } from "./drawing/ChatMessages.tsx";
 import { Fps } from "./components/Fps.tsx";
 import { $choosingWord, $drawing, $newParty } from "./model/game-new.model.ts";
 import { PageLayout } from "./components/PageLayout.tsx";
@@ -63,7 +63,11 @@ export function DrawingPage() {
           ) : (
             <div style={{ padding: "4px 12px" }}>
               <div style={{ display: "flex", justifyContent: "center" }}>
-                <EnterGuess clue={clue} revealed={iRevealed} />
+                <GameInputField
+                  clue={clue}
+                  secret={drawing.word}
+                  revealed={iRevealed}
+                />
               </div>
             </div>
           )}
@@ -72,7 +76,7 @@ export function DrawingPage() {
         </div>
         <div className={css.players}>
           <ListOfPlayers />
-          <Messages />
+          <ChatMessages />
         </div>
       </div>
     </PageLayout>
