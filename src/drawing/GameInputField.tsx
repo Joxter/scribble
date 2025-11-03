@@ -39,6 +39,7 @@ export function GameInputField({ revealed, secret, clue }: Props) {
     e.preventDefault();
     messageSent({ guess: guess.trim() });
     if (calcRevealed(secret, guess) === "almost") {
+      // todo add "almost!" toast message
     } else {
       setGuess("");
     }
