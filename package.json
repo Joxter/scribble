@@ -1,12 +1,15 @@
 {
   "name": "scribble",
   "version": "1.0.0",
+  "type": "module",
   "main": "index.js",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "check-types": "tsc",
     "push-instant": "npx instant-cli@latest push",
+    "server": "node --experimental-strip-types backend/server.ts",
+    "server:dev": "node --watch --experimental-strip-types backend/server.ts",
     "test": "echo \"Error: no test specified\" && exit 1",
     "deploy": "npm run build && gh-pages -d dist"
   },
@@ -14,6 +17,8 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@fastify/cors": "^11.1.0",
+    "@fastify/helmet": "^13.0.2",
     "@instantdb/core": "^0.20.12",
     "@linaria/core": "^6.3.0",
     "@linaria/react": "^6.3.0",
@@ -22,6 +27,7 @@
     "@wyw-in-js/babel-preset": "^0.7.0",
     "effector": "^23.4.1",
     "effector-react": "^23.3.0",
+    "fastify": "^5.6.1",
     "lazy-brush": "^2.0.2",
     "perfect-freehand": "^1.2.2",
     "prettier": "^3.6.2",
@@ -36,6 +42,7 @@
     "@babel/preset-react": "^7.27.1",
     "@babel/preset-typescript": "^7.27.1",
     "@linaria/vite": "^5.0.4",
+    "@types/node": "^24.10.0",
     "@wyw-in-js/transform": "^0.7.0",
     "@wyw-in-js/vite": "^0.7.0",
     "gh-pages": "^6.2.0"
