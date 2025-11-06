@@ -85,4 +85,14 @@ async function start() {
   }
 }
 
+// Graceful shutdown
+async function closeGracefully(signal: string) {
+  console.log(`Received ${signal}, closing server gracefully...`);
+  await fastify.close();
+  process.exit(0);
+}
+
+process.on("SIGTERM", () => closeGracefully("SIGTERM"));
+process.on("SIGINT", () => closeGracefully("SIGINT"));
+
 start();

@@ -1,0 +1,16 @@
+node_modules
+dist
+.git
+.idea
+.DS_Store
+*.log
+npm-debug.log*
+.env
+src
+public
+dictionaries
+*.md
+*.svg
+vite.config.ts
+tsconfig.json
+index.html
