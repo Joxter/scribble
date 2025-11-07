@@ -8,8 +8,8 @@
     "build": "vite build",
     "check-types": "tsc",
     "push-instant": "npx instant-cli@latest push",
-    "server": "node --experimental-strip-types backend/server.ts",
-    "server:dev": "node --watch --experimental-strip-types backend/server.ts",
+    "server": "node --env-file=.env --experimental-strip-types backend/server.ts",
+    "server:dev": "node --env-file=.env --watch --experimental-strip-types backend/server.ts",
     "test": "echo \"Error: no test specified\" && exit 1",
     "deploy": "npm run build && gh-pages -d dist"
   },
@@ -19,6 +19,7 @@
   "dependencies": {
     "@fastify/cors": "^11.1.0",
     "@fastify/helmet": "^13.0.2",
+    "@instantdb/admin": "^0.22.47",
     "@instantdb/core": "^0.20.12",
     "@linaria/core": "^6.3.0",
     "@linaria/react": "^6.3.0",

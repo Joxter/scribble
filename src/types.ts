@@ -1,5 +1,3 @@
-import { AppSchema } from "../instant.schema.ts";
-
 export type PartyOLD = {
   players: { id: string; name: string }[];
   id: string;

@@ -1,6 +1,7 @@
 import Fastify from "fastify";
 import cors from "@fastify/cors";
 import helmet from "@fastify/helmet";
+import { db } from "./instant-db.ts";
 
 type ServerConfig = {
   port: number;
