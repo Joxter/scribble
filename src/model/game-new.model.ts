@@ -131,9 +131,8 @@ export const $choosingWord = combine($localId, $newParty, (localId, p) => {
 liveQuery($newParty, (party) => {
   if (!party.id) return () => [];
 
-  log(`join.. ${party.id}`);
   const room = db.joinRoom("party", party.id);
-  log(`joined`);
+  console.log("party.id", party.id);
 
   const uns = $currentDrawing.watch((currentDrawing) => {
     if ($imDrawing.getState()) {
@@ -144,8 +143,6 @@ liveQuery($newParty, (party) => {
   });
 
   const unsubscribeTopic = room.subscribeTopic("currentCanvas", (ev) => {
-    // console.log("currentCanvas", ev);
-    log(`currentCanvas`);
     if (!$imDrawing.getState()) {
       console.log("somebodyDrawing", ev.currentDrawing);
       somebodyDrawing(ev.currentDrawing);
