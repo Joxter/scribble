@@ -1,11 +1,6 @@
 import { VecLike } from "./freehand/Vec";
 import { Store } from "effector";
-import {
-  CanvasAndChatHistory,
-  Game,
-  GameParams,
-  UserMessageEvent,
-} from "./types.ts";
+import { CanvasAndChatHistory, GameParams, UserMessageEvent } from "./types.ts";
 import { words } from "../dictionaries/ru-300-chatgpt.ts";
 
 export const canvasSize = 600;

@@ -93,11 +93,12 @@ export function ChatMessages() {
           );
         }
 
-        if (ev.type === "choosing-word") {
-          let { playerId } = ev;
+        if (ev.type === "drawing-ended") {
           return (
             <p key={key} className={messageItalic}>
-              {playersMap[playerId]} выбирает слово
+              {ev.payload.reason === "all-revealed" && "Все отгадали!"}
+              {ev.payload.reason === "timeout" && "Время вышло!"}{" "}
+              {ev.payload.nextPlayerId} выбирает новое слово!
             </p>
           );
         }

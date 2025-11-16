@@ -1,7 +1,19 @@
 import { db } from "../DB.ts";
 import { combine, createEvent, createStore, sample } from "effector";
-import { GAME_STATUS, UserMessageEvent, Party, NewWord } from "../types.ts";
-import { calcRevealed, compareWords, liveQuery } from "../utils.ts";
+import {
+  GAME_STATUS,
+  UserMessageEvent,
+  Party,
+  NewWord,
+  AllRevealedEvent,
+  DrawingEndedEvent,
+} from "../types.ts";
+import {
+  calcRevealed,
+  compareWords,
+  liveQuery,
+  newRandomWords,
+} from "../utils.ts";
 import { $localId } from "./game.model.ts";
 import { newParty } from "./utils.ts";
 import { id } from "@instantdb/core";
@@ -89,9 +101,17 @@ const $roomId = $newParty.map((p) => {
   return p.id;
 });
 
+export const $guessed = $newParty.map((p) => {
+  return p.gameState.innerState.state === "drawing"
+    ? p.gameState.innerState.guessed
+    : {};
+});
+
 const $imDrawing = $drawing.map((t) => {
   return t.drawing && t.iam;
 });
+
+export const $isServer = $imDrawing;
 
 export const {
   lineParamsChanged,
@@ -231,6 +251,44 @@ sample({
   ]);
 });
 
+// when every guessed
+combine($guessed, $newParty, $isServer).watch(([guessed, party, isServer]) => {
+  const { players, gameState } = party;
+  if (isServer && gameState.innerState.state === "drawing") {
+    if (Object.keys(guessed).length === players.length - 1) {
+      const artist = gameState.innerState.playerId;
+      const nextPlayerI = players.findIndex((p) => p.id === artist) + 1;
+      const nextPlayerId = players[nextPlayerI]
+        ? players[nextPlayerI].id
+        : players[0].id;
+
+      const event: Omit<DrawingEndedEvent, "id"> = {
+        type: "drawing-ended",
+        payload: {
+          reason: "all-revealed",
+          revealed: gameState.innerState.guessed,
+          nextPlayerId: nextPlayerId,
+        },
+      };
+
+      db.transact([
+        db.tx.party[party.id].update({
+          status: GAME_STATUS.inProgress,
+          gameState: {
+            players: players,
+            innerState: {
+              state: "choosing-word",
+              playerId: nextPlayerId,
+              words: newRandomWords(3),
+            },
+          },
+        }),
+        db.tx.roomEvent[id()].create(event).link({ party: party.id }),
+      ]);
+    }
+  }
+});
+
 sample({
   source: [$localId, $newParty] as const,
   clock: messageSent,
@@ -238,20 +296,27 @@ sample({
 }).watch(([[localId, party], { guess }]) => {
   const gameState = party.gameState.innerState;
   const secretWord = gameState.state === "drawing" ? gameState.word : null;
+  const isRevealed = secretWord ? calcRevealed(secretWord, guess) : "none";
 
   const event: Omit<UserMessageEvent, "id"> = {
     type: "user-message",
     payload: {
       text: guess,
       playerId: localId,
-      isRevealed: secretWord ? calcRevealed(secretWord, guess) : "none",
+      isRevealed,
     },
   };
 
-  db.transact(
-    db.tx.roomEvent[id()]
-      //
-      .create(event)
-      .link({ party: party.id }),
-  );
+  db.transact([
+    db.tx.roomEvent[id()].create(event).link({ party: party.id }),
+    ...(isRevealed === "revealed"
+      ? [
+          db.tx.party[party.id].merge({
+            gameState: {
+              innerState: { guessed: { localId: Date.now() } },
+            },
+          }),
+        ]
+      : []),
+  ]);
 });

@@ -59,6 +59,11 @@ export type Prettify<T> = {
 
 export type ValueOf<T> = T[keyof T];
 
+type Revealed = Record<
+  string, // userId
+  number // timestamp
+>;
+
 // export type PartyAttrs = Prettify<AppSchema["entities"]["party"]["attrs"]>;
 
 export const GAME_STATUS = {
@@ -75,10 +80,18 @@ export type Party = {
   players: Player[];
   status: ValueOf<typeof GAME_STATUS>;
   gameState: {
-    players: string[]; // localIds
+    // todo move to root
+    players: string[];
+    // todo move to root
     innerState:
       | { state: "choosing-word"; playerId: string; words: string[] }
-      | { state: "drawing"; playerId: string; word: string };
+      | {
+          state: "drawing";
+          playerId: string;
+          word: string;
+          // startedAt: number; todo
+          guessed: Revealed;
+        };
   };
   roomEvents: AllChatMessages[];
   gameParams: {
@@ -88,7 +101,7 @@ export type Party = {
   };
 };
 
-type AllChatMessages = UserMessageEvent | NewWord;
+type AllChatMessages = UserMessageEvent | NewWord | DrawingEndedEvent;
 
 type ChatAndLines = {
   history: CanvasAndChatHistory[]; // чат и линии
@@ -103,6 +116,7 @@ export type GameParams = {
   canvasSize: number;
 };
 
+/*
 export type Game = {
   playerIds: string[];
   messages: (NewWord | ChoosingWord | UserMessageEvent)[];
@@ -131,6 +145,7 @@ export type Game = {
         state: "results";
       };
 };
+*/
 
 const LANGS = ["RU", "EN"] as const;
 export type Language = (typeof LANGS)[number];
@@ -145,15 +160,25 @@ export type UserMessageEvent = {
   };
 };
 
+export type NewWord = {
+  type: "new-selected-word";
+  id: string;
+  payload: { playerId: string; word: string };
+};
+
+export type DrawingEndedEvent = {
+  type: "drawing-ended";
+  id: string;
+  payload: {
+    reason: "all-revealed" | "timeout";
+    revealed: Revealed;
+    nextPlayerId: string;
+  };
+};
+
 export type DrawingTimeout = {
   type: "drawing-timeout";
   id: string;
-};
-
-export type NewWord = {
-  type: "new-selected-word"; // todo "new-word-selected"
-  id: string;
-  payload: { playerId: string; word: string };
 };
 
 export type ChoosingWord = {
