@@ -23,7 +23,7 @@ export function DeveloperTools() {
 
       {!isCollapsed && (
         <div style={{ maxWidth: "90vw", overflow: "scroll" }}>
-          <div style={{ display: "grid" }}>
+          <div style={{ display: "grid", border: "1px solid red" }}>
             {logiSmol.map((v, i) => {
               return <p key={i}>{JSON.stringify(v)}</p>;
             })}

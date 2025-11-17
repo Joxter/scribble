@@ -25,6 +25,7 @@ export function createCurrentLine() {
   const lineParamsChanged = createEvent<Partial<Omit<CanvasLine, "dots">>>();
   const lineStarted = createEvent<[x: number, y: number]>();
   const lineExtended = createEvent<[x: number, y: number]>();
+  const saveCanvasToPaining = createEvent();
   const undoClicked = createEvent<any>();
 
   const $lineExtendedTimes = createStore<number[]>([]);
@@ -116,5 +117,6 @@ export function createCurrentLine() {
     $svgCanvasPaths,
     $polylinePaths,
     $lineExtendedCount,
+    saveCanvasToPaining,
   };
 }

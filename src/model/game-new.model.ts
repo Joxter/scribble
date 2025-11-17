@@ -123,6 +123,7 @@ export const {
   lineExtended,
   somebodyDrawing,
   undoClicked,
+  saveCanvasToPaining,
   $svgCanvasPaths,
   $currentDrawing,
   $polylinePaths,
@@ -326,4 +327,19 @@ sample({
         ]
       : []),
   ]);
+});
+
+const a = sample({
+  source: [$currentDrawing, $newParty] as const,
+  clock: saveCanvasToPaining,
+});
+a.watch(([canvas, { gameState }]) => {
+  log("canvas");
+  if (gameState.innerState.state === "drawing") {
+    db.transact(
+      db.tx.paintings[gameState.innerState.drawingId].update({
+        canvas: canvas,
+      }),
+    );
+  }
 });

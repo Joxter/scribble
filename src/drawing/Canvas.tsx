@@ -9,6 +9,7 @@ import {
   $svgCanvasPaths,
   lineExtended,
   lineStarted,
+  saveCanvasToPaining,
 } from "../model/game-new.model.ts";
 import { $debugMode } from "../model/game.model.ts";
 
@@ -171,6 +172,7 @@ const CurrentLine = memo(() => {
       e.preventDefault();
 
       setIsDrawing(false);
+      saveCanvasToPaining();
     },
     [imDrawing, isDrawing],
   );
