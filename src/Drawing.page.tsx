@@ -61,7 +61,7 @@ export function DrawingPage() {
                 {players[choosingWord?.who || ""]?.name || "no name"} выбирает
                 слово!
               </p>
-              <p>todo: показывать рисунок</p>
+              <p>todo: показывать рисунок и реакции для голосования</p>
             </div>
           ) : (
             <Canvas />

@@ -230,17 +230,14 @@ sample({
   clock: newWordSelected,
   fn: (a, b) => [a, b] as const,
 }).watch(([[localId, party], word]) => {
-  const event: Omit<NewWord, "id"> = {
-    type: "new-selected-word",
-    payload: { playerId: localId, word },
-  };
-
   const drawingId = id();
 
   db.transact([
     db.tx.roomEvent[id()]
-      //
-      .create(event)
+      .create({
+        type: "new-selected-word",
+        payload: { playerId: localId, word },
+      })
       .link({ party: party.id }),
     db.tx.paintings[drawingId].create({
       canvas: [],
