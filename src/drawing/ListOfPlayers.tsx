@@ -7,9 +7,9 @@ import { closeParty } from "../db-things.ts";
 export function ListOfPlayers() {
   const party = useUnit($newParty);
 
-  const stablePlayers = party.gameState.players.map((id) => {
-    return party.players.find((p) => p.id === id)!;
-  });
+  const stablePlayers = party.players;
+  // console.log(party.players);
+  // console.log(party.gameState.players);
 
   const drawingId = "not implemented, take something from gameState";
 

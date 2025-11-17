@@ -1,7 +1,11 @@
 import { useUnit } from "effector-react";
 import { css } from "@linaria/core";
 import { useAutoScroll } from "../hooks/useAutoScroll";
-import { $allChatEvents, $newParty } from "../model/game-new.model.ts";
+import {
+  $allChatEvents,
+  $currentPlayers,
+  $newParty,
+} from "../model/game-new.model.ts";
 import { $localId } from "../model/game.model.ts";
 
 const container = css`
@@ -38,14 +42,8 @@ const messageUnknown = css`
 `;
 
 export function ChatMessages() {
-  const [events, { players }] = useUnit([$allChatEvents, $newParty]);
+  const [events, players] = useUnit([$allChatEvents, $currentPlayers]);
   const scrollRef = useAutoScroll(events);
-
-  const playersMap = Object.fromEntries(
-    players.map((it) => {
-      return [it.id, it.name];
-    }),
-  );
 
   return (
     <div ref={scrollRef} className={container}>
@@ -56,7 +54,7 @@ export function ChatMessages() {
           if (isRevealed === "revealed") {
             return (
               <p key={key} className={messageRevealed}>
-                <b>{playersMap[playerId]} отгадал(а) слово!</b>
+                <b>{players[playerId].name} отгадал(а) слово!</b>
               </p>
             );
           }
@@ -64,14 +62,14 @@ export function ChatMessages() {
           if (isRevealed === "almost") {
             return (
               <p key={key} className={messageRevealed}>
-                <b>{playersMap[playerId]} почти отгадал(а)!</b>
+                <b>{players[playerId].name} почти отгадал(а)!</b>
               </p>
             );
           }
 
           return (
             <p key={key}>
-              <b>{playersMap[playerId]}:</b> {text}
+              <b>{players[playerId].name}:</b> {text}
             </p>
           );
         }
@@ -95,11 +93,23 @@ export function ChatMessages() {
 
         if (ev.type === "drawing-ended") {
           return (
-            <p key={key} className={messageItalic}>
-              {ev.payload.reason === "all-revealed" && "Все отгадали!"}
-              {ev.payload.reason === "timeout" && "Время вышло!"}{" "}
-              {ev.payload.nextPlayerId} выбирает новое слово!
-            </p>
+            <div>
+              <p key={key} className={messageItalic}>
+                {ev.payload.reason === "all-revealed" && "Все отгадали!"}
+                {ev.payload.reason === "timeout" && "Время вышло!"}{" "}
+                {players[ev.payload.nextPlayerId].name} выбирает новое слово!
+              </p>
+              <ul style={{ margin: 0 }}>
+                {Object.entries(ev.payload.revealed).map(([key, time]) => {
+                  return (
+                    <li key={key}>
+                      {players[key]?.name || "no name"}{" "}
+                      {new Date(time).toISOString().slice(11, -5)}
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
           );
         }
 

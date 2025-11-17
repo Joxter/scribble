@@ -9,12 +9,18 @@ import css from "./drawing/Page.module.css";
 import { GameInputField } from "./drawing/GameInputField.tsx";
 import { ChatMessages } from "./drawing/ChatMessages.tsx";
 import { Fps } from "./components/Fps.tsx";
-import { $choosingWord, $drawing, $newParty } from "./model/game-new.model.ts";
+import {
+  $choosingWord,
+  $currentPlayers,
+  $drawing,
+  $newParty,
+} from "./model/game-new.model.ts";
 import { PageLayout } from "./components/PageLayout.tsx";
 import { ChooseWord } from "./drawing/ChooseWord.tsx";
 
 export function DrawingPage() {
   const party = useUnit($newParty);
+  const players = useUnit($currentPlayers);
 
   const roomId = party.id;
 
@@ -51,7 +57,11 @@ export function DrawingPage() {
             </div>
           ) : choosingWord.choose && !choosingWord.iam ? (
             <div style={{ width: "100%", aspectRatio: "1" }}>
-              <p>{choosingWord.who} выбирает слово!</p>
+              <p>
+                {players[choosingWord?.who || ""]?.name || "no name"} выбирает
+                слово!
+              </p>
+              <p>todo: показывать рисунок</p>
             </div>
           ) : (
             <Canvas />

@@ -101,6 +101,10 @@ const $roomId = $newParty.map((p) => {
   return p.id;
 });
 
+export const $currentPlayers = $newParty.map((p) => {
+  return Object.fromEntries(p.players.map((it) => [it.id, it]));
+});
+
 export const $guessed = $newParty.map((p) => {
   return p.gameState.innerState.state === "drawing"
     ? p.gameState.innerState.guessed
@@ -313,7 +317,7 @@ sample({
       ? [
           db.tx.party[party.id].merge({
             gameState: {
-              innerState: { guessed: { localId: Date.now() } },
+              innerState: { guessed: { [localId]: Date.now() } },
             },
           }),
         ]
