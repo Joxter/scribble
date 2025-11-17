@@ -70,7 +70,7 @@ export function DrawingPage() {
         <div className={css.footer}>
           {drawing.iam ? (
             <Tools />
-          ) : (
+          ) : drawing.drawing ? (
             <div style={{ padding: "4px 12px" }}>
               <div style={{ display: "flex", justifyContent: "center" }}>
                 <GameInputField
@@ -80,7 +80,7 @@ export function DrawingPage() {
                 />
               </div>
             </div>
-          )}
+          ) : null}
 
           <DeveloperTools />
         </div>

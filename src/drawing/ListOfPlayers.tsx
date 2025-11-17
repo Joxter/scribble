@@ -1,17 +1,18 @@
 import { useUnit } from "effector-react";
 import { Player } from "../types.ts";
 import pencilSvg from "./Pencil.svg";
-import { $newParty } from "../model/game-new.model.ts";
+import { $drawing, $newParty } from "../model/game-new.model.ts";
 import { closeParty } from "../db-things.ts";
 
 export function ListOfPlayers() {
-  const party = useUnit($newParty);
+  const [party, drawing] = useUnit([$newParty, $drawing]);
 
   const stablePlayers = party.players;
-  // console.log(party.players);
-  // console.log(party.gameState.players);
+  const innerState = party.gameState.innerState;
 
-  const drawingId = "not implemented, take something from gameState";
+  const drawingId = drawing.drawing ? drawing.who : null;
+  const choosingWordPlayerId =
+    innerState.state === "choosing-word" ? innerState.playerId : null;
 
   return (
     <div>
@@ -37,6 +38,7 @@ export function ListOfPlayers() {
       >
         {stablePlayers?.map((player: Player) => {
           const isDrawingPlayer = player.id === drawingId;
+          const isChoosingWord = player.id === choosingWordPlayerId;
 
           return (
             <div
@@ -53,6 +55,7 @@ export function ListOfPlayers() {
               {isDrawingPlayer && (
                 <img src={pencilSvg} style={{ width: "18px" }} />
               )}
+              {isChoosingWord && <p>[? ? ?]</p>}
             </div>
           );
         })}
