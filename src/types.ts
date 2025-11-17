@@ -91,6 +91,7 @@ export type Party = {
           word: string;
           // startedAt: number; todo
           guessed: Revealed;
+          drawingId: string;
         };
   };
   roomEvents: AllChatMessages[];

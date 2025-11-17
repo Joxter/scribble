@@ -8,12 +8,8 @@ const _schema = i.schema({
       name: i.string().unique().indexed(), // url
       host: i.string().optional(), //
       gameState: i.any().optional(),
-      // gameParams: {
-      //   rounds: number,
-      //   wordSuggestions: number // количество слов на выбор
-      // }
       gameParams: i.any().optional(),
-      status: i.string(), // GAME_STATUS
+      status: i.string(),
     }),
     roomEvent: i.entity({
       type: i.string(),
@@ -35,11 +31,6 @@ const _schema = i.schema({
       category: i.string().optional(),
       hidden: i.boolean().optional(),
     }),
-    // curretLine: i.entity({
-    //   color: i.string(),
-    //   dots: i.any(),
-    //   width: i.number(),
-    // }),
   },
   links: {
     partyRoomEvents: {
@@ -50,10 +41,6 @@ const _schema = i.schema({
       forward: { on: "party", has: "many", label: "players" },
       reverse: { on: "players", has: "many", label: "parties" },
     },
-    // partyCurrentLine: {
-    //   forward: { on: "party", has: "one", label: "currentLine" },
-    //   reverse: { on: "curretLine", has: "one", label: "party" },
-    // },
   },
   rooms: {
     party: {

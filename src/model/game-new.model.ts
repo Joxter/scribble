@@ -5,7 +5,6 @@ import {
   UserMessageEvent,
   Party,
   NewWord,
-  AllRevealedEvent,
   DrawingEndedEvent,
 } from "../types.ts";
 import {
@@ -16,7 +15,7 @@ import {
 } from "../utils.ts";
 import { $localId } from "./game.model.ts";
 import { newParty } from "./utils.ts";
-import { id } from "@instantdb/core";
+import { i, id } from "@instantdb/core";
 import { createCurrentLine } from "./drawing.model.ts";
 
 export const $renderMode = createStore<"normal" | "polyline" | "tldraw">(
@@ -236,12 +235,18 @@ sample({
     payload: { playerId: localId, word },
   };
 
-  // todo create paint? (topic ? )
+  const drawingId = id();
+
   db.transact([
     db.tx.roomEvent[id()]
       //
       .create(event)
       .link({ party: party.id }),
+    db.tx.paintings[drawingId].create({
+      canvas: [],
+      playerId: localId,
+      word,
+    }),
     db.tx.party[party.id].update({
       gameState: {
         ...party.gameState,
@@ -249,6 +254,7 @@ sample({
           state: "drawing",
           playerId: localId,
           word: word,
+          drawingId: drawingId,
         },
       },
     }),
