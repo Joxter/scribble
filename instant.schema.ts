@@ -1,14 +1,15 @@
 // Docs: https://www.instantdb.com/docs/modeling-data
 
 import { i } from "@instantdb/core";
+import { Party } from "./src/types.ts";
 
 const _schema = i.schema({
   entities: {
     party: i.entity({
       name: i.string().unique().indexed(), // url
-      host: i.string().optional(), //
-      gameState: i.any().optional(),
-      gameParams: i.any().optional(),
+      host: i.string().optional(),
+      gameState: i.json<Party["gameState"]>().optional(),
+      gameParams: i.json<Party["gameParams"]>().optional(),
       status: i.string(),
     }),
     roomEvent: i.entity({

@@ -75,7 +75,7 @@ export function DrawingPage() {
               <div style={{ display: "flex", justifyContent: "center" }}>
                 <GameInputField
                   clue={clue}
-                  secret={drawing.word}
+                  secret={drawing.word || ""}
                   revealed={iRevealed}
                 />
               </div>

@@ -113,9 +113,12 @@ export function ChatMessages() {
           );
         }
 
+        // @ts-ignore
+        const t = ev.type;
+
         return (
           <p key={key} className={messageUnknown}>
-            [{ev.type}]
+            [{t}]
           </p>
         );
       })}

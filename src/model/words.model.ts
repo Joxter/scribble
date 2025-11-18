@@ -22,7 +22,10 @@ $words.on(updateWords, (_, v) => v);
 
 db.subscribeQuery({ words: {} }, (resp) => {
   if (resp.error) console.error(resp.error);
-  if (resp.data) updateWords(resp.data.words || []);
+  if (resp.data) {
+    // @ts-ignore
+    updateWords(resp.data.words || []);
+  }
 });
 
 export function addNewWord(word: string, lang: string) {

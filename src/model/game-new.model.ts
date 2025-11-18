@@ -22,21 +22,6 @@ export const $renderMode = createStore<"normal" | "polyline" | "tldraw">(
   "tldraw",
 );
 
-export async function getMyParty() {
-  const localId = await db.getLocalId("guest");
-
-  const { players } = await db
-    .queryOnce({
-      players: {
-        $: { where: { id: localId } },
-        parties: { $: { where: { status: "prepare" } } },
-      },
-    })
-    .then((it) => it.data);
-
-  return players[0]?.parties?.[0] || null;
-}
-
 export const newPartyLoaded = createEvent<Party>();
 
 export const $newParty = createStore<Party>(newParty());
@@ -126,6 +111,7 @@ export const {
   saveCanvasToPaining,
   $svgCanvasPaths,
   $currentDrawing,
+  initLoad,
   $polylinePaths,
 } = createCurrentLine();
 
@@ -155,28 +141,26 @@ export const $choosingWord = combine($localId, $newParty, (localId, p) => {
 liveQuery($newParty, (party) => {
   if (!party.id) return () => [];
 
-  log(`join.. ${party.id}`);
+  log(`joinRoom ${party.id}`);
   const room = db.joinRoom("party", party.id);
   log(`joined`);
 
   const uns = $currentDrawing.watch((currentDrawing) => {
     if ($imDrawing.getState()) {
       log(`publishTopic`);
-      console.log("publishTopic");
       room.publishTopic("currentCanvas", { currentDrawing });
     }
   });
 
   const unsubscribeTopic = room.subscribeTopic("currentCanvas", (ev) => {
-    // console.log("currentCanvas", ev);
     log(`currentCanvas`);
     if (!$imDrawing.getState()) {
-      console.log("somebodyDrawing", ev.currentDrawing);
       somebodyDrawing(ev.currentDrawing);
     }
   });
 
   return () => {
+    log(`unsubscribe`);
     uns();
     unsubscribeTopic();
     room.leaveRoom();
@@ -185,6 +169,8 @@ liveQuery($newParty, (party) => {
 
 liveQuery($localId, (localId) => {
   if (!localId) return () => {};
+
+  firstLoadForCanvas(localId);
 
   return db.subscribeQuery(
     {
@@ -217,6 +203,7 @@ liveQuery($localId, (localId) => {
 
         if (party) {
           newPartyLoaded(party as Party);
+          console.log(party.gameState?.innerState);
           return;
         }
       }
@@ -253,6 +240,7 @@ sample({
           playerId: localId,
           word: word,
           drawingId: drawingId,
+          guessed: {},
         },
       },
     }),
@@ -283,7 +271,7 @@ combine($guessed, $newParty, $isServer).watch(([guessed, party, isServer]) => {
         db.tx.party[party.id].update({
           status: GAME_STATUS.inProgress,
           gameState: {
-            players: players,
+            players: players.map((p) => p.id),
             innerState: {
               state: "choosing-word",
               playerId: nextPlayerId,
@@ -343,3 +331,41 @@ a.watch(([canvas, { gameState }]) => {
     );
   }
 });
+
+function firstLoadForCanvas(localId: string) {
+  db.queryOnce({
+    party: {
+      $: {
+        where: {
+          or: [
+            {
+              and: [{ status: GAME_STATUS.prepare }, { "players.id": localId }],
+            },
+            {
+              and: [
+                { status: GAME_STATUS.inProgress },
+                { "players.id": localId },
+              ],
+            },
+          ],
+        },
+      },
+    },
+  }).then(({ data }) => {
+    const innerState = data.party?.[0].gameState?.innerState;
+
+    if (innerState?.state === "drawing") {
+      innerState.drawingId;
+
+      db.queryOnce({
+        paintings: {
+          $: { where: { id: innerState.drawingId } },
+        },
+      }).then(({ data }) => {
+        if (data.paintings[0]) {
+          initLoad(data.paintings[0].canvas);
+        }
+      });
+    }
+  });
+}

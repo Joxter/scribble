@@ -113,7 +113,7 @@ export async function updateGameParams(
   params: Partial<Party["gameParams"]>,
 ) {
   const res = await db.transact([
-    db.tx.party[partyId].update({ gameParams: params }),
+    db.tx.party[partyId].merge({ gameParams: params }),
   ]);
 
   return res;
@@ -142,11 +142,15 @@ export async function createNewParty(name: string) {
   const res = await db.transact([
     db.tx.party[partyId]
       .create({
-        gameState: { drawing: "" },
+        status: GAME_STATUS.prepare,
+        gameState: null,
         name: name,
         host: localId,
-        gameParams: { rounds: 5, wordSuggestions: 3 },
-        status: GAME_STATUS.prepare,
+        gameParams: {
+          rounds: 5,
+          wordSuggestions: 3,
+          drawTime: 60,
+        },
       })
       .link({ players: localId }),
   ]);

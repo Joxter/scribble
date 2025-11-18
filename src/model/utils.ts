@@ -5,42 +5,17 @@ import {
   Party,
 } from "../types.ts";
 
-export function findLastEventIndex(
-  arr: CanvasAndChatHistory[],
-  cb: (it: CanvasAndChatHistory) => boolean | undefined,
-): { i: number } | null {
-  for (let i = arr.length - 1; i >= 0; i--) {
-    if (cb(arr[i])) {
-      return { i };
-    }
-  }
-  return null;
-}
-
 export function newParty(): Party {
   return {
     gameState: { players: [], innerState: {} as any },
     name: "",
     host: "",
     gameParams: { rounds: 5, wordSuggestions: 3, drawTime: 60 },
-    status: GAME_STATUS.nothing,
+    status: GAME_STATUS.prepare,
     players: [],
+    roomEvents: [],
     id: "",
   };
-}
-
-export function getChatEvents(
-  chat: CanvasAndChatHistory[],
-  allEvents: CanvasAndChatHistory[],
-) {
-  const newChat = allEvents.filter(
-    (it) =>
-      it.type === "guess" ||
-      it.type === "new-word" ||
-      it.type === "choosing-word",
-  );
-
-  return newChat.length !== chat.length ? newChat : chat;
 }
 
 export function doEventsUndo(events: CanvasAndChatHistory[]): LineEvent[] {
