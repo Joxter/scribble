@@ -116,15 +116,9 @@ export function Canvas() {
       });
     }
   }, [polylinePaths, svgCanvasPaths, renderMode]);
-  const paintId =
-    gameState.innerState.state === "drawing"
-      ? gameState.innerState.drawingId
-      : "";
 
   return (
     <div style={containerStyle}>
-      {paintId && <p>{paintId}</p>}
-
       <canvas ref={canvasLinesRef} style={canvasLayerStyle} />
       <CurrentLine />
       {debugMode && <DebugOverlay />}
