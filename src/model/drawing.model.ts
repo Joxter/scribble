@@ -33,6 +33,7 @@ export function createCurrentLine() {
 
   const somebodyDrawing = createEvent<CurrentCanvas>();
   const initLoad = createEvent<CurrentCanvas>();
+  const newRound = createEvent<any>();
 
   $lineExtendedTimes.on(lineExtended, (times) => {
     const now = Date.now();
@@ -49,6 +50,7 @@ export function createCurrentLine() {
   });
 
   $currentDrawing
+    .on(newRound, () => [])
     .on(somebodyDrawing, (_, draw) => draw)
     .on(initLoad, (_, draw) => draw)
     .on(lineExtended, (s, dot) => {
@@ -114,6 +116,7 @@ export function createCurrentLine() {
     lineParamsChanged,
     undoClicked,
     initLoad,
+    newRound,
     lineStarted,
     lineExtended,
     somebodyDrawing,

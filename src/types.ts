@@ -40,7 +40,7 @@ export type CanvasLine = {
 export type CurrentCanvas = CanvasLine[];
 
 export type Painting = {
-  canvas: (LineEvent | { type: "undo" })[];
+  canvas: CanvasLine[];
   playerId: string;
   word: string;
   id: string;

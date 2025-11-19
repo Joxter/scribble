@@ -1,7 +1,6 @@
 import React, { useRef, useEffect } from "react";
 import { canvasSize } from "../utils.ts";
-import { LineEvent } from "../types.ts";
-import { doEventsUndo } from "../model/utils.ts";
+import { CanvasLine } from "../types.ts";
 
 const PIXEL_RATIO = window.devicePixelRatio || 1;
 
@@ -17,13 +16,11 @@ function setupCanvas(canvas: HTMLCanvasElement, size: number = canvasSize) {
 
 function renderCanvas(
   ctx: CanvasRenderingContext2D,
-  canvas: (LineEvent | { type: "undo" })[],
+  lines: CanvasLine[],
   displaySize: number,
 ) {
   const scale = displaySize / canvasSize;
   ctx.scale(scale, scale);
-
-  const lines = doEventsUndo(canvas);
 
   lines.forEach((line) => {
     if (line.dots.length === 1) {
@@ -48,7 +45,7 @@ function renderCanvas(
 }
 
 type Props = {
-  canvas: (LineEvent | { type: "undo" })[];
+  canvas: CanvasLine[];
   size?: number;
   className?: string;
 };

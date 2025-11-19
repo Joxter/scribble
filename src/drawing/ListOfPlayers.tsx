@@ -52,10 +52,9 @@ export function ListOfPlayers() {
               }}
             >
               {player.name}{" "}
-              {isDrawingPlayer && (
+              {(isChoosingWord || isDrawingPlayer) && (
                 <img src={pencilSvg} style={{ width: "18px" }} />
               )}
-              {isChoosingWord && <p>[? ? ?]</p>}
             </div>
           );
         })}

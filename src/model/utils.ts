@@ -22,7 +22,7 @@ export function doEventsUndo(events: CanvasAndChatHistory[]): LineEvent[] {
   const lines: LineEvent[] = [];
 
   events.forEach((item) => {
-    if (item.type === "line") {
+    if (!item.type || item.type === "line") {
       lines.push(item);
     } else if (item.type === "undo") {
       lines.pop();

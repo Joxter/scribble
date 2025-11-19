@@ -4,6 +4,7 @@ import { canvasSize, toFixed } from "../utils";
 import {
   $currentDrawing,
   $drawing,
+  $newParty,
   $polylinePaths,
   $renderMode,
   $svgCanvasPaths,
@@ -97,6 +98,7 @@ export function Canvas() {
   const debugMode = useUnit($debugMode);
   const polylinePaths = useUnit($polylinePaths);
   const svgCanvasPaths = useUnit($svgCanvasPaths);
+  const { gameState } = useUnit($newParty);
 
   useEffect(() => {
     const canvas = canvasLinesRef.current!;
@@ -114,9 +116,15 @@ export function Canvas() {
       });
     }
   }, [polylinePaths, svgCanvasPaths, renderMode]);
+  const paintId =
+    gameState.innerState.state === "drawing"
+      ? gameState.innerState.drawingId
+      : "";
 
   return (
     <div style={containerStyle}>
+      {paintId && <p>{paintId}</p>}
+
       <canvas ref={canvasLinesRef} style={canvasLayerStyle} />
       <CurrentLine />
       {debugMode && <DebugOverlay />}

@@ -16,7 +16,7 @@ export function Router() {
   const [location, navigate] = useLocation();
 
   useEffect(() => {
-    console.log("party.status", party.status);
+    // return;
     if (!party) {
       navigate(getUrl(""));
     } else if (

@@ -112,8 +112,22 @@ export const {
   $svgCanvasPaths,
   $currentDrawing,
   initLoad,
+  newRound,
   $polylinePaths,
 } = createCurrentLine();
+
+export const $currentDrawingId = $newParty.map((p) => {
+  if (p.gameState.innerState.state === "drawing") {
+    return p.gameState.innerState.drawingId;
+  } else {
+    return null;
+  }
+});
+
+sample({
+  clock: $currentDrawingId,
+  target: newRound,
+});
 
 export const $choosingWord = combine($localId, $newParty, (localId, p) => {
   if (p.status !== GAME_STATUS.inProgress) return { choose: false };

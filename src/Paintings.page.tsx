@@ -93,7 +93,7 @@ export function PaintingsPage() {
           <p>Нет картин</p>
         ) : (
           <div className={css.paintingsGrid}>
-            {paintings.map((painting) => {
+            {paintings.toReversed().map((painting) => {
               return (
                 <PaintingCard
                   key={painting.id}
@@ -126,7 +126,7 @@ function PaintingCard({
   selected,
   onSelectionChange,
 }: Props) {
-  const lines = doEventsUndo(painting.canvas);
+  const lines = doEventsUndo(painting.canvas as any);
   const allEventsCnt = painting.canvas.length;
   const linesAfterUndo = lines.length;
   const totalDots = lines
@@ -134,20 +134,7 @@ function PaintingCard({
     .reduce((acc, l) => acc + l, 0);
 
   return (
-    <div
-      className={css.paintingCard}
-      onClick={() => {
-        const str = JSON.stringify(
-          lines.map((it) => {
-            it.dots = it.dots.map(([x, y]) => [+x.toFixed(1), +y.toFixed(1)]);
-            return it;
-          }),
-        );
-
-        console.log(str);
-        console.log(str.length);
-      }}
-    >
+    <div className={css.paintingCard}>
       <label className={css.paintingLabel}>
         <input
           type="checkbox"
@@ -157,7 +144,10 @@ function PaintingCard({
         />
         <h4 className={css.paintingTitle}>{painting.word}</h4>
       </label>
-      <ReadOnlyCanvas canvas={painting.canvas} size={200} />
+      <ReadOnlyCanvas
+        canvas={doEventsUndo(painting.canvas as any)}
+        size={200}
+      />
 
       <div className={css.paintingInfo}>
         <p className={css.paintingMeta}>Автор: {author.name}</p>
