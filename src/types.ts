@@ -73,27 +73,25 @@ export const GAME_STATUS = {
   finished: "finished",
 } as const;
 
+export type GameState =
+  | { state: "choosing-word"; playerId: string; words: string[] }
+  | {
+      state: "drawing";
+      playerId: string;
+      word: string;
+      // startedAt: number; todo
+      guessed: Revealed;
+      drawingId: string;
+    };
+
 export type Party = {
   id: string;
   name: string;
   host: string;
   players: Player[];
+  staticPlayerIds: string[];
   status: ValueOf<typeof GAME_STATUS>;
-  gameState: {
-    // todo move to root
-    players: string[];
-    // todo move to root
-    innerState:
-      | { state: "choosing-word"; playerId: string; words: string[] }
-      | {
-          state: "drawing";
-          playerId: string;
-          word: string;
-          // startedAt: number; todo
-          guessed: Revealed;
-          drawingId: string;
-        };
-  };
+  gameState: GameState;
   roomEvents: AllChatMessages[];
   gameParams: {
     rounds: number;
