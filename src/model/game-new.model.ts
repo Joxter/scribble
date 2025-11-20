@@ -4,15 +4,10 @@ import {
   GAME_STATUS,
   UserMessageEvent,
   Party,
-  NewWord,
   DrawingEndedEvent,
+  AllChatMessages,
 } from "../types.ts";
-import {
-  calcRevealed,
-  compareWords,
-  liveQuery,
-  newRandomWords,
-} from "../utils.ts";
+import { calcRevealed, liveQuery, newRandomWords } from "../utils.ts";
 import { $localId } from "./game.model.ts";
 import { newParty } from "./utils.ts";
 import { id } from "@instantdb/core";
@@ -27,7 +22,7 @@ export const newPartyLoaded = createEvent<Party>();
 export const $newParty = createStore<Party>(newParty());
 $newParty.on(newPartyLoaded, (_, party) => party);
 
-export const $allChatEvents = createStore<Party["roomEvents"]>([]);
+export const $allChatEvents = createStore<AllChatMessages[]>([]);
 $allChatEvents.on(newPartyLoaded, (_, party) => party.roomEvents);
 
 export const messageSent = createEvent<{ guess: string }>();

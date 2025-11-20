@@ -1,36 +1,3 @@
-export type PartyOLD = {
-  players: { id: string; name: string }[];
-  id: string;
-  link: string;
-  gamestage: "wait-players" | "ongoing" | "done";
-  settings: {
-    timer: number;
-    suggestionsNumber: number;
-    wordList: string;
-    //
-    smoothing: number; // 1
-    thinning: number; // 0.1
-    streamline: number; // 0
-    easing: string; // linear
-  };
-  paintings: {
-    // тут уже завершенные рисунки
-    timestampStart: number;
-    word: string;
-    history: CanvasAndChatHistory[]; // чат и линии
-    scores: {
-      time: string;
-      player: string;
-      addedScore: number;
-    }[];
-  }[];
-  currentCanvas: {
-    history: CanvasAndChatHistory[]; // чат и линии
-    word: string;
-    currentLine: JSON[]; // то что что рисует прям сейчас мышкой игрок
-  };
-};
-
 export type CanvasLine = {
   dots: [x: number, y: number][];
   color: string;
@@ -100,11 +67,7 @@ export type Party = {
   };
 };
 
-type AllChatMessages = UserMessageEvent | NewWord | DrawingEndedEvent;
-
-type ChatAndLines = {
-  history: CanvasAndChatHistory[]; // чат и линии
-};
+export type AllChatMessages = UserMessageEvent | NewWord | DrawingEndedEvent;
 
 type JSON = any;
 
@@ -114,37 +77,6 @@ export type GameParams = {
   rounds: number;
   canvasSize: number;
 };
-
-/*
-export type Game = {
-  playerIds: string[];
-  messages: (NewWord | ChoosingWord | UserMessageEvent)[];
-  paintings: { id: string; name: string; playerId: string }[];
-  params: GameParams;
-  state:
-    | {
-        // settings
-        state: "preparations";
-        lang: Language;
-        suggestions: number;
-        rounds: number;
-      }
-    | {
-        state: "choosing-word";
-        playerId: string;
-        words: string;
-      }
-    | {
-        state: "drawing";
-        playerId: string;
-        word: string;
-        revealed: { playerId: string }[];
-      }
-    | {
-        state: "results";
-      };
-};
-*/
 
 const LANGS = ["RU", "EN"] as const;
 export type Language = (typeof LANGS)[number];
@@ -180,6 +112,7 @@ export type DrawingTimeout = {
   id: string;
 };
 
+// @deprecated
 export type ChoosingWord = {
   type: "choosing-word";
   id: string;
@@ -187,6 +120,7 @@ export type ChoosingWord = {
   words: string; // word|word2|word3...
 };
 
+// @deprecated
 export type LineEvent = {
   type: "line";
   dots: [x: number, y: number][];
@@ -194,6 +128,7 @@ export type LineEvent = {
   width: number;
 };
 
+// @deprecated
 export type CanvasAndChatHistory =
   | LineEvent
   | { type: "undo" }

@@ -14,6 +14,7 @@ const _schema = i.schema({
       status: i.string(),
     }),
     roomEvent: i.entity({
+      // type AllChatMessages
       type: i.string(),
       payload: i.any(),
     }),
