@@ -310,7 +310,7 @@ sample({
       ? [
           db.tx.party[party.id].merge({
             gameState: {
-              innerState: { guessed: { [localId]: Date.now() } },
+              guessed: { [localId]: Date.now() },
             },
           }),
         ]
