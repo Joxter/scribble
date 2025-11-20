@@ -46,6 +46,11 @@ A real-time collaborative drawing application built with React and InstantDB. Cr
   - [x] рисунок сохраняется
   - [x] видно кто следующий рисует
   - [x] тот кто рисует - выбирает слова
+- [ ] обновить схему и типы
+  - [x] более адекватное состояние игры
+  - [x] норм фиксированный список игроков
+  - [x] обновить код и починить все ошибки типов
+  - [ ] gameProgress  2D ARRAY `{rounds: {whoDrawId, scores: Record<string, number>, paintingId}[][]`
 - [ ] окно выбора нового слова
   - [ ] видно результаты
   - [ ] можно проголосовать за рисунок
