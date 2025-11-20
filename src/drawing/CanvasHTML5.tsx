@@ -171,8 +171,8 @@ export function CanvasHTML5() {
           ref={canvasRef}
           onMouseDown={startDrawing}
           onMouseMove={draw}
-          onMouseUp={stopDrawing}
-          onMouseLeave={stopDrawing}
+          onMouseUp={stopDrawing as any}
+          onMouseLeave={stopDrawing as any}
           onTouchStart={startDrawing}
           onTouchMove={draw}
           onTouchEnd={stopDrawing}

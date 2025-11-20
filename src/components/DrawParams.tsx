@@ -1,12 +1,14 @@
 import { useUnit } from "effector-react";
 import {
   $debugMode,
-  $renderMode,
-  $smoothConf,
   debugModeToggled,
   renderModeChanged,
-  setSmoothConf,
 } from "../model/game.model.ts";
+import {
+  $renderMode,
+  $smoothConf,
+  setSmoothConf,
+} from "../model/game-new.model.ts";
 
 const easingFunctions = {
   cubic: (t: number) =>
@@ -98,7 +100,7 @@ export function DrawParams() {
     >
       <div style={{ display: "flex" }}>
         <label htmlFor="smoothing" style={{ width: "150px" }}>
-          Smoothing: {smoothConf.smoothing.toFixed(2)}
+          Smoothing: {smoothConf.smoothing?.toFixed(2)}
         </label>
         <input
           id="smoothing"
@@ -113,7 +115,7 @@ export function DrawParams() {
       </div>
       <div style={{ display: "flex" }}>
         <label htmlFor="thinning" style={{ width: "150px" }}>
-          Thinning: {smoothConf.thinning.toFixed(2)}
+          Thinning: {smoothConf.thinning?.toFixed(2)}
         </label>
         <input
           id="thinning"
@@ -128,7 +130,7 @@ export function DrawParams() {
       </div>
       <div style={{ display: "flex" }}>
         <label htmlFor="streamline" style={{ width: "150px" }}>
-          Streamline: {smoothConf.streamline.toFixed(2)}
+          Streamline: {smoothConf.streamline?.toFixed(2)}
         </label>
         <input
           id="streamline"

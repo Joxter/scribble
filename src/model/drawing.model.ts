@@ -1,11 +1,4 @@
-import {
-  combine,
-  createEvent,
-  createStore,
-  restore,
-  sample,
-  Store,
-} from "effector";
+import { combine, createEvent, createStore, restore, sample } from "effector";
 import { CurrentCanvas, CanvasLine } from "../types.ts";
 import { colors, smoothConf, widths } from "../config.ts";
 import { svgInk } from "../freehand/svgInk.ts";
@@ -123,6 +116,8 @@ export function createCurrentLine() {
     $svgCanvasPaths,
     $polylinePaths,
     $lineExtendedCount,
+    $smoothConf,
+    setSmoothConf,
     saveCanvasToPaining,
   };
 }

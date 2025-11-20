@@ -8,7 +8,7 @@ export function ListOfPlayers() {
   const [party, drawing] = useUnit([$newParty, $drawing]);
 
   const stablePlayers = party.players;
-  const innerState = party.gameState.innerState;
+  const innerState = party.gameState;
 
   const drawingId = drawing.drawing ? drawing.who : null;
   const choosingWordPlayerId =

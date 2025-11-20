@@ -7,8 +7,9 @@ import {
 
 export function newParty(): Party {
   return {
-    gameState: { players: [], innerState: {} as any },
+    gameState: {} as any,
     name: "",
+    staticPlayerIds: [],
     host: "",
     gameParams: { rounds: 5, wordSuggestions: 3, drawTime: 60 },
     status: GAME_STATUS.prepare,

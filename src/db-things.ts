@@ -66,18 +66,21 @@ export async function startParty(_party: Party) {
   const res = await db.transact([
     db.tx.party[partyId].update({
       status: GAME_STATUS.inProgress,
+      staticPlayerIds: players,
       gameState: {
-        ...party.gameState,
-        players: players,
-        innerState: {
-          state: "choosing-word",
-          playerId: players[0],
-          words: newRandomWords(3),
-        },
+        state: "choosing-word",
+        playerId: players[0],
+        words: newRandomWords(3),
       },
     }),
+    // todo add message "started! X выбирает слово"
+    // db.tx.roomEvent[id()]
+    //   .create({
+    //     type: "new-selected-word",
+    //     payload: { playerId: localId, word },
+    //   })
+    //   .link({ party: party.id })
   ]);
-  // todo add message "started! X выбирает слово"
 
   return;
 }

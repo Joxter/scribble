@@ -15,7 +15,7 @@ import {
 } from "../utils.ts";
 import { $localId } from "./game.model.ts";
 import { newParty } from "./utils.ts";
-import { i, id } from "@instantdb/core";
+import { id } from "@instantdb/core";
 import { createCurrentLine } from "./drawing.model.ts";
 
 export const $renderMode = createStore<"normal" | "polyline" | "tldraw">(
@@ -64,11 +64,8 @@ export const $logiSmol = $logi.map((logs) => {
 });
 
 export const $drawing = combine($localId, $newParty, (loadId, p) => {
-  if (
-    p.status === GAME_STATUS.inProgress &&
-    p.gameState.innerState.state === "drawing"
-  ) {
-    const s = p.gameState.innerState;
+  if (p.status === GAME_STATUS.inProgress && p.gameState.state === "drawing") {
+    const s = p.gameState;
 
     return {
       drawing: true,
@@ -90,9 +87,7 @@ export const $currentPlayers = $newParty.map((p) => {
 });
 
 export const $guessed = $newParty.map((p) => {
-  return p.gameState.innerState.state === "drawing"
-    ? p.gameState.innerState.guessed
-    : {};
+  return p.gameState.state === "drawing" ? p.gameState.guessed : {};
 });
 
 const $imDrawing = $drawing.map((t) => {
@@ -113,12 +108,14 @@ export const {
   $currentDrawing,
   initLoad,
   newRound,
+  $smoothConf,
+  setSmoothConf,
   $polylinePaths,
 } = createCurrentLine();
 
 export const $currentDrawingId = $newParty.map((p) => {
-  if (p.gameState.innerState.state === "drawing") {
-    return p.gameState.innerState.drawingId;
+  if (p.gameState.state === "drawing") {
+    return p.gameState.drawingId;
   } else {
     return null;
   }
@@ -132,19 +129,19 @@ sample({
 export const $choosingWord = combine($localId, $newParty, (localId, p) => {
   if (p.status !== GAME_STATUS.inProgress) return { choose: false };
 
-  if (p.gameState.innerState.state === "choosing-word") {
-    if (localId === p.gameState.innerState.playerId) {
+  if (p.gameState.state === "choosing-word") {
+    if (localId === p.gameState.playerId) {
       return {
         choose: true,
         iam: true,
-        who: p.gameState.innerState.playerId,
-        words: p.gameState.innerState.words,
+        who: p.gameState.playerId,
+        words: p.gameState.words,
       };
     }
     return {
       choose: true,
       iam: false,
-      who: p.gameState.innerState.playerId,
+      who: p.gameState.playerId,
       words: [],
     };
   }
@@ -217,7 +214,7 @@ liveQuery($localId, (localId) => {
 
         if (party) {
           newPartyLoaded(party as Party);
-          console.log(party.gameState?.innerState);
+          console.log(party.gameState);
           return;
         }
       }
@@ -248,14 +245,11 @@ sample({
     }),
     db.tx.party[party.id].update({
       gameState: {
-        ...party.gameState,
-        innerState: {
-          state: "drawing",
-          playerId: localId,
-          word: word,
-          drawingId: drawingId,
-          guessed: {},
-        },
+        state: "drawing",
+        playerId: localId,
+        word: word,
+        drawingId: drawingId,
+        guessed: {},
       },
     }),
   ]);
@@ -264,9 +258,9 @@ sample({
 // when every guessed
 combine($guessed, $newParty, $isServer).watch(([guessed, party, isServer]) => {
   const { players, gameState } = party;
-  if (isServer && gameState.innerState.state === "drawing") {
+  if (isServer && gameState.state === "drawing") {
     if (Object.keys(guessed).length === players.length - 1) {
-      const artist = gameState.innerState.playerId;
+      const artist = gameState.playerId;
       const nextPlayerI = players.findIndex((p) => p.id === artist) + 1;
       const nextPlayerId = players[nextPlayerI]
         ? players[nextPlayerI].id
@@ -276,7 +270,7 @@ combine($guessed, $newParty, $isServer).watch(([guessed, party, isServer]) => {
         type: "drawing-ended",
         payload: {
           reason: "all-revealed",
-          revealed: gameState.innerState.guessed,
+          revealed: gameState.guessed,
           nextPlayerId: nextPlayerId,
         },
       };
@@ -284,13 +278,11 @@ combine($guessed, $newParty, $isServer).watch(([guessed, party, isServer]) => {
       db.transact([
         db.tx.party[party.id].update({
           status: GAME_STATUS.inProgress,
+          staticPlayerIds: players.map((p) => p.id),
           gameState: {
-            players: players.map((p) => p.id),
-            innerState: {
-              state: "choosing-word",
-              playerId: nextPlayerId,
-              words: newRandomWords(3),
-            },
+            state: "choosing-word",
+            playerId: nextPlayerId,
+            words: newRandomWords(3),
           },
         }),
         db.tx.roomEvent[id()].create(event).link({ party: party.id }),
@@ -304,7 +296,7 @@ sample({
   clock: messageSent,
   fn: (a, b) => [a, b] as const,
 }).watch(([[localId, party], { guess }]) => {
-  const gameState = party.gameState.innerState;
+  const gameState = party.gameState;
   const secretWord = gameState.state === "drawing" ? gameState.word : null;
   const isRevealed = secretWord ? calcRevealed(secretWord, guess) : "none";
 
@@ -337,9 +329,9 @@ const a = sample({
 });
 a.watch(([canvas, { gameState }]) => {
   log("canvas");
-  if (gameState.innerState.state === "drawing") {
+  if (gameState.state === "drawing") {
     db.transact(
-      db.tx.paintings[gameState.innerState.drawingId].update({
+      db.tx.paintings[gameState.drawingId].update({
         canvas: canvas,
       }),
     );
@@ -366,7 +358,7 @@ function firstLoadForCanvas(localId: string) {
       },
     },
   }).then(({ data }) => {
-    const innerState = data.party?.[0].gameState?.innerState;
+    const innerState = data.party?.[0].gameState;
 
     if (innerState?.state === "drawing") {
       innerState.drawingId;
