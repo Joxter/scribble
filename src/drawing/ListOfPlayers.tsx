@@ -17,7 +17,11 @@ export function ListOfPlayers() {
   return (
     <div>
       <p>
-        Комната "{party.name}"{" "}
+        Комната "{party.name}" круг:
+        <b>
+          {" "}
+          {(party.gameProgress || []).length}/{party.gameParams.rounds}{" "}
+        </b>
         <button
           onClick={() => {
             closeParty(party.id);

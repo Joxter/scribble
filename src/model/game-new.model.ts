@@ -254,10 +254,15 @@ sample({
 
 // when every guessed
 combine($guessed, $newParty, $isServer).watch(([guessed, party, isServer]) => {
-  const { players, gameState, gameProgress, gameParams } = party;
+  console.log("---------", isServer);
+  console.log(party);
+  const { players, staticPlayerIds, gameState, gameProgress, gameParams } =
+    party;
+
   if (isServer && gameState.state === "drawing") {
     // ВСЕ УГАДАЛИ
-    if (Object.keys(guessed).length === players.length - 1) {
+
+    if (Object.keys(guessed).length === staticPlayerIds.length - 1) {
       const artist = gameState.playerId;
       const nextPlayerI = players.findIndex((p) => p.id === artist) + 1;
 
@@ -282,7 +287,7 @@ combine($guessed, $newParty, $isServer).watch(([guessed, party, isServer]) => {
         // начинаем следующий круг
 
         gameProgress.push([]);
-        if (gameParams.rounds <= gameProgress.length) {
+        if (gameProgress.length < gameParams.rounds) {
           // если ещё есть место для раундов
           nextPlayerChoosingWord(
             players[0].id,
@@ -310,6 +315,7 @@ function nextPlayerChoosingWord(
   partyId: string,
   newGameProgress: GameProgress,
 ) {
+  console.log(">>> nextPlayerChoosingWord");
   const event: Omit<DrawingEndedEvent, "id"> = {
     type: "drawing-ended",
     payload: {
