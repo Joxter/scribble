@@ -1,4 +1,4 @@
-import { createEvent, createStore, restore, sample } from "effector";
+import { createEvent, createStore, restore } from "effector";
 import { CanvasAndChatHistory, Party, Player } from "../types.ts";
 import { liveQuery, URL_ROOM_NAME } from "../utils.ts";
 import { db } from "../DB.ts";
@@ -38,42 +38,16 @@ export const renderModeChanged = createEvent<
   "normal" | "polyline" | "tldraw"
 >();
 export const debugModeToggled = createEvent<boolean>();
-export const makeWeDraw_DEV = createEvent<any>();
 
 export const historyUpdated = createEvent<{
   history: CanvasAndChatHistory[];
 }>();
 
-sample({
-  source: [$localId, $party] as const,
-  clock: makeWeDraw_DEV,
-  fn: ([id, party]) => {
-    return {
-      ...party,
-      gameState: {
-        ...party.gameState,
-        drawing: id,
-      },
-    };
-  },
-  target: $party,
-});
-
 $allRoomEvents.on(historyUpdated, (_, { history }) => history);
 
 $debugMode.on(debugModeToggled, (_, enabled) => enabled);
 
-export async function joinParty(partyId: string) {
-  const localId = await db.getLocalId("guest");
-
-  return await db.transact([db.tx.players[localId].link({ parties: partyId })]);
-}
-
-export async function closeRoom(partyId: string) {
-  return await db.transact([db.tx.party[partyId].delete()]);
-}
-
-export async function getPlayer(limit = 3) {
+async function getPlayer(limit = 3) {
   if (limit < 0) throw new Error(`Can't get user`);
 
   const localId = await db.getLocalId("guest");

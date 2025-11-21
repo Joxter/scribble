@@ -67,6 +67,7 @@ export async function startParty(_party: Party) {
     db.tx.party[partyId].update({
       status: GAME_STATUS.inProgress,
       staticPlayerIds: players,
+      gameProgress: [],
       gameState: {
         state: "choosing-word",
         playerId: players[0],

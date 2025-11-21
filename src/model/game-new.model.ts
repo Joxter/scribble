@@ -6,6 +6,8 @@ import {
   Party,
   DrawingEndedEvent,
   AllChatMessages,
+  GameStateDrawing,
+  GameProgress,
 } from "../types.ts";
 import { calcRevealed, liveQuery, newRandomWords } from "../utils.ts";
 import { $localId } from "./game.model.ts";
@@ -252,39 +254,83 @@ sample({
 
 // when every guessed
 combine($guessed, $newParty, $isServer).watch(([guessed, party, isServer]) => {
-  const { players, gameState } = party;
+  const { players, gameState, gameProgress, gameParams } = party;
   if (isServer && gameState.state === "drawing") {
+    // ВСЕ УГАДАЛИ
     if (Object.keys(guessed).length === players.length - 1) {
       const artist = gameState.playerId;
       const nextPlayerI = players.findIndex((p) => p.id === artist) + 1;
-      const nextPlayerId = players[nextPlayerI]
-        ? players[nextPlayerI].id
-        : players[0].id;
 
-      const event: Omit<DrawingEndedEvent, "id"> = {
-        type: "drawing-ended",
-        payload: {
-          reason: "all-revealed",
-          revealed: gameState.guessed,
-          nextPlayerId: nextPlayerId,
-        },
-      };
+      if (gameProgress.length === 0) {
+        gameProgress.push([]);
+      }
+      gameProgress.at(-1)!.push({
+        paintingId: gameState.drawingId,
+        whoDrawId: gameState.playerId,
+        scores: gameState.guessed,
+      });
 
-      db.transact([
-        db.tx.party[party.id].update({
-          status: GAME_STATUS.inProgress,
-          staticPlayerIds: players.map((p) => p.id),
-          gameState: {
-            state: "choosing-word",
-            playerId: nextPlayerId,
-            words: newRandomWords(3),
-          },
-        }),
-        db.tx.roomEvent[id()].create(event).link({ party: party.id }),
-      ]);
+      if (players[nextPlayerI]) {
+        // продолжается текущий круг
+        nextPlayerChoosingWord(
+          players[nextPlayerI].id,
+          gameState,
+          party.id,
+          gameProgress,
+        );
+      } else {
+        // начинаем следующий круг
+
+        gameProgress.push([]);
+        if (gameParams.rounds <= gameProgress.length) {
+          // если ещё есть место для раундов
+          nextPlayerChoosingWord(
+            players[0].id,
+            gameState,
+            party.id,
+            gameProgress,
+          );
+        } else {
+          // КОНЕЦ ИГРЫ
+          //
+          // db.transact([
+          //   db.tx.party[party.id].update({
+          //     status: GAME_STATUS.finished,
+          //   }),
+          // ]);
+        }
+      }
     }
   }
 });
+
+function nextPlayerChoosingWord(
+  nextPlayerId: string,
+  gameState: GameStateDrawing,
+  partyId: string,
+  newGameProgress: GameProgress,
+) {
+  const event: Omit<DrawingEndedEvent, "id"> = {
+    type: "drawing-ended",
+    payload: {
+      reason: "all-revealed",
+      revealed: gameState.guessed,
+      nextPlayerId: nextPlayerId,
+    },
+  };
+
+  db.transact([
+    db.tx.party[partyId].update({
+      gameState: {
+        state: "choosing-word",
+        playerId: nextPlayerId,
+        words: newRandomWords(3),
+      },
+      gameProgress: newGameProgress,
+    }),
+    db.tx.roomEvent[id()].create(event).link({ party: partyId }),
+  ]);
+}
 
 sample({
   source: [$localId, $newParty] as const,
@@ -318,6 +364,7 @@ sample({
   ]);
 });
 
+// сохранить рисунок в базу
 const a = sample({
   source: [$currentDrawing, $newParty] as const,
   clock: saveCanvasToPaining,

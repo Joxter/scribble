@@ -40,22 +40,33 @@ export const GAME_STATUS = {
   finished: "finished",
 } as const;
 
+export type GameStateDrawing = {
+  state: "drawing";
+  playerId: string; // who draw
+  word: string; // secret word
+  // startedAt: number; todo
+  guessed: Revealed; // who guessed and their time
+  drawingId: string; // id of the painting
+};
+
 export type GameState =
   | { state: "choosing-word"; playerId: string; words: string[] }
-  | {
-      state: "drawing";
-      playerId: string;
-      word: string;
-      // startedAt: number; todo
-      guessed: Revealed;
-      drawingId: string;
-    };
+  | GameStateDrawing;
+
+export type GameProgress = Array<
+  {
+    whoDrawId: string;
+    scores: Record<string, number>;
+    paintingId: string;
+  }[]
+>;
 
 export type Party = {
   id: string;
   name: string;
   host: string;
   players: Player[];
+  gameProgress: GameProgress;
   staticPlayerIds: string[];
   status: ValueOf<typeof GAME_STATUS>;
   gameState: GameState;
@@ -103,7 +114,7 @@ export type DrawingEndedEvent = {
   payload: {
     reason: "all-revealed" | "timeout";
     revealed: Revealed;
-    nextPlayerId: string;
+    nextPlayerId: string; // null - в конце игры никто не рисует
   };
 };
 

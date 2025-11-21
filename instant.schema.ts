@@ -1,7 +1,7 @@
 // Docs: https://www.instantdb.com/docs/modeling-data
 
 import { i } from "@instantdb/core";
-import { CanvasLine, GameState, Party } from "./src/types.ts";
+import { CanvasLine, GameProgress, GameState, Party } from "./src/types.ts";
 
 const _schema = i.schema({
   entities: {
@@ -9,6 +9,7 @@ const _schema = i.schema({
       name: i.string().unique().indexed(), // url
       host: i.string().optional(),
       gameState: i.json<GameState>().optional(),
+      gameProgress: i.json<GameProgress>().optional(),
       gameParams: i.json<Party["gameParams"]>().optional(),
       staticPlayerIds: i.json<string[]>().optional(),
       status: i.string(),
