@@ -16,7 +16,7 @@ import {
   $newParty,
 } from "./model/game-new.model.ts";
 import { PageLayout } from "./components/PageLayout.tsx";
-import { ChooseWord } from "./drawing/ChooseWord.tsx";
+import { DrawResults } from "./components/DrawResults.tsx";
 
 export function DrawingPage() {
   const party = useUnit($newParty);
@@ -51,17 +51,9 @@ export function DrawingPage() {
         </div>
 
         <div className={css.canvasSection}>
-          {choosingWord.choose && choosingWord.iam ? (
+          {choosingWord.choose ? (
             <div style={{ width: "100%", aspectRatio: "1" }}>
-              <ChooseWord words={choosingWord.words} />
-            </div>
-          ) : choosingWord.choose && !choosingWord.iam ? (
-            <div style={{ width: "100%", aspectRatio: "1" }}>
-              <p>
-                {players[choosingWord?.who || ""]?.name || "no name"} выбирает
-                слово!
-              </p>
-              <p>todo: показывать рисунок и реакции для голосования</p>
+              <DrawResults />
             </div>
           ) : (
             <Canvas />
