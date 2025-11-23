@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { PageLayout } from "./components/PageLayout.tsx";
 import { useUnit } from "effector-react/effector-react.mjs";
-import { $localId, $player } from "./model/game.model.ts";
-import { $newParty } from "./model/game-new.model.ts";
+import { $localId, $newParty, $player } from "./model/game-new.model.ts";
 import { css } from "@linaria/core";
 import { TextField } from "./components/TextField.tsx";
 import { Button } from "./components/Button.tsx";

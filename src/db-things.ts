@@ -95,6 +95,12 @@ export async function startParty(_party: Party) {
   return;
 }
 
+export async function getAllPlayers() {
+  const res = await db.queryOnce({ players: {} });
+
+  return res.data.players;
+}
+
 export async function kickPlayer(partyId: string, playerId: string) {
   const res = await db.transact([
     db.tx.party[partyId].unlink({ players: playerId }),

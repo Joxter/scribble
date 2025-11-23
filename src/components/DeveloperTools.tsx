@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 import { useUnit } from "effector-react";
-import { $localId } from "../model/game.model.ts";
 import { Link } from "wouter";
 import {
   $currentDrawing,
+  $localId,
   $logiSmol,
   $newParty,
 } from "../model/game-new.model.ts";

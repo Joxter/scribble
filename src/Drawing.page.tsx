@@ -1,42 +1,24 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { useUnit } from "effector-react";
 import { Canvas } from "./drawing/Canvas.tsx";
-import { DeveloperTools } from "./drawing/DeveloperTools.tsx";
+import { DeveloperTools } from "./components/DeveloperTools.tsx";
 import { Tools } from "./drawing/Tools.tsx";
 import { ListOfPlayers } from "./drawing/ListOfPlayers.tsx";
-import { $clue, $iRevealed, setRoomId } from "./model/game.model.ts";
+import { $choosingWord, $clue, $drawing } from "./model/game-new.model.ts";
 import css from "./drawing/Page.module.css";
 import { GameInputField } from "./drawing/GameInputField.tsx";
 import { ChatMessages } from "./drawing/ChatMessages.tsx";
 import { Fps } from "./components/Fps.tsx";
-import {
-  $choosingWord,
-  $currentPlayers,
-  $drawing,
-  $newParty,
-} from "./model/game-new.model.ts";
 import { PageLayout } from "./components/PageLayout.tsx";
 import { DrawResults } from "./components/DrawResults.tsx";
 
 export function DrawingPage() {
-  const party = useUnit($newParty);
-  const players = useUnit($currentPlayers);
-
-  const roomId = party.id;
-
-  const [drawing, choosingWord, clue, iRevealed] = useUnit([
+  const iRevealed = ""; // todo
+  const [drawing, choosingWord, clue] = useUnit([
     $drawing,
     $choosingWord,
     $clue,
-    $iRevealed,
   ]);
-
-  // Update the room ID in the store when the URL parameter changes
-  useEffect(() => {
-    if (roomId) {
-      setRoomId(roomId);
-    }
-  }, [roomId]);
 
   return (
     <PageLayout>

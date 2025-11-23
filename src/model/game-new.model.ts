@@ -1,15 +1,15 @@
 import { db } from "../DB.ts";
-import { combine, createEvent, createStore, sample } from "effector";
+import { combine, createEvent, createStore, restore, sample } from "effector";
 import {
   GAME_STATUS,
   Party,
   AllChatMessages,
   GameStateDrawing,
   GameProgress,
+  Player,
 } from "../types.ts";
 import { calcRevealed, liveQuery } from "../utils.ts";
-import { $localId } from "./game.model.ts";
-import { newParty } from "./utils.ts";
+import { getPlayer, newParty } from "./utils.ts";
 import { createCurrentLine } from "./drawing.model.ts";
 import {
   selectWord,
@@ -18,9 +18,20 @@ import {
   saveCanvas,
 } from "../db-things.ts";
 
-export const $renderMode = createStore<"normal" | "polyline" | "tldraw">(
-  "tldraw",
-);
+db.getLocalId("guest").then((a) => setLocalId(a));
+getPlayer();
+
+const setLocalId = createEvent<string>();
+export const $localId = restore(setLocalId, "");
+$localId.watch((v) => console.log("$localId", v));
+
+const setPlayer = createEvent<Player>();
+export const $player = restore(setPlayer, {
+  id: "",
+  localId: "",
+  name: "",
+  avatar: "",
+});
 
 export const newPartyLoaded = createEvent<Party>();
 
@@ -81,6 +92,8 @@ export const $drawing = combine($localId, $newParty, (loadId, p) => {
 const $roomId = $newParty.map((p) => {
   return p.id;
 });
+
+export const $clue = createStore<string | null>(null);
 
 export const $currentPlayers = $newParty.map((p) => {
   return Object.fromEntries(p.players.map((it) => [it.id, it]));
@@ -360,3 +373,18 @@ function firstLoadForCanvas(localId: string) {
     }
   });
 }
+
+liveQuery($localId, (localId) => {
+  if (!localId) return () => {};
+
+  return db.subscribeQuery(
+    { players: { $: { where: { id: localId } } } },
+    (resp) => {
+      if (resp.error) console.error(resp.error);
+      if (resp.data) {
+        const player = resp.data.players[0];
+        setPlayer(player);
+      }
+    },
+  );
+});

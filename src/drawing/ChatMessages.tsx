@@ -1,12 +1,7 @@
 import { useUnit } from "effector-react";
 import { css } from "@linaria/core";
 import { useAutoScroll } from "../hooks/useAutoScroll";
-import {
-  $allChatEvents,
-  $currentPlayers,
-  $newParty,
-} from "../model/game-new.model.ts";
-import { $localId } from "../model/game.model.ts";
+import { $allChatEvents, $currentPlayers } from "../model/game-new.model.ts";
 
 const container = css`
   display: grid;
@@ -93,8 +88,8 @@ export function ChatMessages() {
 
         if (ev.type === "drawing-ended") {
           return (
-            <div>
-              <p key={key} className={messageItalic}>
+            <div key={key}>
+              <p className={messageItalic}>
                 {ev.payload.reason === "all-revealed" && "Все отгадали!"}
                 {ev.payload.reason === "timeout" && "Время вышло!"}{" "}
                 {players[ev.payload.nextPlayerId].name} выбирает новое слово!

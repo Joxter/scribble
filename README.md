@@ -166,15 +166,6 @@ The main drawing component that handles:
 - Real-time stroke rendering
 - Integration with the drawing state
 
-### Game Model (src/game.model.ts)
-
-Effector-based state management for:
-
-- Current drawing line and properties
-- Canvas history and synchronization
-- Undo/redo functionality
-- Real-time database updates
-
 ### Database (src/DB.ts & instant.schema.ts)
 
 InstantDB integration for:

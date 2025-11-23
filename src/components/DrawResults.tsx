@@ -4,10 +4,10 @@ import { useUnit } from "effector-react";
 import {
   $choosingWord,
   $currentPlayers,
+  $localId,
   $newParty,
 } from "../model/game-new.model.ts";
-import { $localId } from "../model/game.model.ts";
-import { ChooseWord } from "../drawing/ChooseWord.tsx";
+import { ChooseWord } from "./ChooseWord.tsx";
 
 const container = css`
   border: 1px solid #999;

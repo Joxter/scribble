@@ -6,13 +6,11 @@ import {
   $drawing,
   $newParty,
   $polylinePaths,
-  $renderMode,
   $svgCanvasPaths,
   lineExtended,
   lineStarted,
   saveCanvasToPaining,
 } from "../model/game-new.model.ts";
-import { $debugMode } from "../model/game.model.ts";
 
 const PIXEL_RATIO = window.devicePixelRatio || 1;
 
@@ -94,11 +92,9 @@ const canvasLayerStyle = {
 export function Canvas() {
   const canvasLinesRef = useRef<HTMLCanvasElement>(null);
 
-  const renderMode = useUnit($renderMode);
-  const debugMode = useUnit($debugMode);
+  const debugMode = false;
   const polylinePaths = useUnit($polylinePaths);
   const svgCanvasPaths = useUnit($svgCanvasPaths);
-  const { gameState } = useUnit($newParty);
 
   useEffect(() => {
     const canvas = canvasLinesRef.current!;
@@ -107,15 +103,11 @@ export function Canvas() {
 
     ctx.clearRect(0, 0, canvasSize, canvasSize);
 
-    if (renderMode === "polyline") {
-      renderPolylines(ctx, polylinePaths);
-    } else {
-      svgCanvasPaths.forEach((line) => {
-        ctx.fillStyle = line.color;
-        ctx.fill(new Path2D(line.d));
-      });
-    }
-  }, [polylinePaths, svgCanvasPaths, renderMode]);
+    svgCanvasPaths.forEach((line) => {
+      ctx.fillStyle = line.color;
+      ctx.fill(new Path2D(line.d));
+    });
+  }, [polylinePaths, svgCanvasPaths]);
 
   return (
     <div style={containerStyle}>

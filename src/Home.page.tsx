@@ -1,12 +1,10 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { useUnit } from "effector-react";
 import { getUrl, newRandomWords } from "./utils.ts";
-import { $player } from "./model/game.model.ts";
 import { PageLayout } from "./components/PageLayout.tsx";
 import { TextField } from "./components/TextField.tsx";
 import cssModule from "./Home.module.css";
 import { useLocation } from "wouter";
-import { $newParty } from "./model/game-new.model.ts";
 import { Button } from "./components/Button.tsx";
 import {
   createNewParty,
@@ -14,7 +12,7 @@ import {
   getPreparePartyByName,
   joinToParty,
 } from "./db-things.ts";
-import { GAME_STATUS } from "./types.ts";
+import { $player } from "./model/game-new.model.ts";
 
 export function HomePage() {
   const player = useUnit($player);

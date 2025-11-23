@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import { getAllPlayers } from "./model/game.model.ts";
 import { Painting, Player } from "./types.ts";
 import { ReadOnlyCanvas } from "./components/ReadOnlyCanvas.tsx";
 import { doEventsUndo } from "./model/utils.ts";
@@ -9,6 +8,7 @@ import {
 } from "./model/all-paintings.model.ts";
 import { PageLayout } from "./components/PageLayout.tsx";
 import css from "./Paintings.module.css";
+import { getAllPlayers } from "./db-things.ts";
 
 export function PaintingsPage() {
   const [paintings, setPaintings] = useState<Painting[]>([]);
