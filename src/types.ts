@@ -92,13 +92,15 @@ export type GameParams = {
 const LANGS = ["RU", "EN"] as const;
 export type Language = (typeof LANGS)[number];
 
+export type IsRevealed = "almost" | "revealed" | "none";
+
 export type UserMessageEvent = {
   id: string;
   type: "user-message";
   payload: {
     playerId: string;
     text: string;
-    isRevealed: "almost" | "revealed" | "none";
+    isRevealed: IsRevealed;
   };
 };
 

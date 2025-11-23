@@ -2,18 +2,21 @@ import { db } from "../DB.ts";
 import { combine, createEvent, createStore, sample } from "effector";
 import {
   GAME_STATUS,
-  UserMessageEvent,
   Party,
-  DrawingEndedEvent,
   AllChatMessages,
   GameStateDrawing,
   GameProgress,
 } from "../types.ts";
-import { calcRevealed, liveQuery, newRandomWords } from "../utils.ts";
+import { calcRevealed, liveQuery } from "../utils.ts";
 import { $localId } from "./game.model.ts";
 import { newParty } from "./utils.ts";
-import { id } from "@instantdb/core";
 import { createCurrentLine } from "./drawing.model.ts";
+import {
+  selectWord,
+  transitionToNextPlayer,
+  sendMessage,
+  saveCanvas,
+} from "../db-things.ts";
 
 export const $renderMode = createStore<"normal" | "polyline" | "tldraw">(
   "tldraw",
@@ -226,30 +229,7 @@ sample({
   clock: newWordSelected,
   fn: (a, b) => [a, b] as const,
 }).watch(([[localId, party], word]) => {
-  const drawingId = id();
-
-  db.transact([
-    db.tx.roomEvent[id()]
-      .create({
-        type: "new-selected-word",
-        payload: { playerId: localId, word },
-      })
-      .link({ party: party.id }),
-    db.tx.paintings[drawingId].create({
-      canvas: [],
-      playerId: localId,
-      word,
-    }),
-    db.tx.party[party.id].update({
-      gameState: {
-        state: "drawing",
-        playerId: localId,
-        word: word,
-        drawingId: drawingId,
-        guessed: {},
-      },
-    }),
-  ]);
+  selectWord(localId, party.id, word);
 });
 
 // when every guessed
@@ -316,26 +296,7 @@ function nextPlayerChoosingWord(
   newGameProgress: GameProgress,
 ) {
   console.log(">>> nextPlayerChoosingWord");
-  const event: Omit<DrawingEndedEvent, "id"> = {
-    type: "drawing-ended",
-    payload: {
-      reason: "all-revealed",
-      revealed: gameState.guessed,
-      nextPlayerId: nextPlayerId,
-    },
-  };
-
-  db.transact([
-    db.tx.party[partyId].update({
-      gameState: {
-        state: "choosing-word",
-        playerId: nextPlayerId,
-        words: newRandomWords(3),
-      },
-      gameProgress: newGameProgress,
-    }),
-    db.tx.roomEvent[id()].create(event).link({ party: partyId }),
-  ]);
+  transitionToNextPlayer(nextPlayerId, gameState, partyId, newGameProgress);
 }
 
 sample({
@@ -347,27 +308,7 @@ sample({
   const secretWord = gameState.state === "drawing" ? gameState.word : null;
   const isRevealed = secretWord ? calcRevealed(secretWord, guess) : "none";
 
-  const event: Omit<UserMessageEvent, "id"> = {
-    type: "user-message",
-    payload: {
-      text: guess,
-      playerId: localId,
-      isRevealed,
-    },
-  };
-
-  db.transact([
-    db.tx.roomEvent[id()].create(event).link({ party: party.id }),
-    ...(isRevealed === "revealed"
-      ? [
-          db.tx.party[party.id].merge({
-            gameState: {
-              guessed: { [localId]: Date.now() },
-            },
-          }),
-        ]
-      : []),
-  ]);
+  sendMessage(localId, party.id, guess, isRevealed);
 });
 
 // сохранить рисунок в базу
@@ -378,11 +319,7 @@ const a = sample({
 a.watch(([canvas, { gameState }]) => {
   log("canvas");
   if (gameState.state === "drawing") {
-    db.transact(
-      db.tx.paintings[gameState.drawingId].update({
-        canvas: canvas,
-      }),
-    );
+    saveCanvas(gameState.drawingId, canvas);
   }
 });
 

@@ -1,5 +1,14 @@
 import { db } from "./DB.ts";
-import { GAME_STATUS, Party } from "./types.ts";
+import {
+  GAME_STATUS,
+  Party,
+  DrawingEndedEvent,
+  UserMessageEvent,
+  GameStateDrawing,
+  GameProgress,
+  IsRevealed,
+  CurrentCanvas,
+} from "./types.ts";
 import { id } from "@instantdb/core";
 import { newRandomWords } from "./utils.ts";
 
@@ -67,7 +76,7 @@ export async function startParty(_party: Party) {
     db.tx.party[partyId].update({
       status: GAME_STATUS.inProgress,
       staticPlayerIds: players,
-      gameProgress: [],
+      gameProgress: [[]],
       gameState: {
         state: "choosing-word",
         playerId: players[0],
@@ -160,4 +169,96 @@ export async function createNewParty(name: string) {
   ]);
 
   return res;
+}
+
+export function selectWord(localId: string, partyId: string, word: string) {
+  const drawingId = id();
+
+  return db.transact([
+    db.tx.roomEvent[id()]
+      .create({
+        type: "new-selected-word",
+        payload: { playerId: localId, word },
+      })
+      .link({ party: partyId }),
+    db.tx.paintings[drawingId].create({
+      canvas: [],
+      playerId: localId,
+      word,
+    }),
+    db.tx.party[partyId].update({
+      gameState: {
+        state: "drawing",
+        playerId: localId,
+        word: word,
+        drawingId: drawingId,
+        guessed: {},
+      },
+    }),
+  ]);
+}
+
+export function transitionToNextPlayer(
+  nextPlayerId: string,
+  gameState: GameStateDrawing,
+  partyId: string,
+  newGameProgress: GameProgress,
+) {
+  const event: Omit<DrawingEndedEvent, "id"> = {
+    type: "drawing-ended",
+    payload: {
+      reason: "all-revealed",
+      revealed: gameState.guessed,
+      nextPlayerId: nextPlayerId,
+    },
+  };
+
+  return db.transact([
+    db.tx.party[partyId].update({
+      gameState: {
+        state: "choosing-word",
+        playerId: nextPlayerId,
+        words: newRandomWords(3),
+      },
+      gameProgress: newGameProgress,
+    }),
+    db.tx.roomEvent[id()].create(event).link({ party: partyId }),
+  ]);
+}
+
+export function sendMessage(
+  localId: string,
+  partyId: string,
+  guess: string,
+  isRevealed: IsRevealed,
+) {
+  const event: Omit<UserMessageEvent, "id"> = {
+    type: "user-message",
+    payload: {
+      text: guess,
+      playerId: localId,
+      isRevealed,
+    },
+  };
+
+  return db.transact([
+    db.tx.roomEvent[id()].create(event).link({ party: partyId }),
+    ...(isRevealed === "revealed"
+      ? [
+          db.tx.party[partyId].merge({
+            gameState: {
+              guessed: { [localId]: Date.now() },
+            },
+          }),
+        ]
+      : []),
+  ]);
+}
+
+export function saveCanvas(drawingId: string, canvas: CurrentCanvas) {
+  return db.transact(
+    db.tx.paintings[drawingId].update({
+      canvas: canvas,
+    }),
+  );
 }

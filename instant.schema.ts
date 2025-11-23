@@ -1,7 +1,5 @@
-// Docs: https://www.instantdb.com/docs/modeling-data
-
 import { i } from "@instantdb/core";
-import { CanvasLine, GameProgress, GameState, Party } from "./src/types.ts";
+import { CurrentCanvas, GameProgress, GameState, Party } from "./src/types.ts";
 
 const _schema = i.schema({
   entities: {
@@ -25,7 +23,7 @@ const _schema = i.schema({
       avatar: i.string(),
     }),
     paintings: i.entity({
-      canvas: i.json<CanvasLine[]>(), // (line | undo)[]
+      canvas: i.json<CurrentCanvas>(), // (line | undo)[]
       playerId: i.string(),
       word: i.string(),
     }),

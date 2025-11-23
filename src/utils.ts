@@ -1,6 +1,6 @@
 import { VecLike } from "./freehand/Vec";
 import { Store } from "effector";
-import { CanvasAndChatHistory, GameParams, UserMessageEvent } from "./types.ts";
+import { IsRevealed } from "./types.ts";
 import { words } from "../dictionaries/ru-300-chatgpt.ts";
 
 export const canvasSize = 600;
@@ -174,10 +174,7 @@ examples.forEach(([a, b]) => {
 });
 */
 
-export function calcRevealed(
-  secret: string,
-  guess: string,
-): UserMessageEvent["payload"]["isRevealed"] {
+export function calcRevealed(secret: string, guess: string): IsRevealed {
   const mistakes = levenshteinDistance(
     secret.toLowerCase().trim(),
     guess.toLowerCase().trim(),
