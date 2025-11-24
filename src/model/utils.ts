@@ -53,3 +53,30 @@ export async function getPlayer(limit = 3) {
 
   return getPlayer(limit - 1);
 }
+
+export function mergeLogi(logs: any[]): any[] {
+  if (logs.length === 0) return [];
+
+  const merged: string[] = [];
+  let currentLog: any = null;
+  let count = 0;
+
+  for (const log of logs) {
+    if (typeof log === "string" && log === currentLog) {
+      count++;
+    } else {
+      if (currentLog !== null) {
+        merged.push(count > 1 ? `${currentLog} ${count}` : currentLog);
+      }
+      currentLog = log;
+      count = 1;
+    }
+  }
+
+  // Don't forget the last entry
+  if (currentLog !== null) {
+    merged.push(count > 1 ? `${currentLog} ${count}` : currentLog);
+  }
+
+  return merged;
+}

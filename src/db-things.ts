@@ -11,6 +11,7 @@ import {
 } from "./types.ts";
 import { id } from "@instantdb/core";
 import { newRandomWords } from "./utils.ts";
+import { initLoad } from "./model/game-new.model.ts";
 
 export async function editPlayerName(name: string) {
   const localId = await db.getLocalId("guest");
@@ -267,4 +268,42 @@ export function saveCanvas(drawingId: string, canvas: CurrentCanvas) {
       canvas: canvas,
     }),
   );
+}
+
+export function firstLoadForCanvas(localId: string) {
+  db.queryOnce({
+    party: {
+      $: {
+        where: {
+          or: [
+            {
+              and: [{ status: GAME_STATUS.prepare }, { "players.id": localId }],
+            },
+            {
+              and: [
+                { status: GAME_STATUS.inProgress },
+                { "players.id": localId },
+              ],
+            },
+          ],
+        },
+      },
+    },
+  }).then(({ data }) => {
+    const innerState = data.party?.[0].gameState;
+
+    if (innerState?.state === "drawing") {
+      innerState.drawingId;
+
+      db.queryOnce({
+        paintings: {
+          $: { where: { id: innerState.drawingId } },
+        },
+      }).then(({ data }) => {
+        if (data.paintings[0]) {
+          initLoad(data.paintings[0].canvas);
+        }
+      });
+    }
+  });
 }

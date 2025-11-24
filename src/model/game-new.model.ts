@@ -9,13 +9,14 @@ import {
   Player,
 } from "../types.ts";
 import { calcRevealed, liveQuery } from "../utils.ts";
-import { getPlayer, newParty } from "./utils.ts";
+import { getPlayer, mergeLogi, newParty } from "./utils.ts";
 import { createCurrentLine } from "./drawing.model.ts";
 import {
   selectWord,
   transitionToNextPlayer,
   sendMessage,
   saveCanvas,
+  firstLoadForCanvas,
 } from "../db-things.ts";
 
 db.getLocalId("guest").then((a) => setLocalId(a));
@@ -47,32 +48,7 @@ export const newWordSelected = createEvent<string>();
 export const log = createEvent<any>();
 export const $logi = createStore<any[]>([]);
 $logi.on(log, (s, l) => [...s, l]);
-export const $logiSmol = $logi.map((logs) => {
-  if (logs.length === 0) return [];
-
-  const merged: string[] = [];
-  let currentLog: any = null;
-  let count = 0;
-
-  for (const log of logs) {
-    if (typeof log === "string" && log === currentLog) {
-      count++;
-    } else {
-      if (currentLog !== null) {
-        merged.push(count > 1 ? `${currentLog} ${count}` : currentLog);
-      }
-      currentLog = log;
-      count = 1;
-    }
-  }
-
-  // Don't forget the last entry
-  if (currentLog !== null) {
-    merged.push(count > 1 ? `${currentLog} ${count}` : currentLog);
-  }
-
-  return merged;
-});
+export const $logiSmol = $logi.map(mergeLogi);
 
 export const $drawing = combine($localId, $newParty, (loadId, p) => {
   if (p.status === GAME_STATUS.inProgress && p.gameState.state === "drawing") {
@@ -121,8 +97,6 @@ export const {
   $currentDrawing,
   initLoad,
   newRound,
-  $smoothConf,
-  setSmoothConf,
   $polylinePaths,
 } = createCurrentLine();
 
@@ -308,7 +282,6 @@ function nextPlayerChoosingWord(
   partyId: string,
   newGameProgress: GameProgress,
 ) {
-  console.log(">>> nextPlayerChoosingWord");
   transitionToNextPlayer(nextPlayerId, gameState, partyId, newGameProgress);
 }
 
@@ -335,44 +308,6 @@ a.watch(([canvas, { gameState }]) => {
     saveCanvas(gameState.drawingId, canvas);
   }
 });
-
-function firstLoadForCanvas(localId: string) {
-  db.queryOnce({
-    party: {
-      $: {
-        where: {
-          or: [
-            {
-              and: [{ status: GAME_STATUS.prepare }, { "players.id": localId }],
-            },
-            {
-              and: [
-                { status: GAME_STATUS.inProgress },
-                { "players.id": localId },
-              ],
-            },
-          ],
-        },
-      },
-    },
-  }).then(({ data }) => {
-    const innerState = data.party?.[0].gameState;
-
-    if (innerState?.state === "drawing") {
-      innerState.drawingId;
-
-      db.queryOnce({
-        paintings: {
-          $: { where: { id: innerState.drawingId } },
-        },
-      }).then(({ data }) => {
-        if (data.paintings[0]) {
-          initLoad(data.paintings[0].canvas);
-        }
-      });
-    }
-  });
-}
 
 liveQuery($localId, (localId) => {
   if (!localId) return () => {};

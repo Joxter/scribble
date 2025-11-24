@@ -1,7 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { PageLayout } from "./components/PageLayout.tsx";
 import { useUnit } from "effector-react/effector-react.mjs";
-import { $localId, $newParty, $player } from "./model/game-new.model.ts";
+import {
+  $currentPlayers,
+  $localId,
+  $newParty,
+  $player,
+} from "./model/game-new.model.ts";
 import { css } from "@linaria/core";
 import { TextField } from "./components/TextField.tsx";
 import { Button } from "./components/Button.tsx";
@@ -20,7 +25,7 @@ import { GAME_STATUS } from "./types.ts";
 import { DrawingPage } from "./Drawing.page.tsx";
 
 export function PartyPrepare() {
-  const party = useUnit($newParty);
+  const [party, currentPlayers] = useUnit([$newParty, $currentPlayers]);
   const player = useUnit($player);
   const localId = useUnit($localId);
   const [name, setName] = useState(player.name);
@@ -55,8 +60,7 @@ export function PartyPrepare() {
     );
   }
 
-  const hostName =
-    party.players.find((p) => p.id === party.host)?.name || party.host;
+  const hostName = currentPlayers[party.host]?.name || party.host;
   const imHost = localId === party.host;
 
   return (
