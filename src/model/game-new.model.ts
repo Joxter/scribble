@@ -76,6 +76,12 @@ export const $currentPlayers = $newParty.map((p) => {
   return Object.fromEntries(p.players.map((it) => [it.id, it]));
 });
 
+export const $partyPaintingIds = $newParty.map((p) => {
+  return p.gameProgress.flatMap((round) =>
+    round.flatMap((res) => res.paintingId),
+  );
+});
+
 export const $guessed = $newParty.map((p) => {
   return p.gameState.state === "drawing" ? p.gameState.guessed : {};
 });
