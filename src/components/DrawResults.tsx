@@ -32,7 +32,8 @@ export function DrawResults({}: Props) {
   const choosingWord = useUnit($choosingWord);
   const localId = useUnit($localId);
 
-  const lastResults = gameProgress.at(-1)?.at(-1);
+  const lastResults =
+    gameProgress.at(-1)?.at(-1) || gameProgress.at(-2)?.at(-1);
 
   if (!lastResults) {
     return <div className={container}>no last result</div>;

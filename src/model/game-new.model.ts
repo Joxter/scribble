@@ -221,8 +221,6 @@ sample({
 
 // when every guessed
 combine($guessed, $newParty, $isServer).watch(([guessed, party, isServer]) => {
-  console.log("---------", isServer);
-  console.log(party);
   const { players, staticPlayerIds, gameState, gameProgress, gameParams } =
     party;
 
