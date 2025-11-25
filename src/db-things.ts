@@ -233,6 +233,7 @@ export function transitionToNextPlayer(
     db.tx.roomEvent[id()].create(event).link({ party: partyId }),
   ]);
 }
+
 export function gameFinished(partyId: string, newGameProgress: GameProgress) {
   const event: Omit<GameFinishedEvent, "id"> = {
     type: "game-finished",
@@ -244,6 +245,7 @@ export function gameFinished(partyId: string, newGameProgress: GameProgress) {
   return db.transact([
     db.tx.party[partyId].update({
       gameState: { state: "game-finished" },
+      status: GAME_STATUS.finished,
       gameProgress: newGameProgress,
     }),
     db.tx.roomEvent[id()].create(event).link({ party: partyId }),

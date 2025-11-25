@@ -21,11 +21,10 @@ export function Router() {
       navigate(getUrl(""));
     } else if (
       party.status === GAME_STATUS.prepare ||
+      party.status === GAME_STATUS.finished ||
       party.status === GAME_STATUS.inProgress
     ) {
       navigate(getUrl("current-party"));
-    } else if (party.status === GAME_STATUS.finished) {
-      navigate(getUrl(""));
     } else {
       navigate(getUrl(""));
     }

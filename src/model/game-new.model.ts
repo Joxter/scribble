@@ -181,22 +181,11 @@ liveQuery($localId, (localId) => {
     {
       party: {
         $: {
-          where: {
-            or: [
-              {
-                and: [
-                  { status: GAME_STATUS.prepare },
-                  { "players.id": localId },
-                ],
-              },
-              {
-                and: [
-                  { status: GAME_STATUS.inProgress },
-                  { "players.id": localId },
-                ],
-              },
-            ],
+          where: { "players.id": localId },
+          order: {
+            serverCreatedAt: "desc",
           },
+          limit: 1,
         },
         players: {},
         roomEvents: {},
@@ -241,6 +230,7 @@ combine($guessed, $newParty, $isServer).watch(([guessed, party, isServer]) => {
       if (gameProgress.length === 0) {
         gameProgress.push([]);
       }
+
       gameProgress.at(-1)!.push({
         paintingId: gameState.drawingId,
         whoDrawId: gameState.playerId,
@@ -259,7 +249,11 @@ combine($guessed, $newParty, $isServer).watch(([guessed, party, isServer]) => {
         // начинаем следующий круг
 
         gameProgress.push([]);
+        log(
+          `gameProgress.length < gameParams.rounds (${gameProgress.length}, ${gameParams.rounds})`,
+        );
         if (gameProgress.length < gameParams.rounds) {
+          log(`nextPlayerChoosingWord: ${players[0].id}`);
           // если ещё есть место для раундов
           nextPlayerChoosingWord(
             players[0].id,
@@ -268,6 +262,7 @@ combine($guessed, $newParty, $isServer).watch(([guessed, party, isServer]) => {
             gameProgress,
           );
         } else {
+          log("game finished!");
           gameFinished(party.id, gameProgress);
         }
       }
