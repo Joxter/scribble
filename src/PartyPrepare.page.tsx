@@ -23,6 +23,7 @@ import { useLocation } from "wouter";
 import { getUrl } from "./utils.ts";
 import { GAME_STATUS } from "./types.ts";
 import { DrawingPage } from "./Drawing.page.tsx";
+import { FinishedGamePage } from "./FinishedGame.page.tsx";
 
 export function PartyPrepare() {
   const [party, currentPlayers] = useUnit([$newParty, $currentPlayers]);
@@ -50,6 +51,10 @@ export function PartyPrepare() {
 
   if (party.status === GAME_STATUS.inProgress) {
     return <DrawingPage />;
+  }
+
+  if (party.status === GAME_STATUS.finished) {
+    return <FinishedGamePage />;
   }
 
   if (party.status !== "prepare") {

@@ -17,6 +17,7 @@ import {
   sendMessage,
   saveCanvas,
   firstLoadForCanvas,
+  gameFinished,
 } from "../db-things.ts";
 
 db.getLocalId("guest").then((a) => setLocalId(a));
@@ -261,13 +262,7 @@ combine($guessed, $newParty, $isServer).watch(([guessed, party, isServer]) => {
             gameProgress,
           );
         } else {
-          // КОНЕЦ ИГРЫ
-          //
-          // db.transact([
-          //   db.tx.party[party.id].update({
-          //     status: GAME_STATUS.finished,
-          //   }),
-          // ]);
+          gameFinished(party.id, gameProgress);
         }
       }
     }

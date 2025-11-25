@@ -49,9 +49,20 @@ export type GameStateDrawing = {
   drawingId: string; // id of the painting
 };
 
+export type GameStateChoosingWord = {
+  state: "choosing-word";
+  playerId: string;
+  words: string[];
+};
+
+export type GameStateFinished = {
+  state: "game-finished";
+};
+
 export type GameState =
-  | { state: "choosing-word"; playerId: string; words: string[] }
-  | GameStateDrawing;
+  | GameStateChoosingWord
+  | GameStateDrawing
+  | GameStateFinished;
 
 export type GameProgress = Array<
   {
@@ -78,7 +89,11 @@ export type Party = {
   };
 };
 
-export type AllChatMessages = UserMessageEvent | NewWord | DrawingEndedEvent;
+export type AllChatMessages =
+  | UserMessageEvent
+  | NewWord
+  | DrawingEndedEvent
+  | GameFinishedEvent;
 
 type JSON = any;
 
@@ -116,7 +131,15 @@ export type DrawingEndedEvent = {
   payload: {
     reason: "all-revealed" | "timeout";
     revealed: Revealed;
-    nextPlayerId: string; // null - в конце игры никто не рисует
+    nextPlayerId: string;
+  };
+};
+
+export type GameFinishedEvent = {
+  type: "game-finished";
+  id: string;
+  payload: {
+    reason: "no-more-rounds";
   };
 };
 

@@ -8,6 +8,7 @@ import {
   GameProgress,
   IsRevealed,
   CurrentCanvas,
+  GameFinishedEvent,
 } from "./types.ts";
 import { id } from "@instantdb/core";
 import { newRandomWords } from "./utils.ts";
@@ -227,6 +228,22 @@ export function transitionToNextPlayer(
         playerId: nextPlayerId,
         words: newRandomWords(3),
       },
+      gameProgress: newGameProgress,
+    }),
+    db.tx.roomEvent[id()].create(event).link({ party: partyId }),
+  ]);
+}
+export function gameFinished(partyId: string, newGameProgress: GameProgress) {
+  const event: Omit<GameFinishedEvent, "id"> = {
+    type: "game-finished",
+    payload: {
+      reason: "no-more-rounds",
+    },
+  };
+
+  return db.transact([
+    db.tx.party[partyId].update({
+      gameState: { state: "game-finished" },
       gameProgress: newGameProgress,
     }),
     db.tx.roomEvent[id()].create(event).link({ party: partyId }),
