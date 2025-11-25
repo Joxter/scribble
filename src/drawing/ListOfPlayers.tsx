@@ -1,5 +1,5 @@
 import { useUnit } from "effector-react";
-import { Player } from "../types.ts";
+import { GAME_STATUS, Player } from "../types.ts";
 import pencilSvg from "./Pencil.svg";
 import { $drawing, $newParty } from "../model/game-new.model.ts";
 import { closeParty } from "../db-things.ts";
@@ -17,11 +17,13 @@ export function ListOfPlayers() {
   return (
     <div>
       <p>
-        Комната "{party.name}" круг:
-        <b>
-          {" "}
-          {(party.gameProgress || []).length}/{party.gameParams.rounds}{" "}
-        </b>
+        Комната "{party.name}"
+        {party.status === GAME_STATUS.inProgress && (
+          <b>
+            круг: {(party.gameProgress || []).length}/
+            {party.gameParams.rounds}{" "}
+          </b>
+        )}
         <button
           onClick={() => {
             closeParty(party.id);
