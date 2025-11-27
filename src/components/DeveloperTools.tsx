@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useUnit } from "effector-react";
 import { Link } from "wouter";
 import {
-  $currentDrawing,
+  currentLine,
   $localId,
   $logiSmol,
   $newParty,
@@ -12,7 +12,7 @@ export function DeveloperTools() {
   const [isCollapsed, setIsCollapsed] = useState(true);
   const localId = useUnit($localId);
   const party = useUnit($newParty);
-  const currentDrawing = useUnit($currentDrawing);
+  const currentDrawing = useUnit(currentLine.$currentDrawing);
   const logiSmol = useUnit($logiSmol);
 
   return (

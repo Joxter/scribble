@@ -1,16 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback, memo } from "react";
 import { useUnit } from "effector-react";
 import { canvasSize, toFixed } from "../utils";
-import {
-  $currentDrawing,
-  $drawing,
-  $newParty,
-  $polylinePaths,
-  $svgCanvasPaths,
-  lineExtended,
-  lineStarted,
-  saveCanvasToPaining,
-} from "../model/game-new.model.ts";
+import { currentLine, $drawing, $newParty } from "../model/game-new.model.ts";
 
 const PIXEL_RATIO = window.devicePixelRatio || 1;
 
@@ -93,8 +84,8 @@ export function Canvas() {
   const canvasLinesRef = useRef<HTMLCanvasElement>(null);
 
   const debugMode = false;
-  const polylinePaths = useUnit($polylinePaths);
-  const svgCanvasPaths = useUnit($svgCanvasPaths);
+  const polylinePaths = useUnit(currentLine.$polylinePaths);
+  const svgCanvasPaths = useUnit(currentLine.$svgCanvasPaths);
 
   useEffect(() => {
     const canvas = canvasLinesRef.current!;
@@ -125,7 +116,7 @@ const CurrentLine = memo(() => {
   const drawing = useUnit($drawing);
   const imDrawing = drawing.iam || false;
 
-  const svgCurrentLine = useUnit($svgCanvasPaths).at(-1);
+  const svgCurrentLine = useUnit(currentLine.$svgCanvasPaths).at(-1);
 
   useEffect(() => {
     const canvas = canvasRef.current!;
@@ -144,7 +135,7 @@ const CurrentLine = memo(() => {
       if (!imDrawing) return;
       e.preventDefault();
       const { x, y } = getEventCoordinates(e, canvasRef.current!);
-      lineStarted([x, y]);
+      currentLine.lineStarted([x, y]);
       setIsDrawing(true);
     },
     [imDrawing],
@@ -155,7 +146,7 @@ const CurrentLine = memo(() => {
       if (!imDrawing || !isDrawing) return;
       e.preventDefault();
       const { x, y } = getEventCoordinates(e, canvasRef.current!);
-      lineExtended([x, y]);
+      currentLine.lineExtended([x, y]);
     },
     [imDrawing, isDrawing],
   );
@@ -166,7 +157,7 @@ const CurrentLine = memo(() => {
       e.preventDefault();
 
       setIsDrawing(false);
-      saveCanvasToPaining();
+      currentLine.saveCanvasToPaining();
     },
     [imDrawing, isDrawing],
   );
@@ -188,7 +179,7 @@ const CurrentLine = memo(() => {
 });
 
 const DebugOverlay = memo(() => {
-  const linesRaw = useUnit($currentDrawing);
+  const linesRaw = useUnit(currentLine.$currentDrawing);
 
   const debugOverlayStyle = {
     position: "absolute" as const,

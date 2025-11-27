@@ -92,20 +92,7 @@ const $imDrawing = $drawing.map((t) => {
 
 export const $isServer = $imDrawing;
 
-export const {
-  lineParamsChanged,
-  $currentLineParams,
-  lineStarted,
-  lineExtended,
-  somebodyDrawing,
-  undoClicked,
-  saveCanvasToPaining,
-  $svgCanvasPaths,
-  $currentDrawing,
-  initLoad,
-  newRound,
-  $polylinePaths,
-} = createCurrentLine();
+export const currentLine = createCurrentLine();
 
 export const $currentDrawingId = $newParty.map((p) => {
   if (p.gameState.state === "drawing") {
@@ -117,7 +104,7 @@ export const $currentDrawingId = $newParty.map((p) => {
 
 sample({
   clock: $currentDrawingId,
-  target: newRound,
+  target: currentLine.newRound,
 });
 
 export const $choosingWord = combine($localId, $newParty, (localId, p) => {
@@ -150,7 +137,7 @@ liveQuery($newParty, (party) => {
   const room = db.joinRoom("party", party.id);
   log(`joined`);
 
-  const uns = $currentDrawing.watch((currentDrawing) => {
+  const uns = currentLine.$currentDrawing.watch((currentDrawing) => {
     if ($imDrawing.getState()) {
       log(`publishTopic`);
       room.publishTopic("currentCanvas", { currentDrawing });
@@ -160,7 +147,7 @@ liveQuery($newParty, (party) => {
   const unsubscribeTopic = room.subscribeTopic("currentCanvas", (ev) => {
     log(`currentCanvas`);
     if (!$imDrawing.getState()) {
-      somebodyDrawing(ev.currentDrawing);
+      currentLine.somebodyDrawing(ev.currentDrawing);
     }
   });
 
@@ -293,8 +280,8 @@ sample({
 
 // сохранить рисунок в базу
 const a = sample({
-  source: [$currentDrawing, $newParty] as const,
-  clock: saveCanvasToPaining,
+  source: [currentLine.$currentDrawing, $newParty] as const,
+  clock: currentLine.saveCanvasToPaining,
 });
 a.watch(([canvas, { gameState }]) => {
   log("canvas");

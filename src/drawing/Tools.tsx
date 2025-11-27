@@ -2,14 +2,10 @@ import { WidthSelector } from "../components/WidthSelector.tsx";
 import arrowArcLeftSrc from "./ArrowArcLeft.svg";
 import { ColorSelector } from "../components/ColorSelector.tsx";
 import { useStoreMap, useUnit } from "effector-react";
-import {
-  $currentLineParams,
-  lineParamsChanged,
-  undoClicked,
-} from "../model/game-new.model.ts";
+import { currentLine } from "../model/game-new.model.ts";
 
 export function Tools() {
-  const { width, color } = useUnit($currentLineParams);
+  const { width, color } = useUnit(currentLine.$currentLineParams);
 
   return (
     <div
@@ -28,19 +24,19 @@ export function Tools() {
           justifyContent: "space-between",
         }}
       >
-        <button onClick={undoClicked}>
+        <button onClick={currentLine.undoClicked}>
           <img style={{ width: "20px" }} src={arrowArcLeftSrc} />
         </button>
 
         <WidthSelector
           value={width}
-          onChange={(width) => lineParamsChanged({ width })}
+          onChange={(width) => currentLine.lineParamsChanged({ width })}
         />
       </div>
       <div>
         <ColorSelector
           value={color}
-          onChange={(color) => lineParamsChanged({ color })}
+          onChange={(color) => currentLine.lineParamsChanged({ color })}
         />
       </div>
     </div>

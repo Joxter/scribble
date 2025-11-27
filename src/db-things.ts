@@ -14,7 +14,7 @@ import {
 } from "./types.ts";
 import { id, User } from "@instantdb/core";
 import { newRandomWords } from "./utils.ts";
-import { initLoad } from "./model/game-new.model.ts";
+import { currentLine } from "./model/game-new.model.ts";
 import { getUsername } from "./code-worlds.ts";
 
 export async function editPlayerName(name: string) {
@@ -361,7 +361,7 @@ export function firstLoadForCanvas(localId: string) {
         },
       }).then(({ data }) => {
         if (data.paintings[0]) {
-          initLoad(data.paintings[0].canvas);
+          currentLine.initLoad(data.paintings[0].canvas);
         }
       });
     }
