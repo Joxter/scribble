@@ -36,7 +36,8 @@ export function DrawResults({}: Props) {
     gameProgress.at(-1)?.at(-1) || gameProgress.at(-2)?.at(-1);
 
   if (!lastResults) {
-    return <div className={container}>no last result</div>;
+    // very first round
+    // return <div className={container}>no last result</div>;
   }
 
   if (choosingWord.choose && choosingWord.who) {
@@ -48,24 +49,28 @@ export function DrawResults({}: Props) {
           <p>{currentPlayers[choosingWord.who].name} выбирает слово</p>
         )}
         <br />
-        <h3>Очки за "рисунок-нейм":</h3>
-        <ul>
-          {Object.entries(lastResults.scores).map(([userId, timestamp]) => {
-            const iso = new Date(timestamp).toTimeString().split(" ")[0];
+        {lastResults && (
+          <>
+            <h3>Очки за "рисунок-нейм":</h3>
+            <ul>
+              {Object.entries(lastResults.scores).map(([userId, timestamp]) => {
+                const iso = new Date(timestamp).toTimeString().split(" ")[0];
 
-            // показывать накопленные очки + полученные
-            return (
-              <li
-                key={userId}
-                className={userId === localId ? currentUser : ""}
-              >
-                {currentPlayers[userId].name}: {iso}
-              </li>
-            );
-          })}
-        </ul>
+                // показывать накопленные очки + полученные
+                return (
+                  <li
+                    key={userId}
+                    className={userId === localId ? currentUser : ""}
+                  >
+                    {currentPlayers[userId].name}: {iso}
+                  </li>
+                );
+              })}
+            </ul>
 
-        <p>тут будет рисунок и реакции</p>
+            <p>тут будет рисунок и реакции</p>
+          </>
+        )}
       </div>
     );
   }

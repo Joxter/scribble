@@ -1,8 +1,19 @@
-import { combine, createEvent, createStore, restore, sample } from "effector";
-import { CurrentCanvas, CanvasLine } from "../types.ts";
+import {
+  combine,
+  createEvent,
+  createStore,
+  restore,
+  sample,
+  Store,
+} from "effector";
+import { CurrentCanvas, CanvasLine, GAME_STATUS, Party } from "../types.ts";
 import { colors, smoothConf, widths } from "../config.ts";
 import { svgInk } from "../freehand/svgInk.ts";
 import { Vec } from "../freehand/Vec.ts";
+import { liveQuery } from "../utils.ts";
+import { db } from "../DB.ts";
+import { saveCanvas } from "../db-things.ts";
+import { $localId, $newParty, log } from "./game-new.model.ts";
 
 export function createCurrentLine() {
   const setSmoothConf = createEvent<Partial<typeof smoothConf>>();
@@ -119,5 +130,96 @@ export function createCurrentLine() {
     $smoothConf,
     setSmoothConf,
     saveCanvasToPaining,
+  };
+}
+
+export function createDrawing(params: {
+  $localId: Store<string>;
+  $newParty: Store<Party>;
+  log: (data: any) => any;
+}) {
+  const { $localId, $newParty, log } = params;
+
+  const $drawing = combine($localId, $newParty, (loadId, p) => {
+    if (
+      p.status === GAME_STATUS.inProgress &&
+      p.gameState.state === "drawing"
+    ) {
+      const s = p.gameState;
+
+      return {
+        drawing: true,
+        iam: loadId === s.playerId,
+        who: s.playerId,
+        word: s.word,
+      };
+    }
+
+    return { drawing: false };
+  });
+
+  const $imDrawing = $drawing.map((t) => {
+    return t.drawing && t.iam;
+  });
+
+  const $isServer = $imDrawing;
+
+  const currentLine = createCurrentLine();
+
+  const $currentDrawingId = $newParty.map((p) => {
+    if (p.gameState.state === "drawing") {
+      return p.gameState.drawingId;
+    } else {
+      return null;
+    }
+  });
+
+  sample({ clock: $currentDrawingId, target: currentLine.newRound });
+
+  liveQuery($newParty, (party) => {
+    if (!party.id) return () => [];
+
+    log(`joinRoom ${party.id}`);
+    const room = db.joinRoom("party", party.id);
+    log(`joined`);
+
+    const uns = currentLine.$currentDrawing.watch((currentDrawing) => {
+      if ($imDrawing.getState()) {
+        log(`publishTopic`);
+        room.publishTopic("currentCanvas", { currentDrawing });
+      }
+    });
+
+    const unsubscribeTopic = room.subscribeTopic("currentCanvas", (ev) => {
+      log(`currentCanvas`);
+      if (!$imDrawing.getState()) {
+        currentLine.somebodyDrawing(ev.currentDrawing);
+      }
+    });
+
+    return () => {
+      log(`unsubscribe`);
+      uns();
+      unsubscribeTopic();
+      room.leaveRoom();
+    };
+  });
+
+  // сохранить рисунок в базу
+  const a = sample({
+    source: [currentLine.$currentDrawing, $newParty] as const,
+    clock: currentLine.saveCanvasToPaining,
+  });
+  a.watch(([canvas, { gameState }]) => {
+    if (gameState.state === "drawing") {
+      saveCanvas(gameState.drawingId, canvas);
+    }
+  });
+
+  return {
+    $drawing,
+    $isServer,
+    currentLine,
+    $currentDrawingId,
   };
 }

@@ -3,11 +3,10 @@ import { combine, createEvent, createStore, restore, sample } from "effector";
 import { AllChatMessages, GAME_STATUS, Party, Player } from "../types.ts";
 import { calcRevealed, liveQuery } from "../utils.ts";
 import { getPlayer, mergeLogi, newParty } from "./utils.ts";
-import { createCurrentLine } from "./drawing.model.ts";
+import { createDrawing } from "./drawing.model.ts";
 import {
   firstLoadForCanvas,
   gameFinished,
-  saveCanvas,
   selectWord,
   sendMessage,
   transitionToNextPlayer,
@@ -43,21 +42,6 @@ export const $logi = createStore<any[]>([]);
 $logi.on(log, (s, l) => [...s, l]);
 export const $logiSmol = $logi.map(mergeLogi);
 
-export const $drawing = combine($localId, $newParty, (loadId, p) => {
-  if (p.status === GAME_STATUS.inProgress && p.gameState.state === "drawing") {
-    const s = p.gameState;
-
-    return {
-      drawing: true,
-      iam: loadId === s.playerId,
-      who: s.playerId,
-      word: s.word,
-    };
-  }
-
-  return { drawing: false };
-});
-
 export const $currentPlayers = $newParty.map((p) => {
   return Object.fromEntries(p.players.map((it) => [it.id, it]));
 });
@@ -72,21 +56,8 @@ export const $guessed = $newParty.map((p) => {
   return p.gameState.state === "drawing" ? p.gameState.guessed : {};
 });
 
-const $imDrawing = $drawing.map((t) => {
-  return t.drawing && t.iam;
-});
-
-export const $isServer = $imDrawing;
-
-export const currentLine = createCurrentLine();
-
-export const $currentDrawingId = $newParty.map((p) => {
-  if (p.gameState.state === "drawing") {
-    return p.gameState.drawingId;
-  } else {
-    return null;
-  }
-});
+const drawing = createDrawing({ $localId, $newParty, log });
+export const { $drawing, $isServer, currentLine } = drawing;
 
 export const $choosingWord = combine($localId, $newParty, (localId, p) => {
   if (p.status !== GAME_STATUS.inProgress) return { choose: false };
@@ -109,37 +80,6 @@ export const $choosingWord = combine($localId, $newParty, (localId, p) => {
   }
 
   return { choose: false };
-});
-
-sample({ clock: $currentDrawingId, target: currentLine.newRound });
-
-liveQuery($newParty, (party) => {
-  if (!party.id) return () => [];
-
-  log(`joinRoom ${party.id}`);
-  const room = db.joinRoom("party", party.id);
-  log(`joined`);
-
-  const uns = currentLine.$currentDrawing.watch((currentDrawing) => {
-    if ($imDrawing.getState()) {
-      log(`publishTopic`);
-      room.publishTopic("currentCanvas", { currentDrawing });
-    }
-  });
-
-  const unsubscribeTopic = room.subscribeTopic("currentCanvas", (ev) => {
-    log(`currentCanvas`);
-    if (!$imDrawing.getState()) {
-      currentLine.somebodyDrawing(ev.currentDrawing);
-    }
-  });
-
-  return () => {
-    log(`unsubscribe`);
-    uns();
-    unsubscribeTopic();
-    room.leaveRoom();
-  };
 });
 
 liveQuery($localId, (localId) => {
@@ -247,17 +187,6 @@ sample({
   const isRevealed = secretWord ? calcRevealed(secretWord, guess) : "none";
 
   sendMessage(localId, party.id, guess, isRevealed);
-});
-
-// сохранить рисунок в базу
-const a = sample({
-  source: [currentLine.$currentDrawing, $newParty] as const,
-  clock: currentLine.saveCanvasToPaining,
-});
-a.watch(([canvas, { gameState }]) => {
-  if (gameState.state === "drawing") {
-    saveCanvas(gameState.drawingId, canvas);
-  }
 });
 
 liveQuery($localId, (localId) => {
