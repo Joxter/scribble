@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { DeveloperTools } from "./components/DeveloperTools.tsx";
 import { ListOfPlayers } from "./drawing/ListOfPlayers.tsx";
 import css from "./drawing/Page.module.css";
@@ -11,10 +11,11 @@ import {
   $newParty,
   $partyPaintingIds,
 } from "./model/game-new.model.ts";
+import { db } from "./DB.ts";
 
 function calculatePlayerScores(
   gameProgress: any[],
-  players: Record<string, any>
+  players: Record<string, any>,
 ) {
   const playerScores: Record<string, number> = {};
 
@@ -30,7 +31,7 @@ function calculatePlayerScores(
 
       // Sort guessers by timestamp (earlier = better)
       const sortedGuessers = Object.entries(scores).sort(
-        ([, timeA], [, timeB]) => (timeA as number) - (timeB as number)
+        ([, timeA], [, timeB]) => (timeA as number) - (timeB as number),
       );
 
       // Award points based on guess order

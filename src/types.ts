@@ -20,6 +20,11 @@ export type Player = {
   avatar: string;
 };
 
+export type Player2 = {
+  id: string;
+  name: string;
+};
+
 export type Prettify<T> = {
   [K in keyof T]: T[K];
 } & {};

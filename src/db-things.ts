@@ -9,10 +9,13 @@ import {
   IsRevealed,
   CurrentCanvas,
   GameFinishedEvent,
+  Player,
+  Player2,
 } from "./types.ts";
-import { id } from "@instantdb/core";
+import { id, User } from "@instantdb/core";
 import { newRandomWords } from "./utils.ts";
 import { initLoad } from "./model/game-new.model.ts";
+import { getUsername } from "./code-worlds.ts";
 
 export async function editPlayerName(name: string) {
   const localId = await db.getLocalId("guest");
@@ -20,6 +23,10 @@ export async function editPlayerName(name: string) {
   return await db.transact([
     db.tx.players[localId].update({ name, localId, avatar: "" }),
   ]);
+}
+
+export async function editUserName(userId: string, newName: string) {
+  return db.transact([db.tx.$users[userId].update({ name: newName })]);
 }
 
 export async function getPreparePartyByName(name: string) {
@@ -250,6 +257,40 @@ export function gameFinished(partyId: string, newGameProgress: GameProgress) {
     }),
     db.tx.roomEvent[id()].create(event).link({ party: partyId }),
   ]);
+}
+
+export function authOrCreateUser(cb: (user: Player2) => void) {
+  db.getAuth()
+    .then((user) => {
+      if (user) {
+        return user;
+      } else {
+        return db.auth.signInAsGuest().then(({ user: newUser }) => {
+          return editUserName(newUser.id, getUsername()).then(() => {
+            return newUser;
+          });
+        });
+      }
+    })
+    .then((user) => {
+      db.subscribeQuery(
+        {
+          $users: {
+            $: { where: { id: user.id } },
+          },
+        },
+        ({ data }) => {
+          if (data?.$users[0]) {
+            cb({
+              id: user.id,
+              name: data!.$users[0].name || "",
+            });
+          } else {
+            cb({ id: user.id, name: "error" });
+          }
+        },
+      );
+    });
 }
 
 export function sendMessage(

@@ -3,6 +3,10 @@ import { CurrentCanvas, GameProgress, GameState, Party } from "./src/types.ts";
 
 const _schema = i.schema({
   entities: {
+    $users: i.entity({
+      name: i.string().optional(),
+      type: i.string().optional(),
+    }),
     party: i.entity({
       name: i.string().unique().indexed(), // url
       host: i.string().optional(),
