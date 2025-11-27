@@ -4,7 +4,7 @@ import { Canvas } from "./drawing/Canvas.tsx";
 import { DeveloperTools } from "./components/DeveloperTools.tsx";
 import { Tools } from "./drawing/Tools.tsx";
 import { ListOfPlayers } from "./drawing/ListOfPlayers.tsx";
-import { $choosingWord, $clue, $drawing } from "./model/game-new.model.ts";
+import { $choosingWord, $drawing } from "./model/game-new.model.ts";
 import css from "./drawing/Page.module.css";
 import { GameInputField } from "./drawing/GameInputField.tsx";
 import { ChatMessages } from "./drawing/ChatMessages.tsx";
@@ -14,11 +14,8 @@ import { DrawResults } from "./components/DrawResults.tsx";
 
 export function DrawingPage() {
   const iRevealed = ""; // todo
-  const [drawing, choosingWord, clue] = useUnit([
-    $drawing,
-    $choosingWord,
-    $clue,
-  ]);
+  const clue = ""; // todo
+  const [drawing, choosingWord] = useUnit([$drawing, $choosingWord]);
 
   return (
     <PageLayout>
@@ -48,7 +45,7 @@ export function DrawingPage() {
             <div style={{ padding: "4px 12px" }}>
               <div style={{ display: "flex", justifyContent: "center" }}>
                 <GameInputField
-                  clue={clue}
+                  clue={""}
                   secret={drawing.word || ""}
                   revealed={iRevealed}
                 />

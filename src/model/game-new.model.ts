@@ -1,23 +1,16 @@
 import { db } from "../DB.ts";
 import { combine, createEvent, createStore, restore, sample } from "effector";
-import {
-  GAME_STATUS,
-  Party,
-  AllChatMessages,
-  GameStateDrawing,
-  GameProgress,
-  Player,
-} from "../types.ts";
+import { AllChatMessages, GAME_STATUS, Party, Player } from "../types.ts";
 import { calcRevealed, liveQuery } from "../utils.ts";
 import { getPlayer, mergeLogi, newParty } from "./utils.ts";
 import { createCurrentLine } from "./drawing.model.ts";
 import {
-  selectWord,
-  transitionToNextPlayer,
-  sendMessage,
-  saveCanvas,
   firstLoadForCanvas,
   gameFinished,
+  saveCanvas,
+  selectWord,
+  sendMessage,
+  transitionToNextPlayer,
 } from "../db-things.ts";
 
 db.getLocalId("guest").then((a) => setLocalId(a));
@@ -25,7 +18,6 @@ getPlayer();
 
 const setLocalId = createEvent<string>();
 export const $localId = restore(setLocalId, "");
-$localId.watch((v) => console.log("$localId", v));
 
 const setPlayer = createEvent<Player>();
 export const $player = restore(setPlayer, {
@@ -66,12 +58,6 @@ export const $drawing = combine($localId, $newParty, (loadId, p) => {
   return { drawing: false };
 });
 
-const $roomId = $newParty.map((p) => {
-  return p.id;
-});
-
-export const $clue = createStore<string | null>(null);
-
 export const $currentPlayers = $newParty.map((p) => {
   return Object.fromEntries(p.players.map((it) => [it.id, it]));
 });
@@ -102,11 +88,6 @@ export const $currentDrawingId = $newParty.map((p) => {
   }
 });
 
-sample({
-  clock: $currentDrawingId,
-  target: currentLine.newRound,
-});
-
 export const $choosingWord = combine($localId, $newParty, (localId, p) => {
   if (p.status !== GAME_STATUS.inProgress) return { choose: false };
 
@@ -129,6 +110,8 @@ export const $choosingWord = combine($localId, $newParty, (localId, p) => {
 
   return { choose: false };
 });
+
+sample({ clock: $currentDrawingId, target: currentLine.newRound });
 
 liveQuery($newParty, (party) => {
   if (!party.id) return () => [];
@@ -226,7 +209,7 @@ combine($guessed, $newParty, $isServer).watch(([guessed, party, isServer]) => {
 
       if (players[nextPlayerI]) {
         // продолжается текущий круг
-        nextPlayerChoosingWord(
+        transitionToNextPlayer(
           players[nextPlayerI].id,
           gameState,
           party.id,
@@ -236,13 +219,10 @@ combine($guessed, $newParty, $isServer).watch(([guessed, party, isServer]) => {
         // начинаем следующий круг
 
         gameProgress.push([]);
-        log(
-          `gameProgress.length < gameParams.rounds (${gameProgress.length}, ${gameParams.rounds})`,
-        );
         if (gameProgress.length < gameParams.rounds) {
           log(`nextPlayerChoosingWord: ${players[0].id}`);
           // если ещё есть место для раундов
-          nextPlayerChoosingWord(
+          transitionToNextPlayer(
             players[0].id,
             gameState,
             party.id,
@@ -256,15 +236,6 @@ combine($guessed, $newParty, $isServer).watch(([guessed, party, isServer]) => {
     }
   }
 });
-
-function nextPlayerChoosingWord(
-  nextPlayerId: string,
-  gameState: GameStateDrawing,
-  partyId: string,
-  newGameProgress: GameProgress,
-) {
-  transitionToNextPlayer(nextPlayerId, gameState, partyId, newGameProgress);
-}
 
 sample({
   source: [$localId, $newParty] as const,
@@ -284,7 +255,6 @@ const a = sample({
   clock: currentLine.saveCanvasToPaining,
 });
 a.watch(([canvas, { gameState }]) => {
-  log("canvas");
   if (gameState.state === "drawing") {
     saveCanvas(gameState.drawingId, canvas);
   }
