@@ -1,16 +1,16 @@
 import { db } from "../DB.ts";
 import { combine, createEvent, createStore, restore, sample } from "effector";
-import { AllChatMessages, GAME_STATUS, Party, Player } from "../types.ts";
+import { Player } from "../types.ts";
 import { calcRevealed, liveQuery } from "../utils.ts";
-import { getPlayer, mergeLogi, newParty } from "./utils.ts";
+import { getPlayer, mergeLogi } from "./utils.ts";
 import { createDrawing } from "./drawing.model.ts";
 import {
-  firstLoadForCanvas,
   gameFinished,
   selectWord,
   sendMessage,
   transitionToNextPlayer,
 } from "../db-things.ts";
+import { createParty } from "./party.model.ts";
 
 db.getLocalId("guest").then((a) => setLocalId(a));
 getPlayer();
@@ -26,14 +26,6 @@ export const $player = restore(setPlayer, {
   avatar: "",
 });
 
-export const newPartyLoaded = createEvent<Party>();
-
-export const $newParty = createStore<Party>(newParty());
-$newParty.on(newPartyLoaded, (_, party) => party);
-
-export const $allChatEvents = createStore<AllChatMessages[]>([]);
-$allChatEvents.on(newPartyLoaded, (_, party) => party.roomEvents);
-
 export const messageSent = createEvent<{ guess: string }>();
 export const newWordSelected = createEvent<string>();
 
@@ -42,80 +34,20 @@ export const $logi = createStore<any[]>([]);
 $logi.on(log, (s, l) => [...s, l]);
 export const $logiSmol = $logi.map(mergeLogi);
 
-export const $currentPlayers = $newParty.map((p) => {
-  return Object.fromEntries(p.players.map((it) => [it.id, it]));
-});
+const party = createParty($localId);
 
-export const $partyPaintingIds = $newParty.map((p) => {
-  return p.gameProgress.flatMap((round) =>
-    round.flatMap((res) => res.paintingId),
-  );
-});
-
-export const $guessed = $newParty.map((p) => {
-  return p.gameState.state === "drawing" ? p.gameState.guessed : {};
-});
+export const {
+  $newParty,
+  $allChatEvents,
+  $currentPlayers,
+  $partyPaintingIds,
+  $guessed,
+  $choosingWord,
+} = party;
 
 const drawing = createDrawing({ $localId, $newParty, log });
+
 export const { $drawing, $isServer, currentLine } = drawing;
-
-export const $choosingWord = combine($localId, $newParty, (localId, p) => {
-  if (p.status !== GAME_STATUS.inProgress) return { choose: false };
-
-  if (p.gameState.state === "choosing-word") {
-    if (localId === p.gameState.playerId) {
-      return {
-        choose: true,
-        iam: true,
-        who: p.gameState.playerId,
-        words: p.gameState.words,
-      };
-    }
-    return {
-      choose: true,
-      iam: false,
-      who: p.gameState.playerId,
-      words: [],
-    };
-  }
-
-  return { choose: false };
-});
-
-liveQuery($localId, (localId) => {
-  if (!localId) return () => {};
-
-  firstLoadForCanvas(localId);
-
-  return db.subscribeQuery(
-    {
-      party: {
-        $: {
-          where: { "players.id": localId },
-          order: {
-            serverCreatedAt: "desc",
-          },
-          limit: 1,
-        },
-        players: {},
-        roomEvents: {},
-      },
-    },
-    (resp) => {
-      if (resp.data) {
-        const party = resp.data.party?.[0];
-
-        if (party) {
-          newPartyLoaded(party as Party);
-          console.log(party.gameState);
-          return;
-        }
-      }
-      console.warn("Something went wrong");
-      console.log(resp);
-    },
-  );
-});
 
 sample({
   source: [$localId, $newParty] as const,
