@@ -6,14 +6,13 @@ import {
   sample,
   Store,
 } from "effector";
-import { CurrentCanvas, CanvasLine, GAME_STATUS, Party } from "../types.ts";
+import { CanvasLine, CurrentCanvas, GAME_STATUS, Party } from "../types.ts";
 import { colors, smoothConf, widths } from "../config.ts";
 import { svgInk } from "../freehand/svgInk.ts";
 import { Vec } from "../freehand/Vec.ts";
 import { liveQuery } from "../utils.ts";
 import { db } from "../DB.ts";
 import { saveCanvas } from "../db-things.ts";
-import { $localId, $newParty, log } from "./game-new.model.ts";
 
 export function createCurrentLine() {
   const setSmoothConf = createEvent<Partial<typeof smoothConf>>();
@@ -135,12 +134,14 @@ export function createCurrentLine() {
 
 export function createDrawing(params: {
   $localId: Store<string>;
-  $newParty: Store<Party>;
+  $newParty: Store<Party | null>;
   log: (data: any) => any;
 }) {
   const { $localId, $newParty, log } = params;
 
   const $drawing = combine($localId, $newParty, (loadId, p) => {
+    if (!p) return { drawing: false };
+
     if (
       p.status === GAME_STATUS.inProgress &&
       p.gameState.state === "drawing"
@@ -167,7 +168,7 @@ export function createDrawing(params: {
   const currentLine = createCurrentLine();
 
   const $currentDrawingId = $newParty.map((p) => {
-    if (p.gameState.state === "drawing") {
+    if (p && p.gameState.state === "drawing") {
       return p.gameState.drawingId;
     } else {
       return null;
@@ -177,7 +178,7 @@ export function createDrawing(params: {
   sample({ clock: $currentDrawingId, target: currentLine.newRound });
 
   liveQuery($newParty, (party) => {
-    if (!party.id) return () => [];
+    if (!party) return () => [];
 
     log(`joinRoom ${party.id}`);
     const room = db.joinRoom("party", party.id);
@@ -210,9 +211,9 @@ export function createDrawing(params: {
     source: [currentLine.$currentDrawing, $newParty] as const,
     clock: currentLine.saveCanvasToPaining,
   });
-  a.watch(([canvas, { gameState }]) => {
-    if (gameState.state === "drawing") {
-      saveCanvas(gameState.drawingId, canvas);
+  a.watch(([canvas, p]) => {
+    if (p?.gameState.state === "drawing") {
+      saveCanvas(p.gameState.drawingId, canvas);
     }
   });
 

@@ -1,6 +1,5 @@
 import { combine, createEvent, createStore, Store } from "effector";
 import { GAME_STATUS, Party } from "../types.ts";
-import { newParty } from "./utils.ts";
 import { liveQuery } from "../utils.ts";
 import { firstLoadForCanvas } from "../db-things.ts";
 import { db } from "../DB.ts";
@@ -8,26 +7,29 @@ import { db } from "../DB.ts";
 export function createParty($localId: Store<string>) {
   const newPartyLoaded = createEvent<Party>();
 
-  const $newParty = createStore<Party>(newParty());
+  const $newParty = createStore<Party | null>(null);
   $newParty.on(newPartyLoaded, (_, party) => party);
 
-  const $allChatEvents = $newParty.map((p) => p.roomEvents);
+  const $allChatEvents = $newParty.map((p) => p?.roomEvents || []);
 
   const $currentPlayers = $newParty.map((p) => {
-    return Object.fromEntries(p.players.map((it) => [it.id, it]));
+    return Object.fromEntries(p?.players.map((it) => [it.id, it]) || []);
   });
 
   const $partyPaintingIds = $newParty.map((p) => {
+    if (!p) return [];
     return p.gameProgress.flatMap((round) =>
       round.flatMap((res) => res.paintingId),
     );
   });
 
   const $guessed = $newParty.map((p) => {
+    if (!p) return {};
     return p.gameState.state === "drawing" ? p.gameState.guessed : {};
   });
 
   const $choosingWord = combine($localId, $newParty, (localId, p) => {
+    if (!p) return { choose: false };
     if (p.status !== GAME_STATUS.inProgress) return { choose: false };
 
     if (p.gameState.state === "choosing-word") {

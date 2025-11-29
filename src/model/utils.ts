@@ -4,9 +4,6 @@ import {
   LineEvent,
   Party,
 } from "../types.ts";
-import { db } from "../DB.ts";
-import { getUsername } from "../code-worlds.ts";
-import { editPlayerName } from "../db-things.ts";
 
 export function newParty(): Party {
   return {
@@ -35,23 +32,6 @@ export function doEventsUndo(events: CanvasAndChatHistory[]): LineEvent[] {
   });
 
   return lines;
-}
-
-export async function getPlayer(limit = 3) {
-  if (limit < 0) throw new Error(`Can't get user`);
-
-  const localId = await db.getLocalId("guest");
-
-  const player = await db
-    .queryOnce({ players: { $: { where: { id: localId } } } })
-    .then((it) => it.data.players[0]);
-
-  if (player) return player;
-
-  const randomName = getUsername();
-  await editPlayerName(randomName);
-
-  return getPlayer(limit - 1);
 }
 
 export function mergeLogi(logs: any[]): any[] {

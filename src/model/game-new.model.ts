@@ -1,10 +1,10 @@
-import { db } from "../DB.ts";
-import { combine, createEvent, createStore, restore, sample } from "effector";
-import { Player } from "../types.ts";
-import { calcRevealed, liveQuery } from "../utils.ts";
-import { getPlayer, mergeLogi } from "./utils.ts";
+import { combine, createEvent, createStore, sample } from "effector";
+import { Player2 } from "../types.ts";
+import { calcRevealed } from "../utils.ts";
+import { mergeLogi } from "./utils.ts";
 import { createDrawing } from "./drawing.model.ts";
 import {
+  authOrCreateUser,
   gameFinished,
   selectWord,
   sendMessage,
@@ -12,19 +12,10 @@ import {
 } from "../db-things.ts";
 import { createParty } from "./party.model.ts";
 
-db.getLocalId("guest").then((a) => setLocalId(a));
-getPlayer();
+const user = createUser();
 
-const setLocalId = createEvent<string>();
-export const $localId = restore(setLocalId, "");
-
-const setPlayer = createEvent<Player>();
-export const $player = restore(setPlayer, {
-  id: "",
-  localId: "",
-  name: "",
-  avatar: "",
-});
+export const $player = user.$user;
+export const $localId = $player.map((p) => p?.id || "");
 
 export const messageSent = createEvent<{ guess: string }>();
 export const newWordSelected = createEvent<string>();
@@ -54,11 +45,13 @@ sample({
   clock: newWordSelected,
   fn: (a, b) => [a, b] as const,
 }).watch(([[localId, party], word]) => {
-  selectWord(localId, party.id, word);
+  if (party) selectWord(localId, party.id, word);
 });
 
 // when every guessed
 combine($guessed, $newParty, $isServer).watch(([guessed, party, isServer]) => {
+  if (!party) return;
+
   const { players, staticPlayerIds, gameState, gameProgress, gameParams } =
     party;
 
@@ -114,6 +107,7 @@ sample({
   clock: messageSent,
   fn: (a, b) => [a, b] as const,
 }).watch(([[localId, party], { guess }]) => {
+  if (!party) return;
   const gameState = party.gameState;
   const secretWord = gameState.state === "drawing" ? gameState.word : null;
   const isRevealed = secretWord ? calcRevealed(secretWord, guess) : "none";
@@ -121,17 +115,12 @@ sample({
   sendMessage(localId, party.id, guess, isRevealed);
 });
 
-liveQuery($localId, (localId) => {
-  if (!localId) return () => {};
+function createUser() {
+  const $user = createStore<Player2 | null>(null);
+  const setUser = createEvent<Player2 | null>();
 
-  return db.subscribeQuery(
-    { players: { $: { where: { id: localId } } } },
-    (resp) => {
-      if (resp.error) console.error(resp.error);
-      if (resp.data) {
-        const player = resp.data.players[0];
-        setPlayer(player);
-      }
-    },
-  );
-});
+  $user.on(setUser, (_, u) => u);
+  authOrCreateUser((user) => setUser(user));
+
+  return { $user };
+}

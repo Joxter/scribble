@@ -14,7 +14,7 @@ const _schema = i.schema({
       gameProgress: i.json<GameProgress>().optional(),
       gameParams: i.json<Party["gameParams"]>().optional(),
       staticPlayerIds: i.json<string[]>().optional(),
-      status: i.string(),
+      status: i.string<Party["status"]>(),
     }),
     roomEvent: i.entity({
       // type AllChatMessages

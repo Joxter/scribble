@@ -29,19 +29,17 @@ export function PartyPrepare() {
   const [party, currentPlayers] = useUnit([$newParty, $currentPlayers]);
   const player = useUnit($player);
   const localId = useUnit($localId);
-  const [name, setName] = useState(player.name);
+  const [name, setName] = useState(player?.name || "");
 
   const [location, navigate] = useLocation();
 
-  // console.log(party);
-
   useEffect(() => {
-    if (player.name) {
+    if (player?.name) {
       setName(player.name);
     }
   }, [player]);
 
-  if (!party.id) {
+  if (!party) {
     return (
       <PageLayout>
         <p>группа не найдена</p>
@@ -88,8 +86,8 @@ export function PartyPrepare() {
             ev.preventDefault();
 
             const n = name.trim();
-            if (n !== player.name) {
-              editPlayerName(n);
+            if (n !== player?.name) {
+              editPlayerName(localId, n);
             } else {
               setName(n);
             }
@@ -172,7 +170,7 @@ export function PartyPrepare() {
                 {p.id === localId && (
                   <button
                     onClick={() => {
-                      leaveParty(party.id).then(() => {
+                      leaveParty(localId, party.id).then(() => {
                         navigate(getUrl(""));
                       });
                     }}

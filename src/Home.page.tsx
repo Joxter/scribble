@@ -15,10 +15,6 @@ import {
 import { $player } from "./model/game-new.model.ts";
 
 export function HomePage() {
-  const player = useUnit($player);
-
-  if (!player.id) return null;
-
   return (
     <PageLayout>
       <CreateNewParty />
@@ -29,14 +25,14 @@ export function HomePage() {
 function CreateNewParty() {
   const player = useUnit($player);
   const [roomCode, setRoomCode] = useState("");
-  const [name, setName] = useState(player.name);
+  const [name, setName] = useState(player?.name || "");
 
   const [newPartyName, setNewPartyName] = useState(newRandomWords(3).join("-"));
   const [location, navigate] = useLocation();
 
   const handleCreateRoom = async () => {
     try {
-      await createNewParty(newPartyName);
+      await createNewParty(player!.id, newPartyName);
     } catch (error) {
       console.error("Failed to create party:", error);
     }
@@ -50,10 +46,10 @@ function CreateNewParty() {
         <form
           onSubmit={(ev) => {
             ev.preventDefault();
-            editPlayerName(name.trim());
+            editPlayerName(player!.id, name.trim());
             getPreparePartyByName(roomCode).then((party) => {
               if (party) {
-                return joinToParty(party.id).then(() => {
+                return joinToParty(player!.id, party.id).then(() => {
                   navigate(getUrl("current-party"));
                 });
               }

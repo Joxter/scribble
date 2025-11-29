@@ -10,7 +10,7 @@ export default defineConfig({
       },
     }),
   ],
-  base: "/scribble/",
+  base: "/scribble",
   define: {
     __BUILD_TIME__: JSON.stringify(new Date().toISOString()),
     __BUILD_TIMESTAMP__: JSON.stringify(Date.now()),

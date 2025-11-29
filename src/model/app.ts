@@ -1,9 +1,6 @@
-import { createEvent, createStore, restore } from "effector";
-import { Party, Player2 } from "../types.ts";
+import { createEvent, restore } from "effector";
+import { Party } from "../types.ts";
 import { db } from "../DB.ts";
-import { authOrCreateUser } from "../db-things.ts";
-
-const user = createUser();
 
 const { $allParties } = createParties();
 export { $allParties };
@@ -18,21 +15,4 @@ function createParties() {
   });
 
   return { $allParties };
-}
-
-function createUser() {
-  const $user = createStore<Player2 | null>(null);
-  const setUser = createEvent<Player2 | null>();
-
-  $user.on(setUser, (_, u) => u);
-  authOrCreateUser((user) => setUser(user));
-
-  // $user.watch((user) => {
-  //   console.log("UUUUSER", user);
-  //   console.log(">>>>>>", user?.name);
-  // });
-
-  return {
-    $user,
-  };
 }

@@ -7,16 +7,18 @@ import { PaintingsPage } from "./Paintings.page.tsx";
 import { PartyPrepare } from "./PartyPrepare.page.tsx";
 import { AllPartiesPage } from "./AllParties.page.tsx";
 import { useUnit } from "effector-react";
-import { $newParty } from "./model/game-new.model.ts";
+import { $newParty, $player } from "./model/game-new.model.ts";
 import { GAME_STATUS } from "./types.ts";
 import { getUrl } from "./utils.ts";
 
 export function Router() {
   const party = useUnit($newParty);
   const [location, navigate] = useLocation();
+  const player = useUnit($player);
 
   useEffect(() => {
-    // return;
+    if (!player) return;
+
     if (!party) {
       navigate(getUrl(""));
     } else if (
@@ -28,7 +30,9 @@ export function Router() {
     } else {
       navigate(getUrl(""));
     }
-  }, [party]);
+  }, [party, player]);
+
+  if (!player) return null;
 
   return (
     <div style={{ height: "100%" }}>

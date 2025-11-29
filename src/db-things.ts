@@ -1,25 +1,22 @@
 import { db } from "./DB.ts";
 import {
-  GAME_STATUS,
-  Party,
-  DrawingEndedEvent,
-  UserMessageEvent,
-  GameStateDrawing,
-  GameProgress,
-  IsRevealed,
   CurrentCanvas,
+  DrawingEndedEvent,
+  GAME_STATUS,
   GameFinishedEvent,
-  Player,
+  GameProgress,
+  GameStateDrawing,
+  IsRevealed,
+  Party,
   Player2,
+  UserMessageEvent,
 } from "./types.ts";
-import { id, User } from "@instantdb/core";
+import { id } from "@instantdb/core";
 import { newRandomWords } from "./utils.ts";
 import { currentLine } from "./model/game-new.model.ts";
 import { getUsername } from "./code-worlds.ts";
 
-export async function editPlayerName(name: string) {
-  const localId = await db.getLocalId("guest");
-
+export async function editPlayerName(localId: string, name: string) {
   return await db.transact([
     db.tx.players[localId].update({ name, localId, avatar: "" }),
   ]);
@@ -51,9 +48,7 @@ export async function getPartyById(partyId: string) {
   return party[0] || null;
 }
 
-export async function joinToParty(partyId: string) {
-  const localId = await db.getLocalId("guest");
-
+export async function joinToParty(localId: string, partyId: string) {
   const party = await getPartyById(partyId);
   if (!party) {
     throw new Error(`Party not found '${partyId}'`);
@@ -118,9 +113,7 @@ export async function kickPlayer(partyId: string, playerId: string) {
   return res;
 }
 
-export async function leaveParty(partyId: string) {
-  const localId = await db.getLocalId("guest");
-
+export async function leaveParty(localId: string, partyId: string) {
   const res = await db.transact([
     db.tx.party[partyId].unlink({ players: localId }),
   ]);
@@ -147,9 +140,8 @@ export async function updateGameParams(
   return res;
 }
 
-export async function createNewParty(name: string) {
+export async function createNewParty(localId: string, name: string) {
   const partyId = id();
-  const localId = await db.getLocalId("guest");
 
   // Check if player already has a link to a party with status "prepare"
   const { players } = await db
@@ -335,22 +327,13 @@ export function firstLoadForCanvas(localId: string) {
     party: {
       $: {
         where: {
-          or: [
-            {
-              and: [{ status: GAME_STATUS.prepare }, { "players.id": localId }],
-            },
-            {
-              and: [
-                { status: GAME_STATUS.inProgress },
-                { "players.id": localId },
-              ],
-            },
-          ],
+          and: [{ status: GAME_STATUS.inProgress }, { "players.id": localId }],
         },
       },
     },
   }).then(({ data }) => {
-    const innerState = data.party?.[0].gameState;
+    // @ts-ignore
+    const innerState = data.party?.[0]?.gameState;
 
     if (innerState?.state === "drawing") {
       innerState.drawingId;
