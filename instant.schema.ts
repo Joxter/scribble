@@ -7,6 +7,7 @@ const _schema = i.schema({
       name: i.string().optional(),
       type: i.string().optional(),
     }),
+    // 1 party = 1 game session
     party: i.entity({
       name: i.string().unique().indexed(), // url
       host: i.string().optional(),
@@ -44,8 +45,13 @@ const _schema = i.schema({
       reverse: { on: "roomEvent", has: "one", label: "party" },
     },
     partyPlayers: {
+      // deprecated
       forward: { on: "party", has: "many", label: "players" },
       reverse: { on: "players", has: "many", label: "parties" },
+    },
+    partyNewPlayers: {
+      forward: { on: "party", has: "many", label: "newPlayers" },
+      reverse: { on: "$users", has: "many", label: "parties" },
     },
   },
   rooms: {

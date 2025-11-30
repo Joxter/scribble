@@ -15,7 +15,7 @@ export function AllPartiesPage() {
       ) : (
         <ul>
           {allParties.map((party) => {
-            const cnt = party.players?.length || 0;
+            const cnt = party.newPlayers?.length || 0;
 
             return (
               <li key={party.id}>

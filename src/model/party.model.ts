@@ -13,7 +13,7 @@ export function createParty($localId: Store<string>) {
   const $allChatEvents = $newParty.map((p) => p?.roomEvents || []);
 
   const $currentPlayers = $newParty.map((p) => {
-    return Object.fromEntries(p?.players.map((it) => [it.id, it]) || []);
+    return Object.fromEntries(p?.newPlayers.map((it) => [it.id, it]) || []);
   });
 
   const $partyPaintingIds = $newParty.map((p) => {
@@ -61,13 +61,13 @@ export function createParty($localId: Store<string>) {
       {
         party: {
           $: {
-            where: { "players.id": localId },
+            where: { "newPlayers.id": localId },
             order: {
               serverCreatedAt: "desc",
             },
             limit: 1,
           },
-          players: {},
+          newPlayers: {},
           roomEvents: {},
         },
       },

@@ -8,7 +8,7 @@ import { useLocation } from "wouter";
 import { Button } from "./components/Button.tsx";
 import {
   createNewParty,
-  editPlayerName,
+  editUserName,
   getPreparePartyByName,
   joinToParty,
 } from "./db-things.ts";
@@ -46,7 +46,7 @@ function CreateNewParty() {
         <form
           onSubmit={(ev) => {
             ev.preventDefault();
-            editPlayerName(player!.id, name.trim());
+            editUserName(player!.id, name.trim());
             getPreparePartyByName(roomCode).then((party) => {
               if (party) {
                 return joinToParty(player!.id, party.id).then(() => {

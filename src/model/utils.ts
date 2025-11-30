@@ -14,7 +14,7 @@ export function newParty(): Party {
     host: "",
     gameParams: { rounds: 5, wordSuggestions: 3, drawTime: 60 },
     status: GAME_STATUS.prepare,
-    players: [],
+    newPlayers: [],
     roomEvents: [],
     id: "",
   };

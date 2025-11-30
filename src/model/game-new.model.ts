@@ -52,7 +52,7 @@ sample({
 combine($guessed, $newParty, $isServer).watch(([guessed, party, isServer]) => {
   if (!party) return;
 
-  const { players, staticPlayerIds, gameState, gameProgress, gameParams } =
+  const { newPlayers, staticPlayerIds, gameState, gameProgress, gameParams } =
     party;
 
   if (isServer && gameState.state === "drawing") {
@@ -60,7 +60,7 @@ combine($guessed, $newParty, $isServer).watch(([guessed, party, isServer]) => {
 
     if (Object.keys(guessed).length === staticPlayerIds.length - 1) {
       const artist = gameState.playerId;
-      const nextPlayerI = players.findIndex((p) => p.id === artist) + 1;
+      const nextPlayerI = newPlayers.findIndex((p) => p.id === artist) + 1;
 
       if (gameProgress.length === 0) {
         gameProgress.push([]);
@@ -72,10 +72,10 @@ combine($guessed, $newParty, $isServer).watch(([guessed, party, isServer]) => {
         scores: gameState.guessed,
       });
 
-      if (players[nextPlayerI]) {
+      if (newPlayers[nextPlayerI]) {
         // продолжается текущий круг
         transitionToNextPlayer(
-          players[nextPlayerI].id,
+          newPlayers[nextPlayerI].id,
           gameState,
           party.id,
           gameProgress,
@@ -85,10 +85,10 @@ combine($guessed, $newParty, $isServer).watch(([guessed, party, isServer]) => {
 
         gameProgress.push([]);
         if (gameProgress.length < gameParams.rounds) {
-          log(`nextPlayerChoosingWord: ${players[0].id}`);
+          log(`nextPlayerChoosingWord: ${newPlayers[0].id}`);
           // если ещё есть место для раундов
           transitionToNextPlayer(
-            players[0].id,
+            newPlayers[0].id,
             gameState,
             party.id,
             gameProgress,

@@ -81,7 +81,7 @@ export type Party = {
   id: string;
   name: string;
   host: string;
-  players: Player[];
+  newPlayers: Player2[];
   gameProgress: GameProgress;
   staticPlayerIds: string[];
   status: ValueOf<typeof GAME_STATUS>;

@@ -16,6 +16,7 @@ import { newRandomWords } from "./utils.ts";
 import { currentLine } from "./model/game-new.model.ts";
 import { getUsername } from "./code-worlds.ts";
 
+// @deprecated - Use editUserName instead. This function updates the old players entity which is deprecated.
 export async function editPlayerName(localId: string, name: string) {
   return await db.transact([
     db.tx.players[localId].update({ name, localId, avatar: "" }),
@@ -48,7 +49,7 @@ export async function getPartyById(partyId: string) {
   return party[0] || null;
 }
 
-export async function joinToParty(localId: string, partyId: string) {
+export async function joinToParty(userId: string, partyId: string) {
   const party = await getPartyById(partyId);
   if (!party) {
     throw new Error(`Party not found '${partyId}'`);
@@ -59,7 +60,7 @@ export async function joinToParty(localId: string, partyId: string) {
   }
 
   const res = await db.transact([
-    db.tx.party[partyId].link({ players: localId }),
+    db.tx.party[partyId].link({ newPlayers: userId }),
   ]);
 
   return res;
@@ -74,7 +75,7 @@ export async function startParty(_party: Party) {
   if (party.status !== GAME_STATUS.prepare)
     throw new Error(`Can't start to party in '${party.status}' status`);
 
-  const players = _party.players.map((p) => p.id);
+  const players = _party.newPlayers.map((p) => p.id);
 
   const res = await db.transact([
     db.tx.party[partyId].update({
@@ -99,23 +100,24 @@ export async function startParty(_party: Party) {
   return;
 }
 
+// @deprecated - Query $users directly instead. This function queries the old players entity which is deprecated.
 export async function getAllPlayers() {
   const res = await db.queryOnce({ players: {} });
 
   return res.data.players;
 }
 
-export async function kickPlayer(partyId: string, playerId: string) {
+export async function kickPlayer(partyId: string, userId: string) {
   const res = await db.transact([
-    db.tx.party[partyId].unlink({ players: playerId }),
+    db.tx.party[partyId].unlink({ newPlayers: userId }),
   ]);
 
   return res;
 }
 
-export async function leaveParty(localId: string, partyId: string) {
+export async function leaveParty(userId: string, partyId: string) {
   const res = await db.transact([
-    db.tx.party[partyId].unlink({ players: localId }),
+    db.tx.party[partyId].unlink({ newPlayers: userId }),
   ]);
 
   return res;
@@ -140,22 +142,22 @@ export async function updateGameParams(
   return res;
 }
 
-export async function createNewParty(localId: string, name: string) {
+export async function createNewParty(userId: string, name: string) {
   const partyId = id();
 
-  // Check if player already has a link to a party with status "prepare"
-  const { players } = await db
+  // Check if user already has a link to a party with status "prepare"
+  const { $users } = await db
     .queryOnce({
-      players: {
-        $: { where: { id: localId } },
+      $users: {
+        $: { where: { id: userId } },
         parties: { $: { where: { status: GAME_STATUS.prepare } } },
       },
     })
     .then((it) => it.data);
 
-  if (players[0]?.parties && players[0].parties.length > 0) {
+  if ($users[0]?.parties && $users[0].parties.length > 0) {
     throw new Error(
-      "Player already has a party in prepare status. Please finish or leave that party first.",
+      "User already has a party in prepare status. Please finish or leave that party first.",
     );
   }
 
@@ -165,14 +167,14 @@ export async function createNewParty(localId: string, name: string) {
         status: GAME_STATUS.prepare,
         gameState: null,
         name: name,
-        host: localId,
+        host: userId,
         gameParams: {
           rounds: 5,
           wordSuggestions: 3,
           drawTime: 60,
         },
       })
-      .link({ players: localId }),
+      .link({ newPlayers: userId }),
   ]);
 
   return res;
@@ -322,12 +324,12 @@ export function saveCanvas(drawingId: string, canvas: CurrentCanvas) {
   );
 }
 
-export function firstLoadForCanvas(localId: string) {
+export function firstLoadForCanvas(userId: string) {
   db.queryOnce({
     party: {
       $: {
         where: {
-          and: [{ status: GAME_STATUS.inProgress }, { "players.id": localId }],
+          and: [{ status: GAME_STATUS.inProgress }, { "newPlayers.id": userId }],
         },
       },
     },

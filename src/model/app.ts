@@ -9,7 +9,7 @@ function createParties() {
   const allPartiesLoaded = createEvent<Party[]>();
   const $allParties = restore(allPartiesLoaded, []);
 
-  db.subscribeQuery({ party: { players: {} } }, (resp) => {
+  db.subscribeQuery({ party: { newPlayers: {} } }, (resp) => {
     if (resp.error) console.error(resp.error);
     if (resp.data) allPartiesLoaded(resp.data.party as Party[]);
   });

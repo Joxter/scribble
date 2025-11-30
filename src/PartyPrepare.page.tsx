@@ -13,7 +13,7 @@ import { Button } from "./components/Button.tsx";
 import { Select } from "./components/Select.tsx";
 import {
   closeParty,
-  editPlayerName,
+  editUserName,
   kickPlayer,
   leaveParty,
   startParty,
@@ -87,7 +87,7 @@ export function PartyPrepare() {
 
             const n = name.trim();
             if (n !== player?.name) {
-              editPlayerName(localId, n);
+              editUserName(localId, n);
             } else {
               setName(n);
             }
@@ -163,7 +163,7 @@ export function PartyPrepare() {
         <p>Игроки: </p>
         <br />
         <ul>
-          {party.players.map((p) => {
+          {party.newPlayers.map((p) => {
             return (
               <li key={p.id}>
                 {p.name}{" "}
