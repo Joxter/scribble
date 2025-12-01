@@ -64,7 +64,12 @@ export type GameStateFinished = {
   state: "game-finished";
 };
 
+export type GameStatePrepare = {
+  state: "game-prepare";
+};
+
 export type GameState =
+  | GameStatePrepare
   | GameStateChoosingWord
   | GameStateDrawing
   | GameStateFinished;

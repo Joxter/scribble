@@ -164,15 +164,17 @@ export async function createNewParty(userId: string, name: string) {
   const res = await db.transact([
     db.tx.party[partyId]
       .create({
-        status: GAME_STATUS.prepare,
-        gameState: null,
         name: name,
         host: userId,
+        gameState: { state: "game-prepare" },
+        gameProgress: [[]],
         gameParams: {
           rounds: 5,
           wordSuggestions: 3,
           drawTime: 60,
         },
+        staticPlayerIds: [],
+        status: GAME_STATUS.prepare,
       })
       .link({ newPlayers: userId }),
   ]);
@@ -329,7 +331,10 @@ export function firstLoadForCanvas(userId: string) {
     party: {
       $: {
         where: {
-          and: [{ status: GAME_STATUS.inProgress }, { "newPlayers.id": userId }],
+          and: [
+            { status: GAME_STATUS.inProgress },
+            { "newPlayers.id": userId },
+          ],
         },
       },
     },
