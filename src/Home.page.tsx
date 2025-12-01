@@ -3,8 +3,8 @@ import { useUnit } from "effector-react";
 import { getUrl, newRandomWords } from "./utils.ts";
 import { PageLayout } from "./components/PageLayout.tsx";
 import { TextField } from "./components/TextField.tsx";
-import cssModule from "./Home.module.css";
-import { useLocation } from "wouter";
+import css from "./Home.module.css";
+import { Link, useLocation } from "wouter";
 import { Button } from "./components/Button.tsx";
 import {
   createNewParty,
@@ -12,7 +12,7 @@ import {
   getPreparePartyByName,
   joinToParty,
 } from "./db-things.ts";
-import { $player } from "./model/game-new.model.ts";
+import { $player, party } from "./model/game-new.model.ts";
 
 export function HomePage() {
   return (
@@ -24,6 +24,7 @@ export function HomePage() {
 
 function CreateNewParty() {
   const player = useUnit($player);
+  const allMyParties = useUnit(party.$allMyParties);
   const [roomCode, setRoomCode] = useState("");
   const [name, setName] = useState(player?.name || "");
 
@@ -39,10 +40,10 @@ function CreateNewParty() {
   };
 
   return (
-    <div className={cssModule.form}>
+    <div className={css.form}>
       <TextField label="Имя" value={name} onChange={setName} />
 
-      <div className={cssModule.field}>
+      <div className={css.field}>
         <form
           onSubmit={(ev) => {
             ev.preventDefault();
@@ -55,20 +56,32 @@ function CreateNewParty() {
               }
             });
           }}
-          className={cssModule.roomCodeRow}
+          className={css.roomCodeRow}
         >
           <TextField label="Комната" value={roomCode} onChange={setRoomCode} />
-          <button type="submit" className={cssModule.joinButton}>
+          <button type="submit" className={css.joinButton}>
             Войти
           </button>
         </form>
       </div>
 
-      <div className={cssModule.divider}>
+      <div className={css.divider}>
         <span>или</span>
       </div>
 
       <Button onClick={handleCreateRoom}>Создать новую игру</Button>
+
+      <ul className={css.allParties}>
+        {allMyParties.map((p) => {
+          return (
+            <li>
+              <Link href={getUrl(`room/${p.name}`)}>
+                {p.name} <b>{p.status}</b>
+              </Link>
+            </li>
+          );
+        })}
+      </ul>
     </div>
   );
 }

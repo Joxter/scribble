@@ -25,7 +25,7 @@ export const $logi = createStore<any[]>([]);
 $logi.on(log, (s, l) => [...s, l]);
 export const $logiSmol = $logi.map(mergeLogi);
 
-const party = createParty($localId);
+export const party = createParty($localId);
 
 export const {
   $newParty,

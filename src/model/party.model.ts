@@ -4,11 +4,19 @@ import { liveQuery } from "../utils.ts";
 import { firstLoadForCanvas } from "../db-things.ts";
 import { db } from "../DB.ts";
 
-export function createParty($localId: Store<string>) {
-  const newPartyLoaded = createEvent<Party>();
+type DbParty = Pick<Party, "id" | "name" | "status">;
 
+export function createParty($localId: Store<string>) {
   const $newParty = createStore<Party | null>(null);
-  $newParty.on(newPartyLoaded, (_, party) => party);
+  const newPartyLoaded = createEvent<Party>();
+  $newParty.on(newPartyLoaded, (_, parties) => parties);
+
+  const allPartiesLoaded = createEvent<DbParty[]>();
+  const $allMyParties = createStore<DbParty[]>([]);
+  $allMyParties.on(allPartiesLoaded, (_, parties) => parties);
+  $allMyParties.watch((p) => {
+    console.log("$allMyParties", p);
+  });
 
   const $allChatEvents = $newParty.map((p) => p?.roomEvents || []);
 
@@ -65,19 +73,17 @@ export function createParty($localId: Store<string>) {
             order: {
               serverCreatedAt: "desc",
             },
-            limit: 1,
           },
-          newPlayers: {},
-          roomEvents: {},
         },
       },
       (resp) => {
         if (resp.data) {
-          const party = resp.data.party?.[0];
-
-          if (party) {
-            newPartyLoaded(party as Party);
-            console.log(party.gameState);
+          if (resp.data.party) {
+            allPartiesLoaded(
+              resp.data.party.map((p) => {
+                return { id: p.id, name: p.name, status: p.status };
+              }),
+            );
             return;
           }
         }
@@ -90,6 +96,7 @@ export function createParty($localId: Store<string>) {
   return {
     newPartyLoaded,
     $newParty,
+    $allMyParties,
     $allChatEvents,
     $currentPlayers,
     $partyPaintingIds,
