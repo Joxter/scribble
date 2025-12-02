@@ -1,40 +1,34 @@
 import React, { useEffect } from "react";
 import { Route, Switch, useLocation, useRoute } from "wouter";
 import { HomePage } from "./Home.page.tsx";
-import { DrawingPage } from "./Drawing.page.tsx";
 import { WordsPage } from "./Words.page.tsx";
 import { PaintingsPage } from "./Paintings.page.tsx";
 import { PartyPrepare } from "./PartyPrepare.page.tsx";
 import { AllPartiesPage } from "./AllParties.page.tsx";
 import { useUnit } from "effector-react";
-import { $newParty, $player } from "./model/game-new.model.ts";
-import { GAME_STATUS } from "./types.ts";
+import { $player, party } from "./model/game-new.model.ts";
 import { getUrl } from "./utils.ts";
 import { PageLayout } from "./components/PageLayout.tsx";
 
 export function Router() {
-  const party = useUnit($newParty);
+  const [party222, partyName] = useUnit([
+    party.$allMyParties,
+    party.$pagePartyName,
+  ]);
+  const partyy = party222.find((p) => p.name === partyName);
+
   const [location, navigate] = useLocation();
   const player = useUnit($player);
 
   useEffect(() => {
     if (!player) return;
-    console.log("-------");
-    console.log(party);
 
-    if (!party) {
-      console.log("1111");
-      navigate(getUrl(""));
-      // } else if (
-      //   party.status === GAME_STATUS.prepare ||
-      //   party.status === GAME_STATUS.finished ||
-      //   party.status === GAME_STATUS.inProgress
-      // ) {
-      //   navigate(getUrl("current-party"));
+    if (partyy) {
+      navigate(getUrl("room/" + partyy.name));
     } else {
       navigate(getUrl(""));
     }
-  }, [party, player]);
+  }, [partyy, player]);
 
   if (!player) return null;
 
@@ -56,10 +50,19 @@ export function Router() {
 function RoomPage() {
   const [match, params] = useRoute("/scribble/room/:roomName");
 
+  useEffect(() => {
+    if (params?.roomName) {
+      party.pageOpened(params.roomName);
+    }
+  }, [params?.roomName]);
+
+  if (params?.roomName) {
+    return <PartyPrepare />;
+  }
+
   return (
     <PageLayout>
-      <h3>RoomPage</h3>
-      <p>name: {params?.roomName || "not found"}</p>
+      <h3>not found</h3>
     </PageLayout>
   );
 }

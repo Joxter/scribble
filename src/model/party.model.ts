@@ -3,12 +3,29 @@ import { GAME_STATUS, Party } from "../types.ts";
 import { liveQuery } from "../utils.ts";
 import { firstLoadForCanvas } from "../db-things.ts";
 import { db } from "../DB.ts";
+import { AppSchema } from "../../instant.schema.ts";
+import { InstaQLResult } from "@instantdb/core";
 
 type DbParty = Pick<Party, "id" | "name" | "status">;
 
 export function createParty($localId: Store<string>) {
-  const $newParty = createStore<Party | null>(null);
-  const newPartyLoaded = createEvent<Party>();
+  const $pagePartyName = createStore("");
+  const pageOpened = createEvent<string>();
+  $pagePartyName.on(pageOpened, (_, p) => p);
+
+  type NewParty = InstaQLResult<
+    AppSchema,
+    {
+      party: {
+        $: { where: { name: string }; limit: 1 };
+        newPlayers: {};
+        roomEvents: {};
+      };
+    }
+  >["party"][number];
+
+  const $newParty = createStore<NewParty | null>(null);
+  const newPartyLoaded = createEvent<NewParty>();
   $newParty.on(newPartyLoaded, (_, parties) => parties);
 
   const allPartiesLoaded = createEvent<DbParty[]>();
@@ -63,16 +80,12 @@ export function createParty($localId: Store<string>) {
   liveQuery($localId, (localId) => {
     if (!localId) return () => {};
 
-    firstLoadForCanvas(localId);
-
     return db.subscribeQuery(
       {
         party: {
           $: {
             where: { "newPlayers.id": localId },
-            order: {
-              serverCreatedAt: "desc",
-            },
+            order: { serverCreatedAt: "desc" },
           },
         },
       },
@@ -93,6 +106,35 @@ export function createParty($localId: Store<string>) {
     );
   });
 
+  liveQuery($pagePartyName, (partyName) => {
+    if (!partyName) return () => {};
+
+    // firstLoadForCanvas(localId);
+
+    return db.subscribeQuery(
+      {
+        party: {
+          $: {
+            where: { name: partyName },
+            limit: 1,
+          },
+          newPlayers: {},
+          roomEvents: {},
+        },
+      },
+      (resp) => {
+        if (resp.data) {
+          if (resp.data.party) {
+            newPartyLoaded(resp.data.party[0]);
+            return;
+          }
+        }
+        console.warn("Something went wrong");
+        console.log(resp);
+      },
+    );
+  });
+
   return {
     newPartyLoaded,
     $newParty,
@@ -102,5 +144,7 @@ export function createParty($localId: Store<string>) {
     $partyPaintingIds,
     $guessed,
     $choosingWord,
+    $pagePartyName,
+    pageOpened,
   };
 }

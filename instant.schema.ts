@@ -11,10 +11,10 @@ const _schema = i.schema({
     party: i.entity({
       name: i.string().unique().indexed(), // url
       host: i.string().optional(),
-      gameState: i.json<GameState>().optional(),
-      gameProgress: i.json<GameProgress>().optional(),
-      gameParams: i.json<Party["gameParams"]>().optional(),
-      staticPlayerIds: i.json<string[]>().optional(),
+      gameState: i.json<GameState>(),
+      gameProgress: i.json<GameProgress>(),
+      gameParams: i.json<Party["gameParams"]>(),
+      staticPlayerIds: i.json<string[]>(),
       status: i.string<Party["status"]>(),
     }),
     roomEvent: i.entity({

@@ -161,7 +161,7 @@ export async function createNewParty(userId: string, name: string) {
     );
   }
 
-  const res = await db.transact([
+  await db.transact([
     db.tx.party[partyId]
       .create({
         name: name,
@@ -179,7 +179,11 @@ export async function createNewParty(userId: string, name: string) {
       .link({ newPlayers: userId }),
   ]);
 
-  return res;
+  return db
+    .queryOnce({
+      party: { $: { where: { id: partyId } } },
+    })
+    .then((it) => it.data.party[0]!);
 }
 
 export function selectWord(localId: string, partyId: string, word: string) {
