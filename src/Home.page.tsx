@@ -39,9 +39,26 @@ function CreateNewParty() {
     }
   };
 
+  const handleSaveName = () => {
+    if (player && name.trim()) {
+      editUserName(player.id, name.trim());
+    }
+  };
+
+  const isNameUnchanged = name.trim() === (player?.name || "");
+
   return (
     <div className={css.form}>
-      <TextField label="Имя" value={name} onChange={setName} />
+      <div className={css.roomCodeRow}>
+        <TextField label="Имя" value={name} onChange={setName} />
+        <button
+          onClick={handleSaveName}
+          className={css.joinButton}
+          disabled={isNameUnchanged}
+        >
+          Сохранить
+        </button>
+      </div>
 
       <div className={css.field}>
         <form
