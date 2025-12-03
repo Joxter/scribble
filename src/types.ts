@@ -100,6 +100,7 @@ export type Party = {
 };
 
 export type AllChatMessages =
+  | GameStartedEvent
   | UserMessageEvent
   | NewWord
   | DrawingEndedEvent
@@ -126,6 +127,14 @@ export type UserMessageEvent = {
     playerId: string;
     text: string;
     isRevealed: IsRevealed;
+  };
+};
+
+export type GameStartedEvent = {
+  id: string;
+  type: "game-started";
+  payload: {
+    playerId: string;
   };
 };
 

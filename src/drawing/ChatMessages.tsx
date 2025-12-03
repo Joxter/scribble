@@ -108,6 +108,25 @@ export function ChatMessages() {
           );
         }
 
+        if (ev.type === "game-started") {
+          return (
+            <div key={key}>
+              <p className={messageItalic}>
+                Игра началась! {players[ev.payload.playerId].name} выбирает
+                первое слово!
+              </p>
+            </div>
+          );
+        }
+
+        if (ev.type === "game-finished") {
+          return (
+            <div key={key}>
+              <p className={messageItalic}>Конец игры!</p>
+            </div>
+          );
+        }
+
         // @ts-ignore
         const t = ev.type;
 

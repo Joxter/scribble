@@ -88,13 +88,12 @@ export async function startParty(_party: Party) {
         words: newRandomWords(3),
       },
     }),
-    // todo add message "started! X выбирает слово"
-    // db.tx.roomEvent[id()]
-    //   .create({
-    //     type: "new-selected-word",
-    //     payload: { playerId: localId, word },
-    //   })
-    //   .link({ party: party.id })
+    db.tx.roomEvent[id()]
+      .create({
+        type: "game-started",
+        payload: { playerId: players[0] },
+      })
+      .link({ party: partyId }),
   ]);
 
   return;

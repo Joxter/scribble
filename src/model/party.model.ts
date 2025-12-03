@@ -1,5 +1,5 @@
 import { combine, createEvent, createStore, Store } from "effector";
-import { GAME_STATUS, Party } from "../types.ts";
+import { AllChatMessages, GAME_STATUS, Party } from "../types.ts";
 import { liveQuery } from "../utils.ts";
 import { firstLoadForCanvas } from "../db-things.ts";
 import { db } from "../DB.ts";
@@ -13,7 +13,7 @@ export function createParty($localId: Store<string>) {
   const pageOpened = createEvent<string>();
   $pagePartyName.on(pageOpened, (_, p) => p);
 
-  type NewParty = InstaQLResult<
+  type NewParty_ = InstaQLResult<
     AppSchema,
     {
       party: {
@@ -23,6 +23,9 @@ export function createParty($localId: Store<string>) {
       };
     }
   >["party"][number];
+  type NewParty = Omit<NewParty_, "roomEvents"> & {
+    roomEvents: AllChatMessages[];
+  };
 
   const $newParty = createStore<NewParty | null>(null);
   const newPartyLoaded = createEvent<NewParty>();
@@ -125,7 +128,7 @@ export function createParty($localId: Store<string>) {
       (resp) => {
         if (resp.data) {
           if (resp.data.party) {
-            newPartyLoaded(resp.data.party[0]);
+            newPartyLoaded(resp.data.party[0] as NewParty);
             return;
           }
         }
