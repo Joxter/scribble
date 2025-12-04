@@ -161,7 +161,6 @@ export function PartyPrepare() {
         </div>
         <br />
         <p>Игроки: </p>
-        <br />
         <ul>
           {party.newPlayers.map((p) => {
             return (

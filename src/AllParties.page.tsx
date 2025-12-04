@@ -16,10 +16,12 @@ export function AllPartiesPage() {
         <ul>
           {allParties.map((party) => {
             const cnt = party.newPlayers?.length || 0;
+            const names =
+              party.newPlayers?.map((it) => `"${it.name}"`).join(", ") || 0;
 
             return (
               <li key={party.id}>
-                "{party.name}" {cnt} {cnt === 1 ? "игрок" : "игроков"}{" "}
+                "{party.name}" {names} {cnt} {cnt === 1 ? "игрок" : "игроков"}{" "}
                 <b>{party.status}</b>
               </li>
             );
