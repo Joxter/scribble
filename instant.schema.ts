@@ -44,11 +44,6 @@ const _schema = i.schema({
       forward: { on: "party", has: "many", label: "roomEvents" },
       reverse: { on: "roomEvent", has: "one", label: "party" },
     },
-    partyPlayers: {
-      // deprecated
-      forward: { on: "party", has: "many", label: "players" },
-      reverse: { on: "players", has: "many", label: "parties" },
-    },
     partyNewPlayers: {
       forward: { on: "party", has: "many", label: "newPlayers" },
       reverse: { on: "$users", has: "many", label: "parties" },
