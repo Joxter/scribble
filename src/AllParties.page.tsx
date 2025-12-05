@@ -21,8 +21,7 @@ export function AllPartiesPage() {
 
             return (
               <li key={party.id}>
-                "{party.name}" {names} {cnt} {cnt === 1 ? "игрок" : "игроков"}{" "}
-                <b>{party.status}</b>
+                "{party.name}" newPlayers: {cnt} <b>{party.status}</b>
               </li>
             );
           })}
