@@ -19,6 +19,14 @@ const rules = {
    *   bind: ["isOwner", "auth.id != null && auth.id == data.ownerId"],
    * },
    */
+  $users: {
+    allow: {
+      view: "true",
+    },
+    fields: {
+      email: "auth.id == data.id",
+    },
+  },
 } satisfies InstantRules;
 
 export default rules;
