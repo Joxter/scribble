@@ -140,7 +140,7 @@ export function createDrawing(params: {
   const { $localId, $newParty, log } = params;
 
   const $drawing = combine($localId, $newParty, (loadId, p) => {
-    if (!p) return { drawing: false };
+    if (!p) return { drawing: false } as const;
 
     if (
       p.status === GAME_STATUS.inProgress &&
@@ -149,14 +149,15 @@ export function createDrawing(params: {
       const s = p.gameState;
 
       return {
+        gameState: p.gameState,
         drawing: true,
         iam: loadId === s.playerId,
         who: s.playerId,
         word: s.word,
-      };
+      } as const;
     }
 
-    return { drawing: false };
+    return { drawing: false } as const;
   });
 
   const $imDrawing = $drawing.map((t) => {

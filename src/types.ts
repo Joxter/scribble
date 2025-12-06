@@ -48,10 +48,11 @@ export const GAME_STATUS = {
 export type GameStateDrawing = {
   state: "drawing";
   playerId: string; // who draw
+  drawingId: string;
   word: string; // secret word
+  clue: string;
   // startedAt: number; todo
   guessed: Revealed; // who guessed and their time
-  drawingId: string; // id of the painting
 };
 
 export type GameStateChoosingWord = {

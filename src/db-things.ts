@@ -205,6 +205,7 @@ export function selectWord(localId: string, partyId: string, word: string) {
         state: "drawing",
         playerId: localId,
         word: word,
+        clue: word.replace(/[^\s-! ,.]/g, "_"),
         drawingId: drawingId,
         guessed: {},
       },

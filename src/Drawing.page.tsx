@@ -13,8 +13,6 @@ import { PageLayout } from "./components/PageLayout.tsx";
 import { DrawResults } from "./components/DrawResults.tsx";
 
 export function DrawingPage() {
-  const iRevealed = ""; // todo
-  const clue = ""; // todo
   const [drawing, choosingWord] = useUnit([$drawing, $choosingWord]);
 
   return (
@@ -45,9 +43,9 @@ export function DrawingPage() {
             <div style={{ padding: "4px 12px" }}>
               <div style={{ display: "flex", justifyContent: "center" }}>
                 <GameInputField
-                  clue={""}
+                  clue={drawing.gameState.clue}
                   secret={drawing.word || ""}
-                  revealed={iRevealed}
+                  revealed={"none"}
                 />
               </div>
             </div>

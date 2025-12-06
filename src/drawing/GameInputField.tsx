@@ -12,6 +12,7 @@ const containerBase = css`
 
 const textBase = css`
   padding: 0 4px;
+  color: #999;
 `;
 
 const textRevealed = css`
@@ -28,7 +29,7 @@ const inputField = css`
 
 type Props = {
   clue: string | null;
-  revealed: string;
+  revealed: "almost" | "revealed" | "none";
   secret: string;
 };
 
@@ -49,11 +50,6 @@ export function GameInputField({ revealed, secret, clue }: Props) {
     setGuess(e.target.value);
   };
 
-  const clueCnt = clue
-    ?.split(" ")
-    .map((it) => it.length)
-    .join(" ");
-
   const gridTemplateColumns =
     revealed || !clue
       ? `1fr min-content`
@@ -62,8 +58,10 @@ export function GameInputField({ revealed, secret, clue }: Props) {
   return (
     <form onSubmit={handleSubmit}>
       <div className={containerBase} style={{ gridTemplateColumns }}>
-        <p className={`${textBase} ${revealed ? textRevealed : ""}`}>
-          {revealed ? revealed + "!" : clue}
+        <p
+          className={`${textBase} ${revealed === "revealed" ? textRevealed : ""}`}
+        >
+          {revealed === "revealed" ? revealed + "!" : clue}
         </p>
         <div></div>
         <div>
