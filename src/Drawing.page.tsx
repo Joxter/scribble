@@ -4,7 +4,7 @@ import { Canvas } from "./drawing/Canvas.tsx";
 import { DeveloperTools } from "./components/DeveloperTools.tsx";
 import { Tools } from "./drawing/Tools.tsx";
 import { ListOfPlayers } from "./drawing/ListOfPlayers.tsx";
-import { $choosingWord, $drawing } from "./model/game-new.model.ts";
+import { $choosingWord, $drawing, party } from "./model/game-new.model.ts";
 import css from "./drawing/Page.module.css";
 import { GameInputField } from "./drawing/GameInputField.tsx";
 import { ChatMessages } from "./drawing/ChatMessages.tsx";
@@ -20,6 +20,7 @@ export function DrawingPage() {
       <Fps />
       <div className={css.page}>
         <div className={css.header}>
+          <Timeout />
           {drawing.iam && (
             <p style={{ textAlign: "center" }}>
               <b>{drawing.word}</b>
@@ -60,4 +61,14 @@ export function DrawingPage() {
       </div>
     </PageLayout>
   );
+}
+
+function Timeout() {
+  const timeout = useUnit(party.$timeout);
+
+  if (timeout === null) {
+    return null;
+  }
+
+  return <p>time: {timeout} sec</p>;
 }

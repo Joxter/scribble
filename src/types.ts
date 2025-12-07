@@ -51,7 +51,7 @@ export type GameStateDrawing = {
   drawingId: string;
   word: string; // secret word
   clue: string;
-  // startedAt: number; todo
+  startedAt: number;
   guessed: Revealed; // who guessed and their time
 };
 

@@ -1,12 +1,23 @@
 import { combine, createEvent, createStore, Store } from "effector";
 import { AllChatMessages, GAME_STATUS, Party } from "../types.ts";
 import { liveQuery } from "../utils.ts";
-import { firstLoadForCanvas } from "../db-things.ts";
+import { interval } from "patronum";
 import { db } from "../DB.ts";
 import { AppSchema } from "../../instant.schema.ts";
 import { InstaQLResult } from "@instantdb/core";
 
 type DbParty = Pick<Party, "id" | "name" | "status">;
+
+function createTickStore() {
+  let startTimer_ = createEvent();
+  const tickInterval = interval({ timeout: 100, start: startTimer_ });
+  startTimer_();
+  let $tickStore = createStore(0);
+
+  $tickStore.on(tickInterval.tick, (s) => s + 1);
+
+  return $tickStore;
+}
 
 export function createParty($localId: Store<string>) {
   const $pagePartyName = createStore("");
@@ -80,6 +91,29 @@ export function createParty($localId: Store<string>) {
     return { choose: false };
   });
 
+  let $tickStore = createTickStore();
+
+  const $drawingState = combine($localId, $newParty, (localId, p) => {
+    if (!p) return null;
+    if (p.status !== GAME_STATUS.inProgress) return null;
+    if (p.gameState.state !== "drawing") return null;
+
+    return p.gameState;
+  });
+
+  const $timeout = combine(
+    $drawingState,
+    $newParty,
+    $tickStore,
+    (drawingState, p) => {
+      if (!p || !drawingState) return null;
+
+      let msec = p.gameParams.drawTime - (Date.now() - drawingState.startedAt);
+
+      return Math.max(Math.floor(msec / 1000), 0);
+    },
+  );
+
   liveQuery($localId, (localId) => {
     if (!localId) return () => {};
 
@@ -147,6 +181,8 @@ export function createParty($localId: Store<string>) {
     $partyPaintingIds,
     $guessed,
     $choosingWord,
+    $drawingState,
+    $timeout,
     $pagePartyName,
     pageOpened,
   };

@@ -208,6 +208,7 @@ export function selectWord(localId: string, partyId: string, word: string) {
         clue: word.replace(/[^\s-! ,.]/g, "_"),
         drawingId: drawingId,
         guessed: {},
+        startedAt: Date.now(),
       },
     }),
   ]);
