@@ -102,6 +102,60 @@ combine($guessed, $newParty, $isServer).watch(([guessed, party, isServer]) => {
   }
 });
 
+combine($newParty, $isServer, party.$timeout).watch(
+  ([party, isServer, timeout]) => {
+    if (!party) return;
+    if (!isServer) return;
+
+    const { newPlayers, gameState, gameProgress, gameParams } = party;
+
+    if (gameState.state !== "drawing") return;
+    if (timeout === null || timeout > 0) return;
+
+    const artist = gameState.playerId;
+    const nextPlayerI = newPlayers.findIndex((p) => p.id === artist) + 1;
+
+    if (gameProgress.length === 0) {
+      gameProgress.push([]);
+    }
+
+    gameProgress.at(-1)!.push({
+      paintingId: gameState.drawingId,
+      whoDrawId: gameState.playerId,
+      scores: gameState.guessed,
+    });
+
+    if (newPlayers[nextPlayerI]) {
+      // продолжается текущий круг
+      transitionToNextPlayer(
+        newPlayers[nextPlayerI].id,
+        gameState,
+        party.id,
+        gameProgress,
+        true,
+      );
+    } else {
+      // начинаем следующий круг
+
+      gameProgress.push([]);
+      if (gameProgress.length < gameParams.rounds) {
+        log(`nextPlayerChoosingWord: ${newPlayers[0].id}`);
+        // если ещё есть место для раундов
+        transitionToNextPlayer(
+          newPlayers[0].id,
+          gameState,
+          party.id,
+          gameProgress,
+          true,
+        );
+      } else {
+        log("game finished!");
+        gameFinished(party.id, gameProgress);
+      }
+    }
+  },
+);
+
 sample({
   source: [$localId, $newParty] as const,
   clock: messageSent,

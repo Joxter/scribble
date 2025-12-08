@@ -90,7 +90,7 @@ export function ChatMessages() {
           return (
             <div key={key}>
               <p className={messageItalic}>
-                {ev.payload.reason === "all-revealed" && "Все отгадали!"}
+                {ev.payload.reason === "all-revealed" && "Все отгадали!"}{" "}
                 {ev.payload.reason === "timeout" && "Время вышло!"}{" "}
                 {players[ev.payload.nextPlayerId].name} выбирает новое слово!
               </p>

@@ -10,7 +10,7 @@ type DbParty = Pick<Party, "id" | "name" | "status">;
 
 function createTickStore() {
   let startTimer_ = createEvent();
-  const tickInterval = interval({ timeout: 100, start: startTimer_ });
+  const tickInterval = interval({ timeout: 1000, start: startTimer_ });
   startTimer_();
   let $tickStore = createStore(0);
 
@@ -108,9 +108,10 @@ export function createParty($localId: Store<string>) {
     (drawingState, p) => {
       if (!p || !drawingState) return null;
 
-      let msec = p.gameParams.drawTime - (Date.now() - drawingState.startedAt);
+      let msec =
+        p.gameParams.drawTime - (Date.now() - drawingState.startedAt) / 1000;
 
-      return Math.max(Math.floor(msec / 1000), 0);
+      return Math.max(Math.floor(msec), 0);
     },
   );
 

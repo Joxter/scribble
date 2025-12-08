@@ -219,11 +219,12 @@ export function transitionToNextPlayer(
   gameState: GameStateDrawing,
   partyId: string,
   newGameProgress: GameProgress,
+  itTimeout?: boolean,
 ) {
   const event: Omit<DrawingEndedEvent, "id"> = {
     type: "drawing-ended",
     payload: {
-      reason: "all-revealed",
+      reason: itTimeout ? "timeout" : "all-revealed",
       revealed: gameState.guessed,
       nextPlayerId: nextPlayerId,
     },
