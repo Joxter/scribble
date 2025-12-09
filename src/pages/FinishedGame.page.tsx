@@ -1,17 +1,17 @@
 import React, { useEffect } from "react";
-import { DeveloperTools } from "./components/DeveloperTools.tsx";
-import { ListOfPlayers } from "./drawing/ListOfPlayers.tsx";
-import css from "./drawing/Page.module.css";
-import { ChatMessages } from "./drawing/ChatMessages.tsx";
-import { Fps } from "./components/Fps.tsx";
-import { PageLayout } from "./components/PageLayout.tsx";
+import { DeveloperTools } from "../components/DeveloperTools.tsx";
+import { ListOfPlayers } from "../drawing/ListOfPlayers.tsx";
+import css from "../drawing/Page.module.css";
+import { ChatMessages } from "../drawing/ChatMessages.tsx";
+import { Fps } from "../components/Fps.tsx";
+import { PageLayout } from "../components/PageLayout.tsx";
 import { useUnit } from "effector-react";
 import {
   $currentPlayers,
   $newParty,
   $partyPaintingIds,
-} from "./model/game-new.model.ts";
-import { db } from "./DB.ts";
+} from "../model/game-new.model.ts";
+import { db } from "../DB.ts";
 
 function calculatePlayerScores(
   gameProgress: any[],

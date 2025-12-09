@@ -1,16 +1,16 @@
 import React from "react";
 import { useUnit } from "effector-react";
-import { Canvas } from "./drawing/Canvas.tsx";
-import { DeveloperTools } from "./components/DeveloperTools.tsx";
-import { Tools } from "./drawing/Tools.tsx";
-import { ListOfPlayers } from "./drawing/ListOfPlayers.tsx";
-import { $choosingWord, $drawing, party } from "./model/game-new.model.ts";
-import css from "./drawing/Page.module.css";
-import { GameInputField } from "./drawing/GameInputField.tsx";
-import { ChatMessages } from "./drawing/ChatMessages.tsx";
-import { Fps } from "./components/Fps.tsx";
-import { PageLayout } from "./components/PageLayout.tsx";
-import { DrawResults } from "./components/DrawResults.tsx";
+import { Canvas } from "../drawing/Canvas.tsx";
+import { DeveloperTools } from "../components/DeveloperTools.tsx";
+import { Tools } from "../drawing/Tools.tsx";
+import { ListOfPlayers } from "../drawing/ListOfPlayers.tsx";
+import { $choosingWord, $drawing, party } from "../model/game-new.model.ts";
+import css from "../drawing/Page.module.css";
+import { GameInputField } from "../drawing/GameInputField.tsx";
+import { ChatMessages } from "../drawing/ChatMessages.tsx";
+import { Fps } from "../components/Fps.tsx";
+import { PageLayout } from "../components/PageLayout.tsx";
+import { DrawResults } from "../components/DrawResults.tsx";
 
 export function DrawingPage() {
   const [drawing, choosingWord] = useUnit([$drawing, $choosingWord]);

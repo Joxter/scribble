@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from "react";
-import { Painting, Player } from "./types.ts";
-import { ReadOnlyCanvas } from "./components/ReadOnlyCanvas.tsx";
-import { doEventsUndo } from "./model/utils.ts";
+import { Painting, Player } from "../types.ts";
+import { ReadOnlyCanvas } from "../components/ReadOnlyCanvas.tsx";
+import { doEventsUndo } from "../model/utils.ts";
 import {
   getAllPaintings,
   deletePainting,
-} from "./model/all-paintings.model.ts";
-import { PageLayout } from "./components/PageLayout.tsx";
+} from "../model/all-paintings.model.ts";
+import { PageLayout } from "../components/PageLayout.tsx";
 import css from "./Paintings.module.css";
-import { getAllPlayers } from "./db-things.ts";
+import { getAllPlayers } from "../db-things.ts";
 
 export function PaintingsPage() {
   const [paintings, setPaintings] = useState<Painting[]>([]);
@@ -115,7 +115,7 @@ export function PaintingsPage() {
 
 type Props = {
   painting: Painting;
-  author: Player;
+  author?: Player;
   selected: boolean;
   onSelectionChange: (selected: boolean) => void;
 };
@@ -150,7 +150,7 @@ function PaintingCard({
       />
 
       <div className={css.paintingInfo}>
-        <p className={css.paintingMeta}>Автор: {author.name}</p>
+        <p className={css.paintingMeta}>Автор: {author?.name || "???"}</p>
         <p className={css.paintingMeta}>
           Линий {linesAfterUndo}
           {allEventsCnt !== linesAfterUndo ? `(${allEventsCnt})` : ""}, точек{" "}

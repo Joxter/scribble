@@ -1,16 +1,16 @@
 import React, { useEffect, useState } from "react";
-import { PageLayout } from "./components/PageLayout.tsx";
+import { PageLayout } from "../components/PageLayout.tsx";
 import { useUnit } from "effector-react/effector-react.mjs";
 import {
   $currentPlayers,
   $localId,
   $newParty,
   $player,
-} from "./model/game-new.model.ts";
+} from "../model/game-new.model.ts";
 import { css } from "@linaria/core";
-import { TextField } from "./components/TextField.tsx";
-import { Button } from "./components/Button.tsx";
-import { Select } from "./components/Select.tsx";
+import { TextField } from "../components/TextField.tsx";
+import { Button } from "../components/Button.tsx";
+import { Select } from "../components/Select.tsx";
 import {
   closeParty,
   editUserName,
@@ -18,10 +18,10 @@ import {
   leaveParty,
   startParty,
   updateGameParams,
-} from "./db-things.ts";
+} from "../db-things.ts";
 import { useLocation } from "wouter";
-import { getUrl } from "./utils.ts";
-import { GAME_STATUS } from "./types.ts";
+import { getUrl } from "../utils.ts";
+import { GAME_STATUS } from "../types.ts";
 import { DrawingPage } from "./Drawing.page.tsx";
 import { FinishedGamePage } from "./FinishedGame.page.tsx";
 

@@ -1,14 +1,14 @@
 import React, { useState } from "react";
 import { useUnit } from "effector-react";
-import { ru } from "../dictionaries/ru.ts";
+import { ru } from "../../dictionaries/ru.ts";
 import {
   $words,
   addNewWord,
   addNewWords,
   hideWord,
   showWord,
-} from "./model/words.model.ts";
-import { PageLayout } from "./components/PageLayout.tsx";
+} from "../model/words.model.ts";
+import { PageLayout } from "../components/PageLayout.tsx";
 import css from "./Words.module.css";
 
 type Word = {
@@ -143,7 +143,11 @@ type LangSelectorProps = {
   totalWords: number;
 };
 
-function LangSelector({ selectedLang, onLangChange, totalWords }: LangSelectorProps) {
+function LangSelector({
+  selectedLang,
+  onLangChange,
+  totalWords,
+}: LangSelectorProps) {
   return (
     <div className={css.langSelector}>
       <button
@@ -170,7 +174,12 @@ type AddWordFormProps = {
   onSubmit: (e: React.FormEvent) => void;
 };
 
-function AddWordForm({ selectedLang, newWord, onWordChange, onSubmit }: AddWordFormProps) {
+function AddWordForm({
+  selectedLang,
+  newWord,
+  onWordChange,
+  onSubmit,
+}: AddWordFormProps) {
   return (
     <form onSubmit={onSubmit} className={css.addWordForm}>
       <input
@@ -192,7 +201,11 @@ type LetterSelectorProps = {
   onLetterChange: (letter: string) => void;
 };
 
-function LetterSelector({ letters, selectedLetter, onLetterChange }: LetterSelectorProps) {
+function LetterSelector({
+  letters,
+  selectedLetter,
+  onLetterChange,
+}: LetterSelectorProps) {
   return (
     <div className={css.letterSelector}>
       {letters.map((letter) => (
@@ -214,7 +227,11 @@ type WordsListProps = {
   onWordClick: (wordId: string, isHidden: boolean) => void;
 };
 
-function WordsList({ filteredWords, selectedLetter, onWordClick }: WordsListProps) {
+function WordsList({
+  filteredWords,
+  selectedLetter,
+  onWordClick,
+}: WordsListProps) {
   return (
     <div>
       <h3>

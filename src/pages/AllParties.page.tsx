@@ -1,7 +1,7 @@
 import React from "react";
 import { useUnit } from "effector-react";
-import { $allParties } from "./model/app";
-import { PageLayout } from "./components/PageLayout.tsx";
+import { $allParties } from "../model/app.ts";
+import { PageLayout } from "../components/PageLayout.tsx";
 
 export function AllPartiesPage() {
   const allParties = useUnit($allParties);

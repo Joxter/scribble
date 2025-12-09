@@ -1,10 +1,10 @@
 import React, { useEffect } from "react";
 import { Route, Switch, useLocation, useRoute } from "wouter";
-import { HomePage } from "./Home.page.tsx";
-import { WordsPage } from "./Words.page.tsx";
-import { PaintingsPage } from "./Paintings.page.tsx";
-import { PartyPrepare } from "./PartyPrepare.page.tsx";
-import { AllPartiesPage } from "./AllParties.page.tsx";
+import { HomePage } from "./pages/Home.page.tsx";
+import { WordsPage } from "./pages/Words.page.tsx";
+import { PaintingsPage } from "./pages/Paintings.page.tsx";
+import { PartyPrepare } from "./pages/PartyPrepare.page.tsx";
+import { AllPartiesPage } from "./pages/AllParties.page.tsx";
 import { useUnit } from "effector-react";
 import { $player, party } from "./model/game-new.model.ts";
 import { getUrl } from "./utils.ts";

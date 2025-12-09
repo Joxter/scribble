@@ -1,18 +1,18 @@
 import React, { useState } from "react";
 import { useUnit } from "effector-react";
-import { getUrl, newRandomWords } from "./utils.ts";
-import { PageLayout } from "./components/PageLayout.tsx";
-import { TextField } from "./components/TextField.tsx";
+import { getUrl, newRandomWords } from "../utils.ts";
+import { PageLayout } from "../components/PageLayout.tsx";
+import { TextField } from "../components/TextField.tsx";
 import css from "./Home.module.css";
 import { Link, useLocation } from "wouter";
-import { Button } from "./components/Button.tsx";
+import { Button } from "../components/Button.tsx";
 import {
   createNewParty,
   editUserName,
   getPreparePartyByName,
   joinToParty,
-} from "./db-things.ts";
-import { $player, party } from "./model/game-new.model.ts";
+} from "../db-things.ts";
+import { $player, party } from "../model/game-new.model.ts";
 
 export function HomePage() {
   return (
