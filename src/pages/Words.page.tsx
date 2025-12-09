@@ -9,7 +9,107 @@ import {
   showWord,
 } from "../model/words.model.ts";
 import { PageLayout } from "../components/PageLayout.tsx";
-import css from "./Words.module.css";
+import { css } from "@linaria/core";
+
+const container = css`
+  padding: 20px;
+  display: grid;
+  gap: 20px;
+  max-width: 800px;
+  margin: 0 auto;
+`;
+
+const langSelector = css`
+  display: flex;
+  gap: 8px;
+  align-items: center;
+`;
+
+const langButton = css`
+  padding: 8px 16px;
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+  cursor: pointer;
+`;
+
+const langButtonActive = css`
+  background-color: #007bff;
+  color: white;
+`;
+
+const langButtonInactive = css`
+  background-color: #f8f9fa;
+  color: black;
+`;
+
+const checkboxLabel = css`
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+`;
+
+const addWordForm = css`
+  display: grid;
+  grid-template-columns: 1fr 130px;
+  gap: 4px;
+  max-width: 300px;
+`;
+
+const letterSelector = css`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+`;
+
+const letterButton = css`
+  padding: 4px 8px;
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+  cursor: pointer;
+  min-width: 30px;
+`;
+
+const letterButtonActive = css`
+  background-color: #007bff;
+  color: white;
+`;
+
+const letterButtonInactive = css`
+  background-color: #f8f9fa;
+  color: black;
+`;
+
+const wordsList = css`
+  padding-left: 20px;
+`;
+
+const wordItem = css`
+  position: relative;
+`;
+
+const wordItemHidden = css`
+  text-decoration: line-through;
+  opacity: 0.6;
+  color: #6c757d;
+`;
+
+const wordToggleButton = css`
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 12px;
+  padding: 0;
+  margin: 0 0 0 8px;
+`;
+
+const wordToggleButtonShow = css`
+  color: #28a745;
+`;
+
+const wordToggleButtonHide = css`
+  color: #dc3545;
+`;
 
 type Word = {
   id: string;
@@ -80,7 +180,7 @@ export function WordsPage() {
 
   return (
     <PageLayout>
-      <div className={css.container}>
+      <div className={container}>
         {newWords.length > 0 && (
           <div>
             <button
@@ -105,7 +205,7 @@ export function WordsPage() {
           totalWords={words.length}
         />
 
-        <label className={css.checkboxLabel}>
+        <label className={checkboxLabel}>
           <input
             type="checkbox"
             checked={showHidden}
@@ -149,16 +249,16 @@ function LangSelector({
   totalWords,
 }: LangSelectorProps) {
   return (
-    <div className={css.langSelector}>
+    <div className={langSelector}>
       <button
         onClick={() => onLangChange("RU")}
-        className={`${css.langButton} ${selectedLang === "RU" ? css.langButtonActive : css.langButtonInactive}`}
+        className={`${langButton} ${selectedLang === "RU" ? langButtonActive : langButtonInactive}`}
       >
         RU
       </button>
       <button
         onClick={() => onLangChange("EN")}
-        className={`${css.langButton} ${selectedLang === "EN" ? css.langButtonActive : css.langButtonInactive}`}
+        className={`${langButton} ${selectedLang === "EN" ? langButtonActive : langButtonInactive}`}
       >
         EN
       </button>
@@ -181,7 +281,7 @@ function AddWordForm({
   onSubmit,
 }: AddWordFormProps) {
   return (
-    <form onSubmit={onSubmit} className={css.addWordForm}>
+    <form onSubmit={onSubmit} className={addWordForm}>
       <input
         type="text"
         placeholder="Слово"
@@ -207,12 +307,12 @@ function LetterSelector({
   onLetterChange,
 }: LetterSelectorProps) {
   return (
-    <div className={css.letterSelector}>
+    <div className={letterSelector}>
       {letters.map((letter) => (
         <button
           key={letter}
           onClick={() => onLetterChange(letter)}
-          className={`${css.letterButton} ${selectedLetter === letter ? css.letterButtonActive : css.letterButtonInactive}`}
+          className={`${letterButton} ${selectedLetter === letter ? letterButtonActive : letterButtonInactive}`}
         >
           {letter}
         </button>
@@ -240,7 +340,7 @@ function WordsList({
       {filteredWords.length === 0 ? (
         <p>Нет слов</p>
       ) : (
-        <ol className={css.wordsList}>
+        <ol className={wordsList}>
           {filteredWords
             .toSorted((a, b) => a.word.localeCompare(b.word))
             .map((word) => {
@@ -248,12 +348,12 @@ function WordsList({
               return (
                 <li
                   key={word.id}
-                  className={`${css.wordItem} ${isHidden ? css.wordItemHidden : ""}`}
+                  className={`${wordItem} ${isHidden ? wordItemHidden : ""}`}
                 >
                   {word.word}
                   <button
                     onClick={() => onWordClick(word.id, isHidden)}
-                    className={`${css.wordToggleButton} ${isHidden ? css.wordToggleButtonShow : css.wordToggleButtonHide}`}
+                    className={`${wordToggleButton} ${isHidden ? wordToggleButtonShow : wordToggleButtonHide}`}
                     title={isHidden ? "Восстановить слово" : "Скрыть слово"}
                   >
                     {isHidden ? "↻" : "✕"}

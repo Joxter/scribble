@@ -7,8 +7,80 @@ import {
   deletePainting,
 } from "../model/all-paintings.model.ts";
 import { PageLayout } from "../components/PageLayout.tsx";
-import css from "./Paintings.module.css";
+import { css } from "@linaria/core";
 import { getAllPlayers } from "../db-things.ts";
+
+const container = css`
+  width: 100%;
+  max-width: 1200px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+`;
+
+const header = css`
+  display: flex;
+  align-items: center;
+  gap: 16px;
+`;
+
+const deleteButton = css`
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 8px 16px;
+  cursor: pointer;
+  font-size: 14px;
+`;
+
+const deleteButtonDisabled = css`
+  opacity: 0.6;
+  cursor: not-allowed;
+  pointer-events: none;
+`;
+
+const paintingsGrid = css`
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 24px;
+`;
+
+const paintingCard = css`
+  display: flex;
+  flex-direction: column;
+  line-height: 1;
+  gap: 8px;
+  position: relative;
+`;
+
+const paintingLabel = css`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+`;
+
+const paintingCheckbox = css`
+  cursor: pointer;
+`;
+
+const paintingTitle = css`
+  margin: 0;
+  font-size: 18px;
+  font-weight: bold;
+`;
+
+const paintingInfo = css`
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+`;
+
+const paintingMeta = css`
+  margin: 0;
+  color: #6c757d;
+  font-size: 14px;
+`;
 
 export function PaintingsPage() {
   const [paintings, setPaintings] = useState<Painting[]>([]);
@@ -68,7 +140,7 @@ export function PaintingsPage() {
   if (loading) {
     return (
       <PageLayout>
-        <div className={css.container}>
+        <div className={container}>
           <p>Загрузка...</p>
         </div>
       </PageLayout>
@@ -78,13 +150,13 @@ export function PaintingsPage() {
 
   return (
     <PageLayout>
-      <div className={css.container}>
-        <div className={css.header}>
+      <div className={container}>
+        <div className={header}>
           <h3>Картины ({paintings.length}):</h3>
           <button
             onClick={handleDeleteSelected}
             disabled={deleteDisabled}
-            className={`${css.deleteButton} ${deleteDisabled ? css.deleteButtonDisabled : ""}`}
+            className={`${deleteButton} ${deleteDisabled ? deleteButtonDisabled : ""}`}
           >
             {deleting ? `Удаление...` : `Удалить ${selectedPaintings.size}`}
           </button>
@@ -92,7 +164,7 @@ export function PaintingsPage() {
         {paintings.length === 0 ? (
           <p>Нет картин</p>
         ) : (
-          <div className={css.paintingsGrid}>
+          <div className={paintingsGrid}>
             {paintings.toReversed().map((painting) => {
               return (
                 <PaintingCard
@@ -134,24 +206,24 @@ function PaintingCard({
     .reduce((acc, l) => acc + l, 0);
 
   return (
-    <div className={css.paintingCard}>
-      <label className={css.paintingLabel}>
+    <div className={paintingCard}>
+      <label className={paintingLabel}>
         <input
           type="checkbox"
           checked={selected}
           onChange={(e) => onSelectionChange(e.target.checked)}
-          className={css.paintingCheckbox}
+          className={paintingCheckbox}
         />
-        <h4 className={css.paintingTitle}>{painting.word}</h4>
+        <h4 className={paintingTitle}>{painting.word}</h4>
       </label>
       <ReadOnlyCanvas
         canvas={doEventsUndo(painting.canvas as any)}
         size={200}
       />
 
-      <div className={css.paintingInfo}>
-        <p className={css.paintingMeta}>Автор: {author?.name || "???"}</p>
-        <p className={css.paintingMeta}>
+      <div className={paintingInfo}>
+        <p className={paintingMeta}>Автор: {author?.name || "???"}</p>
+        <p className={paintingMeta}>
           Линий {linesAfterUndo}
           {allEventsCnt !== linesAfterUndo ? `(${allEventsCnt})` : ""}, точек{" "}
           {totalDots}

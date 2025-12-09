@@ -3,7 +3,7 @@ import { useUnit } from "effector-react";
 import { getUrl, newRandomWords } from "../utils.ts";
 import { PageLayout } from "../components/PageLayout.tsx";
 import { TextField } from "../components/TextField.tsx";
-import css from "./Home.module.css";
+import { css } from "@linaria/core";
 import { Link, useLocation } from "wouter";
 import { Button } from "../components/Button.tsx";
 import {
@@ -13,6 +13,66 @@ import {
   joinToParty,
 } from "../db-things.ts";
 import { $player, party } from "../model/game-new.model.ts";
+
+const form = css`
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 320px;
+`;
+
+const roomCodeRow = css`
+  display: flex;
+  gap: 4px;
+`;
+
+const joinButton = css`
+  padding: 8px 16px;
+  font-size: 14px;
+  background-color: #22c55e;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  font-weight: 500;
+
+  &:disabled {
+    background-color: #9ca3af;
+    cursor: not-allowed;
+    opacity: 0.6;
+  }
+`;
+
+const divider = css`
+  position: relative;
+  text-align: center;
+
+  &::before {
+    content: "";
+    position: absolute;
+    top: 10px;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background-color: #d1d5db;
+  }
+
+  span {
+    position: relative;
+    padding: 0 12px;
+    background-color: #f9fafb;
+    font-size: 12px;
+    color: #6b7280;
+  }
+`;
+
+const allParties = css`
+  font-size: 14px;
+  text-align: left;
+  padding-left: 20px;
+`;
 
 export function HomePage() {
   return (
@@ -49,19 +109,19 @@ function CreateNewParty() {
   const isNameUnchanged = name.trim() === (player?.name || "");
 
   return (
-    <div className={css.form}>
-      <div className={css.roomCodeRow}>
+    <div className={form}>
+      <div className={roomCodeRow}>
         <TextField label="Имя" value={name} onChange={setName} />
         <button
           onClick={handleSaveName}
-          className={css.joinButton}
+          className={joinButton}
           disabled={isNameUnchanged}
         >
           Сохранить
         </button>
       </div>
 
-      <div className={css.field}>
+      <div>
         <form
           onSubmit={(ev) => {
             ev.preventDefault();
@@ -74,22 +134,22 @@ function CreateNewParty() {
               }
             });
           }}
-          className={css.roomCodeRow}
+          className={roomCodeRow}
         >
           <TextField label="Комната" value={roomCode} onChange={setRoomCode} />
-          <button type="submit" className={css.joinButton}>
+          <button type="submit" className={joinButton}>
             Войти
           </button>
         </form>
       </div>
 
-      <div className={css.divider}>
+      <div className={divider}>
         <span>или</span>
       </div>
 
       <Button onClick={handleCreateRoom}>Создать новую игру</Button>
 
-      <ul className={css.allParties}>
+      <ul className={allParties}>
         {allMyParties.map((p) => {
           return (
             <li key={p.id}>

@@ -25,6 +25,22 @@ import { GAME_STATUS } from "../types.ts";
 import { DrawingPage } from "./Drawing.page.tsx";
 import { FinishedGamePage } from "./FinishedGame.page.tsx";
 
+const nameForm = css`
+  max-width: 200px;
+  display: grid;
+  gap: 4px;
+  grid-template-columns: 1fr min-content;
+`;
+
+const gameParams = css`
+  display: grid;
+  gap: 8px;
+  padding: 8px;
+  border-radius: 4px;
+  background-color: #bddcf3;
+  max-width: 200px;
+`;
+
 export function PartyPrepare() {
   const [party, currentPlayers] = useUnit([$newParty, $currentPlayers]);
   const player = useUnit($player);
@@ -76,12 +92,7 @@ export function PartyPrepare() {
         <p>Ждем всех игроков [поделиться] {party.id}</p>
         <br />
         <form
-          style={{
-            maxWidth: "200px",
-            display: "grid",
-            gap: "4px",
-            gridTemplateColumns: "1fr min-content",
-          }}
+          className={nameForm}
           onSubmit={(ev) => {
             ev.preventDefault();
 
@@ -97,16 +108,7 @@ export function PartyPrepare() {
           <Button type="submit">ОК</Button>
         </form>
         <br />
-        <div
-          style={{
-            display: "grid",
-            gap: "8px",
-            padding: "8px",
-            borderRadius: "4px",
-            backgroundColor: "#bddcf3",
-            maxWidth: "200px",
-          }}
-        >
+        <div className={gameParams}>
           <Select
             label="Количество раундов"
             value={party.gameParams.rounds}
