@@ -15,4 +15,7 @@ export default defineConfig({
     __BUILD_TIME__: JSON.stringify(new Date().toISOString()),
     __BUILD_TIMESTAMP__: JSON.stringify(Date.now()),
   },
+  test: {
+    globals: true,
+  },
 });

@@ -33,39 +33,6 @@ export function queryToStore<T>(store: Store<T>, cb: (val: T) => () => void) {
   });
 }
 
-export const URL_ROOM_NAME = (() => {
-  const pathname = window.location.pathname;
-
-  // Handle new routing structure: /scribble/room/roomId
-  const roomMatch = pathname.match(/\/scribble\/room\/([^\/]+)/);
-  if (roomMatch) {
-    return roomMatch[1];
-  }
-
-  // Handle special routes
-  if (pathname.endsWith("/words")) {
-    return "words";
-  }
-  if (pathname.endsWith("/paintings")) {
-    return "paintings";
-  }
-
-  // Legacy support: extract ID from query parameters
-  const search = window.location.search.slice(1);
-  if (search) return search;
-
-  // Legacy support: extract ID from pathname like /scribble/some-id (not room/)
-  const basePath = "/scribble/";
-  if (pathname.startsWith(basePath)) {
-    const id = pathname.slice(basePath.length);
-    if (id && !id.includes("/")) {
-      return id;
-    }
-  }
-
-  return "";
-})();
-
 export function randomFrom<T>(arr: T[]): T {
   return arr[Math.floor(Math.random() * arr.length)];
 }
@@ -192,6 +159,93 @@ export function compareWords(secret: string, guess: string): number {
     secret.toLowerCase().trim(),
     guess.toLowerCase().trim(),
   );
+}
+
+function seededRandom(seed: number): () => number {
+  let state = seed;
+  return function () {
+    state = (state * 1664525 + 1013904223) % 4294967296;
+    return state / 4294967296;
+  };
+}
+
+console.log(generateClues("мяч", 60, 12345));
+// console.log(generateClues("школа", 60, 12345));
+// console.log(generateClues("какая то длинная строка", 60, 12345));
+
+export function generateClues(
+  secret: string,
+  drawTimeSec: number,
+  seed?: number,
+): { time: number; clue: string }[] {
+  // secret    "hello world"
+  // init clue  _____ _____
+  // 1 clue     __l__ __r__
+  // ...
+
+  const params = [
+    // time left (%), reveal chars (%)
+    { time: 0.5, chars: 0.3 }, // it should open 30% of letter for the first half of the time.
+    { time: 0.75, chars: 0.6 }, // it should open additional 30% of letter for the 3d quater of time
+    // do not open any new letter for the rest of the time
+  ];
+
+  // Get indices of all letter positions (not spaces or punctuation)
+  const letterIndices: number[] = [];
+  for (let i = 0; i < secret.length; i++) {
+    if (secret[i] !== " " && secret[i].trim() !== "") {
+      letterIndices.push(i);
+    }
+  }
+
+  if (letterIndices.length === 0) {
+    return [];
+  }
+
+  // Shuffle letter indices for random reveal
+  const random = seed !== undefined ? seededRandom(seed) : Math.random;
+  const shuffled = [...letterIndices].sort(() => random() - 0.5);
+
+  const clues: { time: number; clue: string }[] = [];
+  const letterCount = letterIndices.length;
+
+  // Calculate how many letters to reveal in each time segment
+  let prevTime = 0;
+  let prevChars = 0;
+
+  for (const param of params) {
+    const targetTime = drawTimeSec * param.time;
+    const targetChars = Math.floor(letterCount * param.chars);
+    const charsInSegment = targetChars - prevChars;
+    const timeForSegment = targetTime - prevTime;
+
+    // Create one clue per letter in this segment
+    for (let i = 1; i <= charsInSegment; i++) {
+      const totalRevealed = prevChars + i;
+      const revealIndices = new Set(shuffled.slice(0, totalRevealed));
+
+      let clue = "";
+      for (let j = 0; j < secret.length; j++) {
+        if (secret[j] === " ") {
+          clue += " ";
+        } else if (revealIndices.has(j)) {
+          clue += secret[j];
+        } else {
+          clue += "_";
+        }
+      }
+
+      clues.push({
+        time: Math.floor(prevTime + (timeForSegment / charsInSegment) * i),
+        clue,
+      });
+    }
+
+    prevTime = targetTime;
+    prevChars = targetChars;
+  }
+
+  return clues;
 }
 
 function levenshteinDistance(str1: string, str2: string): number {
