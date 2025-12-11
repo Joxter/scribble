@@ -169,44 +169,64 @@ function seededRandom(seed: number): () => number {
   };
 }
 
-console.log(generateClues("мяч", 60, 12345));
-// console.log(generateClues("школа", 60, 12345));
-// console.log(generateClues("какая то длинная строка", 60, 12345));
+export function wordToZeroClue(word: string): string {
+  return word.replace(/[^\s-! ,.]/g, "_");
+}
+
+function shuffle<T>(array: T[], rng: () => number = Math.random): T[] {
+  const result = [...array];
+
+  for (let i = result.length - 1; i > 0; i--) {
+    const j = Math.floor(rng() * (i + 1));
+    [result[i], result[j]] = [result[j], result[i]];
+  }
+
+  return result;
+}
+
+function graph(items, time = 60) {
+  let res = Array(time).fill("_");
+  items.forEach((it) => {
+    res[it.time] = "#";
+  });
+
+  return res.join("");
+}
+
+// console.log(generateClues("какая-то длинная, строка!", 60));
+// console.log(graph(generateClues("какая-то длинная, строка!", 60)));
+// console.log(graph(generateClues("мама", 60)));
+// console.log(graph(generateClues("мяч", 60)));
+// console.log(generateClues("школа", 60));
+// console.log(generateClues("университет", 60));
 
 export function generateClues(
   secret: string,
   drawTimeSec: number,
   seed?: number,
 ): { time: number; clue: string }[] {
-  // secret    "hello world"
-  // init clue  _____ _____
-  // 1 clue     __l__ __r__
-  // ...
-
   const params = [
     // time left (%), reveal chars (%)
-    { time: 0.5, chars: 0.3 }, // it should open 30% of letter for the first half of the time.
-    { time: 0.75, chars: 0.6 }, // it should open additional 30% of letter for the 3d quater of time
-    // do not open any new letter for the rest of the time
+    { time: 0.01, chars: 0 },
+    { time: 0.5, chars: 0.3 },
+    { time: 0.75, chars: 0.6 },
   ];
 
-  // Get indices of all letter positions (not spaces or punctuation)
   const letterIndices: number[] = [];
+
+  const zeroClue = wordToZeroClue(secret);
   for (let i = 0; i < secret.length; i++) {
-    if (secret[i] !== " " && secret[i].trim() !== "") {
-      letterIndices.push(i);
-    }
+    if (zeroClue[i] === "_") letterIndices.push(i);
   }
 
   if (letterIndices.length === 0) {
     return [];
   }
 
-  // Shuffle letter indices for random reveal
   const random = seed !== undefined ? seededRandom(seed) : Math.random;
-  const shuffled = [...letterIndices].sort(() => random() - 0.5);
+  const shuffled = shuffle(letterIndices, random);
 
-  const clues: { time: number; clue: string }[] = [];
+  const clues: { time: number; clue: string }[] = [{ time: 0, clue: zeroClue }];
   const letterCount = letterIndices.length;
 
   // Calculate how many letters to reveal in each time segment
@@ -218,25 +238,24 @@ export function generateClues(
     const targetChars = Math.floor(letterCount * param.chars);
     const charsInSegment = targetChars - prevChars;
     const timeForSegment = targetTime - prevTime;
+    // console.log({ targetChars, charsInSegment, timeForSegment });
 
     // Create one clue per letter in this segment
     for (let i = 1; i <= charsInSegment; i++) {
       const totalRevealed = prevChars + i;
       const revealIndices = new Set(shuffled.slice(0, totalRevealed));
 
-      let clue = "";
-      for (let j = 0; j < secret.length; j++) {
-        if (secret[j] === " ") {
-          clue += " ";
-        } else if (revealIndices.has(j)) {
-          clue += secret[j];
-        } else {
-          clue += "_";
-        }
+      // Start with zero clue and reveal letters
+      const clueChars = zeroClue.split("");
+      for (const idx of revealIndices) {
+        clueChars[idx] = secret[idx];
       }
+      const clue = clueChars.join("");
 
       clues.push({
-        time: Math.floor(prevTime + (timeForSegment / charsInSegment) * i),
+        time: Math.floor(
+          prevTime + (timeForSegment / (charsInSegment + 1)) * i,
+        ),
         clue,
       });
     }
@@ -245,6 +264,7 @@ export function generateClues(
     prevChars = targetChars;
   }
 
+  console.log(clues);
   return clues;
 }
 

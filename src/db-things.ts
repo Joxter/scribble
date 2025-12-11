@@ -12,7 +12,7 @@ import {
   UserMessageEvent,
 } from "./types.ts";
 import { id } from "@instantdb/core";
-import { newRandomWords } from "./utils.ts";
+import { newRandomWords, wordToZeroClue } from "./utils.ts";
 import { currentLine } from "./model/game-new.model.ts";
 import { getUsername } from "./code-worlds.ts";
 
@@ -205,7 +205,7 @@ export function selectWord(localId: string, partyId: string, word: string) {
         state: "drawing",
         playerId: localId,
         word: word,
-        clue: word.replace(/[^\s-! ,.]/g, "_"),
+        clue: wordToZeroClue(word),
         drawingId: drawingId,
         guessed: {},
         startedAt: Date.now(),
