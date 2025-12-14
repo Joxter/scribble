@@ -184,88 +184,63 @@ function shuffle<T>(array: T[], rng: () => number = Math.random): T[] {
   return result;
 }
 
-function graph(items, time = 60) {
-  let res = Array(time).fill("_");
-  items.forEach((it) => {
-    res[it.time] = "#";
-  });
-
-  return res.join("");
-}
-
-// console.log(generateClues("какая-то длинная, строка!", 60));
-// console.log(graph(generateClues("какая-то длинная, строка!", 60)));
-// console.log(graph(generateClues("мама", 60)));
-// console.log(graph(generateClues("мяч", 60)));
-// console.log(generateClues("школа", 60));
-// console.log(generateClues("университет", 60));
-
 export function generateClues(
   secret: string,
   drawTimeSec: number,
   seed?: number,
 ): { time: number; clue: string }[] {
-  const params = [
-    // time left (%), reveal chars (%)
-    { time: 0.01, chars: 0 },
-    { time: 0.5, chars: 0.3 },
-    { time: 0.75, chars: 0.6 },
-  ];
+  let cluesSteps: Record<number, string> = {
+    3: "............................1............................1..",
+    4: ".................1..................1....................1..",
+    5: "........1..............1.................1...............1..",
+    6: "........1..............1.................1...............1..",
+    7: "........1.........1...........1..........1...............1..",
+    8: "........1.........1...........1..........1...............1..",
+    9: "........1.........1...........1..........1..............1...",
+    10: "........1.........1...........1..........1..............1...",
+    11: "........1......1........1.........1......1..............1...",
+    12: "........1......2........1.........1......1..............1...",
+    13: "........1......2........1.........1......1..............1...",
+    14: "........1......2........1.........1......1..............1...",
+    15: "........1......2........2.........1......1..............1...",
+    16: "........1......2........2.........1......1..............1...",
+    17: "........1......2........2.........1......1..............1...",
+    18: "........2......2........2.........2......1..............1...",
+    19: "........2......2........2.........2......1..............1...",
+    20: "........2......2........2.........2......2..............1...",
+  };
+
+  const currentClue = wordToZeroClue(secret).split("");
+  const clueSize = currentClue.filter((it) => it === "_").length;
+
+  let result = [{ time: 0, clue: currentClue.join("") }];
+
+  let pattern = cluesSteps[clueSize] || cluesSteps[20];
 
   const letterIndices: number[] = [];
-
-  const zeroClue = wordToZeroClue(secret);
-  for (let i = 0; i < secret.length; i++) {
-    if (zeroClue[i] === "_") letterIndices.push(i);
-  }
-
-  if (letterIndices.length === 0) {
-    return [];
+  for (let i = 0; i < currentClue.length; i++) {
+    if (currentClue[i] === "_") letterIndices.push(i);
   }
 
   const random = seed !== undefined ? seededRandom(seed) : Math.random;
   const shuffled = shuffle(letterIndices, random);
 
-  const clues: { time: number; clue: string }[] = [{ time: 0, clue: zeroClue }];
-  const letterCount = letterIndices.length;
-
-  // Calculate how many letters to reveal in each time segment
-  let prevTime = 0;
-  let prevChars = 0;
-
-  for (const param of params) {
-    const targetTime = drawTimeSec * param.time;
-    const targetChars = Math.floor(letterCount * param.chars);
-    const charsInSegment = targetChars - prevChars;
-    const timeForSegment = targetTime - prevTime;
-    // console.log({ targetChars, charsInSegment, timeForSegment });
-
-    // Create one clue per letter in this segment
-    for (let i = 1; i <= charsInSegment; i++) {
-      const totalRevealed = prevChars + i;
-      const revealIndices = new Set(shuffled.slice(0, totalRevealed));
-
-      // Start with zero clue and reveal letters
-      const clueChars = zeroClue.split("");
-      for (const idx of revealIndices) {
-        clueChars[idx] = secret[idx];
+  let timeK = drawTimeSec / pattern.length;
+  pattern.split("").forEach((cnt, i) => {
+    if (+cnt) {
+      for (let j = 1; j <= +cnt; j++) {
+        const openInd = shuffled.pop()!;
+        currentClue[openInd] = secret[openInd];
       }
-      const clue = clueChars.join("");
 
-      clues.push({
-        time: Math.floor(
-          prevTime + (timeForSegment / (charsInSegment + 1)) * i,
-        ),
-        clue,
+      result.push({
+        time: Math.floor(i * timeK),
+        clue: currentClue.join(""),
       });
     }
+  });
 
-    prevTime = targetTime;
-    prevChars = targetChars;
-  }
-
-  console.log(clues);
-  return clues;
+  return result;
 }
 
 function levenshteinDistance(str1: string, str2: string): number {
