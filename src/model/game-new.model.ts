@@ -8,7 +8,7 @@ import {
   gameFinished,
   selectWord,
   sendMessage,
-  transitionToNextPlayer,
+  drawingEndedtransitionToNextPlayer,
 } from "../db-things.ts";
 import { createParty } from "./party.model.ts";
 
@@ -36,7 +36,12 @@ export const {
   $choosingWord,
 } = party;
 
-const drawing = createDrawing({ $localId, $newParty, log });
+const drawing = createDrawing({
+  $localId,
+  $newParty,
+  log,
+  $timeout: party.$timeout,
+});
 
 export const { $drawing, $isServer, currentLine } = drawing;
 
@@ -45,7 +50,7 @@ sample({
   clock: newWordSelected,
   fn: (a, b) => [a, b] as const,
 }).watch(([[localId, party], word]) => {
-  if (party) selectWord(localId, party.id, word);
+  if (party) selectWord(localId, party, word);
 });
 
 // when every guessed
@@ -74,7 +79,7 @@ combine($guessed, $newParty, $isServer).watch(([guessed, party, isServer]) => {
 
       if (newPlayers[nextPlayerI]) {
         // продолжается текущий круг
-        transitionToNextPlayer(
+        drawingEndedtransitionToNextPlayer(
           newPlayers[nextPlayerI].id,
           gameState,
           party.id,
@@ -87,7 +92,7 @@ combine($guessed, $newParty, $isServer).watch(([guessed, party, isServer]) => {
         if (gameProgress.length < gameParams.rounds) {
           log(`nextPlayerChoosingWord: ${newPlayers[0].id}`);
           // если ещё есть место для раундов
-          transitionToNextPlayer(
+          drawingEndedtransitionToNextPlayer(
             newPlayers[0].id,
             gameState,
             party.id,
@@ -104,13 +109,15 @@ combine($guessed, $newParty, $isServer).watch(([guessed, party, isServer]) => {
 
 combine($newParty, $isServer, party.$timeout).watch(
   ([party, isServer, timeout]) => {
+    // событие, когда закончилось время
+
     if (!party) return;
     if (!isServer) return;
 
     const { newPlayers, gameState, gameProgress, gameParams } = party;
 
     if (gameState.state !== "drawing") return;
-    if (timeout === null || timeout > 0) return;
+    if (timeout === null || timeout.left > 0) return;
 
     const artist = gameState.playerId;
     const nextPlayerI = newPlayers.findIndex((p) => p.id === artist) + 1;
@@ -127,7 +134,7 @@ combine($newParty, $isServer, party.$timeout).watch(
 
     if (newPlayers[nextPlayerI]) {
       // продолжается текущий круг
-      transitionToNextPlayer(
+      drawingEndedtransitionToNextPlayer(
         newPlayers[nextPlayerI].id,
         gameState,
         party.id,
@@ -141,7 +148,7 @@ combine($newParty, $isServer, party.$timeout).watch(
       if (gameProgress.length < gameParams.rounds) {
         log(`nextPlayerChoosingWord: ${newPlayers[0].id}`);
         // если ещё есть место для раундов
-        transitionToNextPlayer(
+        drawingEndedtransitionToNextPlayer(
           newPlayers[0].id,
           gameState,
           party.id,

@@ -136,10 +136,11 @@ export function createDrawing(params: {
   $localId: Store<string>;
   $newParty: Store<Party | null>;
   log: (data: any) => any;
+  $timeout: Store<{ left: number; passed: number } | null>;
 }) {
-  const { $localId, $newParty, log } = params;
+  const { $localId, $newParty, log, $timeout } = params;
 
-  const $drawing = combine($localId, $newParty, (loadId, p) => {
+  const $drawing = combine($localId, $newParty, $timeout, (loadId, p, timeout) => {
     if (!p) return { drawing: false } as const;
 
     if (
@@ -148,12 +149,25 @@ export function createDrawing(params: {
     ) {
       const s = p.gameState;
 
+      // Calculate current clue based on time passed
+      let currentClue = s.allClues[0].clue;
+      if (timeout) {
+        for (const clueEntry of s.allClues) {
+          if (timeout.passed >= clueEntry.time) {
+            currentClue = clueEntry.clue;
+          } else {
+            break;
+          }
+        }
+      }
+
       return {
         gameState: p.gameState,
         drawing: true,
         iam: loadId === s.playerId,
         who: s.playerId,
         word: s.word,
+        clue: currentClue,
       } as const;
     }
 

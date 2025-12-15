@@ -12,9 +12,10 @@ import {
   UserMessageEvent,
 } from "./types.ts";
 import { id } from "@instantdb/core";
-import { newRandomWords, wordToZeroClue } from "./utils.ts";
+import { generateClues, newRandomWords, wordToZeroClue } from "./utils.ts";
 import { currentLine } from "./model/game-new.model.ts";
 import { getUsername } from "./code-worlds.ts";
+import { NewParty } from "./model/party.model.ts";
 
 // @deprecated - Use editUserName instead. This function updates the old players entity which is deprecated.
 export async function editPlayerName(localId: string, name: string) {
@@ -185,7 +186,7 @@ export async function createNewParty(userId: string, name: string) {
     .then((it) => it.data.party[0]!);
 }
 
-export function selectWord(localId: string, partyId: string, word: string) {
+export function selectWord(localId: string, party: NewParty, word: string) {
   const drawingId = id();
 
   return db.transact([
@@ -194,18 +195,18 @@ export function selectWord(localId: string, partyId: string, word: string) {
         type: "new-selected-word",
         payload: { playerId: localId, word },
       })
-      .link({ party: partyId }),
+      .link({ party: party.id }),
     db.tx.paintings[drawingId].create({
       canvas: [],
       playerId: localId,
       word,
     }),
-    db.tx.party[partyId].update({
+    db.tx.party[party.id].update({
       gameState: {
         state: "drawing",
         playerId: localId,
         word: word,
-        clue: wordToZeroClue(word),
+        allClues: generateClues(word, party.gameParams.drawTime),
         drawingId: drawingId,
         guessed: {},
         startedAt: Date.now(),
@@ -214,7 +215,7 @@ export function selectWord(localId: string, partyId: string, word: string) {
   ]);
 }
 
-export function transitionToNextPlayer(
+export function drawingEndedtransitionToNextPlayer(
   nextPlayerId: string,
   gameState: GameStateDrawing,
   partyId: string,

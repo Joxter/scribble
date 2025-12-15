@@ -47,10 +47,10 @@ export const GAME_STATUS = {
 
 export type GameStateDrawing = {
   state: "drawing";
-  playerId: string; // who draw
+  playerId: string; // who is drawing
   drawingId: string;
   word: string; // secret word
-  clue: string;
+  allClues: { time: number; clue: string }[];
   startedAt: number;
   guessed: Revealed; // who guessed and their time
 };

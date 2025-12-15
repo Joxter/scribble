@@ -19,24 +19,24 @@ function createTickStore() {
   return $tickStore;
 }
 
+type NewParty_ = InstaQLResult<
+  AppSchema,
+  {
+    party: {
+      $: { where: { name: string }; limit: 1 };
+      newPlayers: {};
+      roomEvents: {};
+    };
+  }
+>["party"][number];
+export type NewParty = Omit<NewParty_, "roomEvents"> & {
+  roomEvents: AllChatMessages[];
+};
+
 export function createParty($localId: Store<string>) {
   const $pagePartyName = createStore("");
   const pageOpened = createEvent<string>();
   $pagePartyName.on(pageOpened, (_, p) => p);
-
-  type NewParty_ = InstaQLResult<
-    AppSchema,
-    {
-      party: {
-        $: { where: { name: string }; limit: 1 };
-        newPlayers: {};
-        roomEvents: {};
-      };
-    }
-  >["party"][number];
-  type NewParty = Omit<NewParty_, "roomEvents"> & {
-    roomEvents: AllChatMessages[];
-  };
 
   const $newParty = createStore<NewParty | null>(null);
   const newPartyLoaded = createEvent<NewParty>();
@@ -110,8 +110,12 @@ export function createParty($localId: Store<string>) {
 
       let msec =
         p.gameParams.drawTime - (Date.now() - drawingState.startedAt) / 1000;
+      let left = Math.max(Math.floor(msec), 0);
 
-      return Math.max(Math.floor(msec), 0);
+      return {
+        left,
+        passed: p.gameParams.drawTime - left,
+      };
     },
   );
 

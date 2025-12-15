@@ -107,7 +107,7 @@ export function DrawingPage() {
             <div className={drawingToolsContainer}>
               <div className={centeredFlex}>
                 <GameInputField
-                  clue={drawing.gameState.clue}
+                  clue={drawing.clue}
                   secret={drawing.word || ""}
                   revealed={"none"}
                 />
@@ -133,5 +133,5 @@ function Timeout() {
     return null;
   }
 
-  return <p>time: {timeout} sec</p>;
+  return <p>time: {timeout.left} sec</p>;
 }
