@@ -94,7 +94,7 @@ function CreateNewParty() {
   const handleCreateRoom = async () => {
     try {
       const party = await createNewParty(player!.id, newPartyName);
-      navigate(getUrl(party.name));
+      navigate(getUrl("room/" + party.name));
     } catch (error) {
       console.error("Failed to create party:", error);
     }
@@ -129,7 +129,7 @@ function CreateNewParty() {
             getPreparePartyByName(roomCode).then((party) => {
               if (party) {
                 return joinToParty(player!.id, party.id).then(() => {
-                  navigate(getUrl(party.name));
+                  navigate(getUrl("room/" + party.name));
                 });
               }
             });
