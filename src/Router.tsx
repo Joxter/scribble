@@ -5,6 +5,7 @@ import { WordsPage } from "./pages/Words.page.tsx";
 import { PaintingsPage } from "./pages/Paintings.page.tsx";
 import { PartyPrepare } from "./pages/PartyPrepare.page.tsx";
 import { AllPartiesPage } from "./pages/AllParties.page.tsx";
+import { ProfilePage } from "./pages/Profile.page.tsx";
 import { useUnit } from "effector-react";
 import { $player, party } from "./model/game-new.model.ts";
 import { getUrl } from "./utils.ts";
@@ -35,6 +36,7 @@ export function Router() {
   return (
     <div style={{ height: "100%" }}>
       <Switch>
+        <Route path="/scribble/profile" component={ProfilePage} />
         <Route path="/scribble/words" component={WordsPage} />
         <Route path="/scribble/paintings" component={PaintingsPage} />
         <Route path="/scribble/all-rooms" component={AllPartiesPage} />

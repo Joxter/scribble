@@ -108,6 +108,8 @@ function CreateNewParty() {
 
   const isNameUnchanged = name.trim() === (player?.name || "");
 
+  const notFinishedGame = allMyParties.find((it) => it.status !== "finished");
+
   return (
     <div className={form}>
       <div className={roomCodeRow}>
@@ -121,45 +123,47 @@ function CreateNewParty() {
         </button>
       </div>
 
-      <div>
-        <form
-          onSubmit={(ev) => {
-            ev.preventDefault();
-            editUserName(player!.id, name.trim());
-            getPreparePartyByName(roomCode).then((party) => {
-              if (party) {
-                return joinToParty(player!.id, party.id).then(() => {
-                  navigate(getUrl("room/" + party.name));
-                });
-              }
-            });
-          }}
-          className={roomCodeRow}
+      {notFinishedGame ? (
+        <Link
+          href={getUrl(`room/${notFinishedGame.name}`)}
+          style={{ textDecoration: "none" }}
         >
-          <TextField label="Комната" value={roomCode} onChange={setRoomCode} />
-          <button type="submit" className={joinButton}>
-            Войти
-          </button>
-        </form>
-      </div>
+          Вернуться в {notFinishedGame.name} ({notFinishedGame.status})
+        </Link>
+      ) : (
+        <>
+          <div>
+            <form
+              onSubmit={(ev) => {
+                ev.preventDefault();
+                editUserName(player!.id, name.trim());
+                getPreparePartyByName(roomCode).then((party) => {
+                  if (party) {
+                    return joinToParty(player!.id, party.id).then(() => {
+                      navigate(getUrl("room/" + party.name));
+                    });
+                  }
+                });
+              }}
+              className={roomCodeRow}
+            >
+              <TextField
+                label="Комната"
+                value={roomCode}
+                onChange={setRoomCode}
+              />
+              <button type="submit" className={joinButton}>
+                Войти
+              </button>
+            </form>
+          </div>
+          <div className={divider}>
+            <span>или</span>
+          </div>
 
-      <div className={divider}>
-        <span>или</span>
-      </div>
-
-      <Button onClick={handleCreateRoom}>Создать новую игру</Button>
-
-      <ul className={allParties}>
-        {allMyParties.map((p) => {
-          return (
-            <li key={p.id}>
-              <Link href={getUrl(`room/${p.name}`)}>
-                {p.name} <b>{p.status}</b>
-              </Link>
-            </li>
-          );
-        })}
-      </ul>
+          <Button onClick={handleCreateRoom}>Создать новую игру</Button>
+        </>
+      )}
     </div>
   );
 }
