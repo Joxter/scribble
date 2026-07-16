@@ -15,6 +15,8 @@ export function DeveloperTools() {
   const currentDrawing = useUnit(currentLine.$currentDrawing);
   const logiSmol = useUnit($logiSmol);
 
+  if (!party) return null;
+
   return (
     <div>
       <button onClick={() => setIsCollapsed(!isCollapsed)}>

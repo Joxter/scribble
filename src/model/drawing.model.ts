@@ -6,13 +6,14 @@ import {
   sample,
   Store,
 } from "effector";
-import { CanvasLine, CurrentCanvas, GAME_STATUS, Party } from "../types.ts";
+import { CanvasLine, CurrentCanvas, GAME_STATUS } from "../types.ts";
 import { colors, smoothConf, widths } from "../config.ts";
 import { svgInk } from "../freehand/svgInk.ts";
 import { Vec } from "../freehand/Vec.ts";
 import { liveQuery } from "../utils.ts";
 import { db } from "../DB.ts";
 import { saveCanvas } from "../db-things.ts";
+import { NewParty } from "./party.model.ts";
 
 export function createCurrentLine() {
   const setSmoothConf = createEvent<Partial<typeof smoothConf>>();
@@ -134,7 +135,7 @@ export function createCurrentLine() {
 
 export function createDrawing(params: {
   $localId: Store<string>;
-  $newParty: Store<Party | null>;
+  $newParty: Store<NewParty | null>;
   log: (data: any) => any;
   $timeout: Store<{ left: number; passed: number } | null>;
 }) {

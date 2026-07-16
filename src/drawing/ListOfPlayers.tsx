@@ -1,11 +1,13 @@
 import { useUnit } from "effector-react";
-import { GAME_STATUS, Player2 } from "../types.ts";
+import { GAME_STATUS } from "../types.ts";
 import pencilSvg from "./Pencil.svg";
 import { $drawing, $newParty } from "../model/game-new.model.ts";
 import { closeParty } from "../db-things.ts";
 
 export function ListOfPlayers() {
   const [party, drawing] = useUnit([$newParty, $drawing]);
+
+  if (!party) return null;
 
   const stablePlayers = party.newPlayers;
   const innerState = party.gameState;
@@ -42,7 +44,7 @@ export function ListOfPlayers() {
           gap: "4px",
         }}
       >
-        {stablePlayers?.map((player: Player2) => {
+        {stablePlayers?.map((player) => {
           const isDrawingPlayer = player.id === drawingId;
           const isChoosingWord = player.id === choosingWordPlayerId;
 

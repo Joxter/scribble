@@ -67,7 +67,7 @@ export async function joinToParty(userId: string, partyId: string) {
   return res;
 }
 
-export async function startParty(_party: Party) {
+export async function startParty(_party: NewParty) {
   const partyId = _party.id;
 
   const party = await getPartyById(partyId);

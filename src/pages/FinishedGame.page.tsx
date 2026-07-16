@@ -95,13 +95,15 @@ function calculatePlayerScores(
 }
 
 export function FinishedGamePage() {
-  const [{ gameProgress }, players] = useUnit([
+  const [party, players] = useUnit([
     $newParty,
     $currentPlayers,
     $partyPaintingIds,
   ]);
 
-  const playerScores = calculatePlayerScores(gameProgress, players);
+  if (!party) return null;
+
+  const playerScores = calculatePlayerScores(party.gameProgress, players);
 
   // Sort players by score
   const topPlayers = Object.entries(playerScores)

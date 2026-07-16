@@ -79,7 +79,8 @@ export function PartyPrepare() {
     );
   }
 
-  const hostName = currentPlayers[party.host]?.name || party.host;
+  const hostName =
+    (party.host && currentPlayers[party.host]?.name) || party.host;
   const imHost = localId === party.host;
 
   return (

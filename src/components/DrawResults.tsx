@@ -27,10 +27,14 @@ type Props = {
 };
 
 export function DrawResults({}: Props) {
-  const { gameProgress } = useUnit($newParty);
+  const party = useUnit($newParty);
   const currentPlayers = useUnit($currentPlayers);
   const choosingWord = useUnit($choosingWord);
   const localId = useUnit($localId);
+
+  if (!party) return null;
+
+  const { gameProgress } = party;
 
   const lastResults =
     gameProgress.at(-1)?.at(-1) || gameProgress.at(-2)?.at(-1);
