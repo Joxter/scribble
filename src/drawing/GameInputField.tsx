@@ -1,79 +1,152 @@
 import React, { useState } from "react";
 import { css } from "@linaria/core";
-import { messageSent } from "../model/game-new.model.ts";
-import { calcRevealed } from "../utils.ts";
+import { useUnit } from "effector-react";
+import {
+  $drawing,
+  $guessed,
+  $localId,
+  messageSent,
+} from "../model/game-new.model.ts";
 
-const containerBase = css`
-  display: grid;
-  gap: 0px 8px;
-  font-family: monospace;
-  letter-spacing: 2px;
+const root = css`
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 `;
 
-const textBase = css`
-  padding: 0 4px;
-  color: #999;
+const clueRow = css`
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 2px 4px 0;
 `;
 
-const textRevealed = css`
-  color: green;
-  text-align: center;
+const clue = css`
+  font-family: var(--font-mono);
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: 7px;
+  color: var(--ink);
 `;
 
-const inputField = css`
+const clueHidden = css`
+  color: #aab0b8;
+`;
+
+const clueRevealed = css`
+  color: var(--success-text);
+`;
+
+const letterCount = css`
+  font-size: 11px;
+  color: var(--muted);
+  font-weight: 700;
+`;
+
+const inputRow = css`
+  display: flex;
+  gap: 10px;
+`;
+
+const input = css`
+  flex: 1;
+  font-family: inherit;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--ink);
+  background-color: #fff;
+  border: 1px solid var(--line-strong);
+  border-radius: 14px;
+  padding: 12px 16px;
   outline: none;
-  width: 100%;
-  font: inherit;
-  letter-spacing: inherit;
+  min-width: 0;
+
+  &::placeholder {
+    color: var(--muted);
+  }
+
+  &:focus {
+    border-color: var(--brand);
+    box-shadow: 0 0 0 4px rgba(52, 152, 219, 0.18);
+  }
 `;
 
-type Props = {
-  clue: string | null;
-  revealed: "almost" | "revealed" | "none";
-  secret: string;
-};
+const sendButton = css`
+  font-family: inherit;
+  font-size: 16px;
+  font-weight: 900;
+  color: #fff;
+  background-color: var(--brand);
+  border: none;
+  border-bottom: 3px solid var(--brand-dark);
+  border-radius: 14px;
+  padding: 0 22px;
+  cursor: pointer;
 
-export function GameInputField({ revealed, secret, clue }: Props) {
+  &:active {
+    border-bottom-width: 1px;
+    transform: translateY(2px);
+  }
+`;
+
+export function GameInputField() {
+  const drawing = useUnit($drawing);
+  const guessed = useUnit($guessed);
+  const localId = useUnit($localId);
   const [guess, setGuess] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const iGuessed = Boolean(guessed[localId]);
+  const currentClue = drawing.drawing ? drawing.clue : null;
+  const secret = drawing.drawing ? drawing.word : "";
+
+  function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    messageSent({ guess: guess.trim() });
-    if (calcRevealed(secret, guess) === "almost") {
-      // todo add "almost!" toast message
-    } else {
-      setGuess("");
-    }
-  };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setGuess(e.target.value);
-  };
+    const text = guess.trim();
+    if (!text) return;
 
-  const gridTemplateColumns =
-    revealed || !clue
-      ? `1fr min-content`
-      : `calc(${clue.length * 10}px + ${(clue.length - 1) * 3}px + 10px) min-content`;
+    messageSent({ guess: text });
+    setGuess("");
+  }
+
+  const letters = (currentClue || "").replace(/[\s\-!,.]/g, "").length;
 
   return (
-    <form onSubmit={handleSubmit}>
-      <div className={containerBase} style={{ gridTemplateColumns }}>
-        <p
-          className={`${textBase} ${revealed === "revealed" ? textRevealed : ""}`}
-        >
-          {revealed === "revealed" ? revealed + "!" : clue}
-        </p>
-        <div></div>
-        <div>
-          <input
-            type="text"
-            value={guess}
-            // placeholder={clue}
-            onChange={handleInputChange}
-            className={inputField}
-          />
+    <form className={root} onSubmit={handleSubmit}>
+      {currentClue && (
+        <div className={clueRow}>
+          <span className={`${clue} ${iGuessed ? clueRevealed : ""}`}>
+            {iGuessed
+              ? secret
+              : currentClue.split("").map((char, i) =>
+                  char === "_" ? (
+                    <span key={i} className={clueHidden}>
+                      _
+                    </span>
+                  ) : (
+                    char
+                  ),
+                )}
+          </span>
+          <span className={letterCount}>
+            {iGuessed ? "вы отгадали!" : `${letters} букв`}
+          </span>
         </div>
-        <button type="submit">OK</button>
+      )}
+
+      <div className={inputRow}>
+        <input
+          type="text"
+          className={input}
+          value={guess}
+          placeholder={
+            currentClue && !iGuessed ? "Отгадка или сообщение…" : "Сообщение…"
+          }
+          onChange={(e) => setGuess(e.target.value)}
+        />
+        <button type="submit" className={sendButton}>
+          →
+        </button>
       </div>
     </form>
   );

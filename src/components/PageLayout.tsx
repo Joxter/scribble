@@ -5,6 +5,7 @@ import { useUnit } from "effector-react";
 import { getUrl } from "../utils.ts";
 import { BUILD_INFO } from "../config.ts";
 import { $player } from "../model/game-new.model.ts";
+import { DeveloperTools } from "./DeveloperTools.tsx";
 
 type Props = {
   children: React.ReactNode;
@@ -15,7 +16,6 @@ const container = css`
   display: flex;
   flex-direction: column;
   align-items: center;
-  background-color: var(--desk);
   padding: 12px;
 `;
 
@@ -97,6 +97,8 @@ export function PageLayout({ children }: Props) {
       </header>
 
       <main className={content}>{children}</main>
+
+      <DeveloperTools />
 
       <footer className={footer}>
         <Link href={getUrl("")}>Главная</Link>

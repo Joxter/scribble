@@ -1,67 +1,93 @@
 import React from "react";
 import { useUnit } from "effector-react";
-import { Canvas } from "../drawing/Canvas.tsx";
-import { DeveloperTools } from "../components/DeveloperTools.tsx";
-import { Tools } from "../drawing/Tools.tsx";
-import { ListOfPlayers } from "../drawing/ListOfPlayers.tsx";
-import { $choosingWord, $drawing, party } from "../model/game-new.model.ts";
 import { css } from "@linaria/core";
+import { Canvas } from "../drawing/Canvas.tsx";
+import { Tools } from "../drawing/Tools.tsx";
+import { RoomHeader } from "../drawing/RoomHeader.tsx";
+import { PlayerFigures } from "../drawing/PlayerFigures.tsx";
+import {
+  $allChatEvents,
+  $choosingWord,
+  $currentPlayers,
+  $drawing,
+} from "../model/game-new.model.ts";
 import { GameInputField } from "../drawing/GameInputField.tsx";
 import { ChatMessages } from "../drawing/ChatMessages.tsx";
 import { Fps } from "../components/Fps.tsx";
 import { PageLayout } from "../components/PageLayout.tsx";
 import { DrawResults } from "../components/DrawResults.tsx";
+import { Timer } from "../components/Timer.tsx";
 
 const page = css`
-  display: grid;
-  gap: 8px;
-  width: 100%;
-  max-width: 500px;
-  grid-template-areas:
-    "header"
-    "canvas"
-    "footer"
-    "players";
-  grid-template-rows: min-content 1fr min-content min-content;
-  margin: 0 auto;
+  display: flex;
+  gap: 16px;
+  align-items: stretch;
+  justify-content: center;
 
-  @media (width > 808px) {
-    grid-template-areas:
-      "header ."
-      "canvas players"
-      "footer .";
-    grid-template-columns: 500px 300px;
-    grid-template-rows: auto 500px auto;
-    max-width: none;
+  @media (max-width: 807px) {
+    flex-direction: column;
+    align-items: center;
   }
 `;
 
-const header = css`
-  grid-area: header;
+const leftColumn = css`
+  width: 500px;
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+
+  @media (max-width: 807px) {
+    width: 100%;
+    max-width: 500px;
+  }
 `;
 
-const canvasSection = css`
-  grid-area: canvas;
-  width: 100%;
-  padding: 8px;
+const rightColumn = css`
+  width: 300px;
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+
+  @media (max-width: 807px) {
+    width: 100%;
+    max-width: 500px;
+  }
 `;
 
-const footer = css`
-  grid-area: footer;
-`;
-
-const players = css`
-  grid-area: players;
-  display: grid;
-  gap: 8px;
+const chatWindow = css`
+  flex: 1;
+  min-height: 240px;
+  background-color: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  display: flex;
+  flex-direction: column;
   overflow: hidden;
 `;
 
-const roundHeader = css`
+const header = css`
   display: flex;
-  align-items: baseline;
+  align-items: center;
   gap: 10px;
-  padding: 0 12px;
+  padding: 0 4px;
+  min-height: 32px;
+`;
+
+const artistLine = css`
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--slate);
+
+  & b {
+    font-weight: 900;
+    color: var(--ink);
+  }
+`;
+
+const secretWord = css`
+  letter-spacing: 0.5px;
 `;
 
 const roundTitle = css`
@@ -75,23 +101,10 @@ const roundSub = css`
   color: var(--slate);
   font-weight: 700;
 
-  b {
+  & b {
     color: var(--ink);
     font-weight: 900;
   }
-`;
-
-const drawingToolsContainer = css`
-  padding: 4px 12px;
-`;
-
-const centeredFlex = css`
-  display: flex;
-  justify-content: center;
-`;
-
-const textCenter = css`
-  text-align: center;
 `;
 
 export function DrawingPage() {
@@ -101,62 +114,56 @@ export function DrawingPage() {
     <PageLayout>
       <Fps />
       <div className={page}>
-        <div className={header}>
-          {choosingWord.choose ? (
-            <RoundEndHeader />
-          ) : (
-            <>
-              <Timeout />
-              {drawing.iam && (
-                <p className={textCenter}>
-                  <b>{drawing.word}</b>
-                </p>
-              )}
-            </>
-          )}
-        </div>
+        <div className={leftColumn}>
+          <div className={header}>
+            {choosingWord.choose ? <RoundEndTitle /> : <DrawingTitle />}
+          </div>
 
-        <div className={canvasSection}>
           {choosingWord.choose ? <DrawResults /> : <Canvas />}
-        </div>
-        <div className={footer}>
-          {drawing.iam ? (
-            <Tools />
-          ) : drawing.drawing ? (
-            <div className={drawingToolsContainer}>
-              <div className={centeredFlex}>
-                <GameInputField
-                  clue={drawing.clue}
-                  secret={drawing.word || ""}
-                  revealed={"none"}
-                />
-              </div>
-            </div>
-          ) : null}
 
-          <DeveloperTools />
+          {/* художник рисует — вместо ввода палитра; в остальное время можно писать в чат */}
+          {drawing.iam ? <Tools /> : <GameInputField />}
         </div>
-        <div className={players}>
-          <ListOfPlayers />
-          <ChatMessages />
+
+        <div className={rightColumn}>
+          <RoomHeader />
+          <div className={chatWindow}>
+            <ChatMessages />
+            <PlayerFigures />
+          </div>
         </div>
       </div>
     </PageLayout>
   );
 }
 
-function Timeout() {
-  const timeout = useUnit(party.$timeout);
+function DrawingTitle() {
+  const [drawing, players] = useUnit([$drawing, $currentPlayers]);
 
-  if (timeout === null) {
-    return null;
-  }
+  if (!drawing.drawing) return null;
 
-  return <p>time: {timeout.left} sec</p>;
+  return (
+    <>
+      <span className={artistLine}>
+        {drawing.iam ? (
+          <>
+            рисуете: <b className={secretWord}>{drawing.word}</b>
+          </>
+        ) : (
+          <>
+            рисует <b>{players[drawing.who]?.name || "…"}</b>
+          </>
+        )}
+      </span>
+      <span style={{ marginLeft: "auto" }}>
+        <Timer />
+      </span>
+    </>
+  );
 }
 
-function RoundEndHeader() {
-  const events = useUnit(party.$allChatEvents);
+function RoundEndTitle() {
+  const events = useUnit($allChatEvents);
 
   const lastEnded = events.findLast((e) => e.type === "drawing-ended");
   const lastWord = events.findLast((e) => e.type === "new-selected-word");
@@ -168,13 +175,13 @@ function RoundEndHeader() {
       : "Все отгадали!";
 
   return (
-    <div className={roundHeader}>
+    <>
       <span className={roundTitle}>{title}</span>
       {lastEnded && lastWord && (
         <span className={roundSub}>
           слово было <b>{lastWord.payload.word}</b>
         </span>
       )}
-    </div>
+    </>
   );
 }

@@ -1,80 +1,138 @@
+import React from "react";
 import { useUnit } from "effector-react";
 import { css } from "@linaria/core";
 import { useAutoScroll } from "../hooks/useAutoScroll";
-import { $allChatEvents, $currentPlayers } from "../model/game-new.model.ts";
+import {
+  $allChatEvents,
+  $currentPlayers,
+  $playerColors,
+} from "../model/game-new.model.ts";
 
 const container = css`
-  display: grid;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
   align-content: start;
-  gap: 4px;
-  padding: 4px;
-  padding-right: 12px;
-  border-radius: 4px;
-  background-color: #fff;
-  color: #333;
-  border: 1px solid #ddd;
-  overflow: auto;
-  line-height: 1;
-  font-size: 14px;
+  gap: 6px;
+  padding: 12px 14px;
+  overflow-y: auto;
   word-break: break-word;
 `;
 
-const messageRevealed = css`
-  font-style: italic;
-  color: green;
+const system = css`
+  text-align: center;
+  font-size: 11px;
+  color: var(--muted);
+  font-weight: 700;
 `;
 
-const messageItalic = css`
-  font-style: italic;
+const systemDanger = css`
+  color: var(--danger-text);
+  font-weight: 800;
 `;
 
-const wordMask = css`
+const message = css`
+  display: flex;
+  gap: 7px;
+  align-items: baseline;
+
+  & b {
+    font-weight: 800;
+    font-size: 13px;
+    flex: none;
+  }
+
+  & span:last-child {
+    font-size: 13px;
+    color: var(--slate);
+  }
+`;
+
+const dot = css`
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex: none;
+  transform: translateY(2px);
+`;
+
+const pill = css`
+  border-radius: 9px;
+  padding: 5px 10px;
+  font-size: 12px;
+`;
+
+const pillAlmost = css`
+  background-color: var(--warn-bg);
+  color: var(--warn-text);
+`;
+
+const pillRevealed = css`
+  background-color: var(--success-bg);
+  color: var(--success-text);
+  font-weight: 800;
+`;
+
+const clueMask = css`
+  font-family: var(--font-mono);
   letter-spacing: 2px;
 `;
 
-const messageUnknown = css`
-  color: #888;
-`;
-
 export function ChatMessages() {
-  const [events, players] = useUnit([$allChatEvents, $currentPlayers]);
+  const [events, players, colors] = useUnit([
+    $allChatEvents,
+    $currentPlayers,
+    $playerColors,
+  ]);
   const scrollRef = useAutoScroll(events);
+
+  function nameOf(playerId: string) {
+    return players[playerId]?.name || "неизвестный";
+  }
 
   return (
     <div ref={scrollRef} className={container}>
       {events.slice(-50).map((ev, i) => {
         const key = ev.type + i;
+
         if (ev.type === "user-message") {
-          let { text, playerId, isRevealed } = ev.payload;
+          const { text, playerId, isRevealed } = ev.payload;
+
           if (isRevealed === "revealed") {
             return (
-              <p key={key} className={messageRevealed}>
-                <b>{players[playerId].name} отгадал(а) слово!</b>
-              </p>
+              <div key={key} className={`${pill} ${pillRevealed}`}>
+                ✓ {nameOf(playerId)} отгадал(а) слово!
+              </div>
             );
           }
 
           if (isRevealed === "almost") {
             return (
-              <p key={key} className={messageRevealed}>
-                <b>{players[playerId].name} почти отгадал(а)!</b>
-              </p>
+              <div key={key} className={`${pill} ${pillAlmost}`}>
+                <b>{nameOf(playerId)}</b> — почти отгадал(а)!
+              </div>
             );
           }
 
           return (
-            <p key={key}>
-              <b>{players[playerId].name}:</b> {text}
-            </p>
+            <div key={key} className={message}>
+              <span
+                className={dot}
+                style={{ backgroundColor: colors[playerId] }}
+              />
+              <b>{nameOf(playerId)}</b>
+              <span>{text}</span>
+            </div>
           );
         }
 
         if (ev.type === "new-selected-word") {
-          let { word } = ev.payload;
+          const { word } = ev.payload;
+
           return (
-            <p key={key} className={messageItalic}>
+            <p key={key} className={system}>
               Слово выбрано!{" "}
-              <b className={wordMask}>
+              <b className={clueMask}>
                 {word.replace(/\S/g, "_")} (
                 {word
                   .split(" ")
@@ -87,52 +145,38 @@ export function ChatMessages() {
         }
 
         if (ev.type === "drawing-ended") {
+          const timeout = ev.payload.reason === "timeout";
+
           return (
-            <div key={key}>
-              <p className={messageItalic}>
-                {ev.payload.reason === "all-revealed" && "Все отгадали!"}{" "}
-                {ev.payload.reason === "timeout" && "Время вышло!"}{" "}
-                {players[ev.payload.nextPlayerId].name} выбирает новое слово!
-              </p>
-              <ul style={{ margin: 0 }}>
-                {Object.entries(ev.payload.revealed).map(([key, time]) => {
-                  return (
-                    <li key={key}>
-                      {players[key]?.name || "no name"}{" "}
-                      {new Date(time).toISOString().slice(11, -5)}
-                    </li>
-                  );
-                })}
-              </ul>
-            </div>
+            <p key={key} className={`${system} ${timeout ? systemDanger : ""}`}>
+              {timeout ? "Время вышло!" : "Все отгадали!"}{" "}
+              {nameOf(ev.payload.nextPlayerId)} выбирает новое слово
+            </p>
           );
         }
 
         if (ev.type === "game-started") {
           return (
-            <div key={key}>
-              <p className={messageItalic}>
-                Игра началась! {players[ev.payload.playerId].name} выбирает
-                первое слово!
-              </p>
-            </div>
+            <p key={key} className={system}>
+              Игра началась! {nameOf(ev.payload.playerId)} выбирает первое слово
+            </p>
           );
         }
 
         if (ev.type === "game-finished") {
           return (
-            <div key={key}>
-              <p className={messageItalic}>Конец игры!</p>
-            </div>
+            <p key={key} className={system}>
+              Игра окончена!
+            </p>
           );
         }
 
-        // @ts-ignore
-        const t = ev.type;
+        // неизвестное событие — показываем тип, чтобы заметить
+        const unknown: { type: string } = ev;
 
         return (
-          <p key={key} className={messageUnknown}>
-            [{t}]
+          <p key={key} className={system}>
+            [{unknown.type}]
           </p>
         );
       })}

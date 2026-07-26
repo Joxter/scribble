@@ -56,17 +56,16 @@ function renderPolylines(ctx: CanvasRenderingContext2D, polylinePaths: any[]) {
   });
 }
 
-// Styles
+// лист бумаги на прохладном столе: единственная тёплая поверхность в интерфейсе
 const containerStyle = {
   margin: "0 auto",
+  width: "100%",
   maxWidth: "500px",
-  maxHeight: "100%",
-  height: "auto",
   aspectRatio: "1 / 1" as const,
   position: "relative" as const,
   background: "#f6eee2",
-  borderRadius: "8px",
-  boxShadow: `0 4px 20px rgba(0, 0, 0, 0.1)`,
+  borderRadius: "18px",
+  boxShadow: `inset 0 0 0 1px #e8dfcb, 0 14px 26px -16px rgba(30, 40, 50, 0.45)`,
 };
 
 const canvasLayerStyle = {
@@ -76,7 +75,7 @@ const canvasLayerStyle = {
   width: "100%",
   height: "100%",
   touchAction: "none" as const,
-  borderRadius: "8px",
+  borderRadius: "18px",
   cursor: "crosshair" as const,
 };
 

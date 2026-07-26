@@ -5,8 +5,9 @@ import {
   $lastTurn,
   $localId,
   $newParty,
+  $playerColors,
 } from "../model/game-new.model.ts";
-import { PlayerFigure, figureColor } from "./PlayerFigure.tsx";
+import { PlayerFigure } from "./PlayerFigure.tsx";
 import { calculateTotalScores, calculateTurnPoints } from "../utils.ts";
 
 type Props = {
@@ -69,6 +70,7 @@ export function ScoreList({ showDelta = true }: Props) {
   const party = useUnit($newParty);
   const lastTurn = useUnit($lastTurn);
   const localId = useUnit($localId);
+  const colors = useUnit($playerColors);
 
   if (!party) return null;
 
@@ -76,10 +78,10 @@ export function ScoreList({ showDelta = true }: Props) {
   const totals = calculateTotalScores(party.gameProgress);
 
   const rows = party.newPlayers
-    .map((p, i) => ({
+    .map((p) => ({
       id: p.id,
       name: p.name,
-      color: figureColor(i),
+      color: colors[p.id],
       delta: turnPoints[p.id] || 0,
       total: totals[p.id] || 0,
     }))

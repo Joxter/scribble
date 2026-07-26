@@ -4,6 +4,7 @@ import { Provider } from "effector-react";
 import { css } from "@linaria/core";
 import { $newParty, $player, currentLine } from "../model/game-new.model.ts";
 import { mockScreens, ME } from "../dev/mocks.ts";
+import { PaperTweaker } from "../dev/PaperTweaker.tsx";
 import { PartyPrepare } from "./PartyPrepare.page.tsx";
 
 const bar = css`
@@ -71,6 +72,7 @@ export function DevPage() {
           </button>
         ))}
       </div>
+      <PaperTweaker />
       <Provider key={screenKey} value={scope}>
         <PartyPrepare />
       </Provider>

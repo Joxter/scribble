@@ -1,5 +1,6 @@
 :root {
     /* surfaces */
+    --paper: #fdfcf0;
     --desk: #dfe3e8;
     --canvas: #f6eee2;
     --canvas-edge: #e8dfcb;
@@ -41,7 +42,7 @@
     font-weight: 600;
 
     color: var(--ink);
-    background-color: var(--desk);
+    background-color: var(--paper);
 }
 
 * {
@@ -51,6 +52,13 @@
 html {
     height: 100%;
     margin: 0;
+    /* бумага мостится в натуральную величину: зерно одинаковое на любом экране.
+       фон на html, а не на body — иначе он обрывается там, где кончается экран.
+       без background-size: размер берётся из самого paper.svg, чтобы его можно
+       было менять в файле, не трогая этот css */
+    background-color: var(--paper);
+    background-image: url("/paper.svg");
+    background-repeat: repeat;
 }
 
 body {

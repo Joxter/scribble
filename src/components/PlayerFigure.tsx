@@ -1,20 +1,5 @@
 import React from "react";
 
-export const FIGURE_COLORS = [
-  "#3498db",
-  "#2ecc71",
-  "#ff69b4",
-  "#9b59b6",
-  "#ffa729",
-  "#34495e",
-  "#fa3224",
-  "#8b4513",
-];
-
-export function figureColor(index: number): string {
-  return FIGURE_COLORS[index % FIGURE_COLORS.length];
-}
-
 type Props = {
   color: string;
   height?: number;

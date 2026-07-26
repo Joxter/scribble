@@ -1,5 +1,4 @@
 import React from "react";
-import { DeveloperTools } from "../components/DeveloperTools.tsx";
 import { ListOfPlayers } from "../drawing/ListOfPlayers.tsx";
 import { css } from "@linaria/core";
 import { ChatMessages } from "../drawing/ChatMessages.tsx";
@@ -98,9 +97,7 @@ export function FinishedGamePage() {
           <p>todo: рисунки</p>
           <p>todo: ещё раз</p>
         </div>
-        <div className={footer}>
-          <DeveloperTools />
-        </div>
+        <div className={footer}></div>
         <div className={playersSection}>
           <ListOfPlayers />
           <ChatMessages />

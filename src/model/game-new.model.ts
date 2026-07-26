@@ -31,6 +31,7 @@ export const {
   $newParty,
   $allChatEvents,
   $currentPlayers,
+  $playerColors,
   $partyPaintingIds,
   $lastTurn,
   $guessed,

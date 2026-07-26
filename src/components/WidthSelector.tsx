@@ -1,79 +1,69 @@
+import React from "react";
+import { css } from "@linaria/core";
 import { widths } from "../config.ts";
-
-const valGap = 4;
 
 type Props = {
   value: number;
   onChange: (width: number) => void;
 };
 
+const root = css`
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  background-color: #fff;
+  border: 1px solid var(--line-strong);
+  border-radius: 12px;
+  padding: 8px 14px;
+`;
+
+const slot = css`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border: none;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+`;
+
+const dot = css`
+  background-color: var(--ink);
+  border-radius: 50%;
+`;
+
+const selected = css`
+  box-shadow:
+    0 0 0 2px #fff,
+    0 0 0 4px var(--brand);
+`;
+
+// толщина линии на канвасе крупнее, чем читаемая точка в панели
+const DOT_SIZES = [4, 7, 11, 15, 20];
+
 export function WidthSelector({ value, onChange }: Props) {
-  const currentIndex = widths.indexOf(value);
-  const valWidth = Math.max(...widths);
-
-  let pinLeft = currentIndex * valWidth + valGap * currentIndex;
-
   return (
-    <div
-      style={{
-        display: "inline-flex",
-        gap: "4px",
-        position: "relative",
-        height: "32px",
-        backgroundColor: "#eee",
-        borderRadius: "16px",
-        cursor: "pointer",
-        padding: "4px",
-        boxShadow: "0 0px 4px rgba(0,0,0,0.1)",
-        overflow: "hidden",
-      }}
-    >
-      <div
-        style={{
-          position: "absolute",
-          left: pinLeft + "px",
-          display: "flex",
-          top: "0px",
-          width:
-            currentIndex === widths.length - 1
-              ? valWidth + 10 + "px"
-              : valWidth + 4 + "px",
-          height: "100%",
-          backgroundColor: "#007bff",
-        }}
-      ></div>
-      <div
-        style={{
-          display: "flex",
-          gap: valGap + "px",
-          position: "relative",
-          width: "100%",
-        }}
-      >
-        {widths.map((width) => {
-          return (
-            <div
-              onClick={() => onChange(width)}
-              key={width}
-              style={{
-                display: "flex",
-                width: valWidth + "px",
-                height: valWidth + "px",
-              }}
-            >
-              <div
-                style={{
-                  margin: "auto",
-                  width: `${width}px`,
-                  height: `${width}px`,
-                  backgroundColor: width === value ? "#555" : "#666",
-                  borderRadius: "50%",
-                }}
-              />
-            </div>
-          );
-        })}
-      </div>
+    <div className={root}>
+      {widths.map((width, i) => {
+        const size = DOT_SIZES[i] || DOT_SIZES.at(-1)!;
+
+        return (
+          <button
+            key={width}
+            type="button"
+            title={`${width} px`}
+            onClick={() => onChange(width)}
+            className={slot}
+          >
+            <span
+              className={`${dot} ${width === value ? selected : ""}`}
+              style={{ width: `${size}px`, height: `${size}px` }}
+            />
+          </button>
+        );
+      })}
     </div>
   );
 }

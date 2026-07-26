@@ -1,6 +1,7 @@
 import { combine, createEvent, createStore, Store } from "effector";
 import { AllChatMessages, GAME_STATUS, Party } from "../types.ts";
 import { liveQuery } from "../utils.ts";
+import { playerColors } from "../config.ts";
 import { interval } from "patronum";
 import { db } from "../DB.ts";
 import { AppSchema } from "../../instant.schema.ts";
@@ -53,6 +54,16 @@ export function createParty($localId: Store<string>) {
 
   const $currentPlayers = $newParty.map((p) => {
     return Object.fromEntries(p?.newPlayers.map((it) => [it.id, it]) || []);
+  });
+
+  const $playerColors = $newParty.map((p) => {
+    const entries =
+      p?.newPlayers.map((pl, i) => [
+        pl.id,
+        playerColors[i % playerColors.length],
+      ]) || [];
+
+    return Object.fromEntries(entries) as Record<string, string>;
   });
 
   const $partyPaintingIds = $newParty.map((p) => {
@@ -190,6 +201,7 @@ export function createParty($localId: Store<string>) {
     $allMyParties,
     $allChatEvents,
     $currentPlayers,
+    $playerColors,
     $partyPaintingIds,
     $lastTurn,
     $guessed,

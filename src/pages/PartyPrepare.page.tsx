@@ -6,17 +6,15 @@ import {
   $localId,
   $newParty,
   $player,
+  $playerColors,
 } from "../model/game-new.model.ts";
 import { css } from "@linaria/core";
 import { TextField } from "../components/TextField.tsx";
 import { Button } from "../components/Button.tsx";
 import { Select } from "../components/Select.tsx";
-import {
-  FIGURE_COLORS,
-  PlayerFigure,
-  figureColor,
-} from "../components/PlayerFigure.tsx";
+import { PlayerFigure } from "../components/PlayerFigure.tsx";
 import { Placeholder } from "../components/Placeholder.tsx";
+import { playerColors } from "../config.ts";
 import {
   closeParty,
   editUserName,
@@ -285,6 +283,7 @@ export function PartyPrepare() {
   const [party, currentPlayers] = useUnit([$newParty, $currentPlayers]);
   const player = useUnit($player);
   const localId = useUnit($localId);
+  const colors = useUnit($playerColors);
   const [name, setName] = useState(player?.name || "");
   const [copied, setCopied] = useState(false);
 
@@ -323,11 +322,6 @@ export function PartyPrepare() {
   const hostName =
     (party.host && currentPlayers[party.host]?.name) || party.host;
   const imHost = localId === party.host;
-
-  const myIndex = Math.max(
-    party.newPlayers.findIndex((p) => p.id === localId),
-    0,
-  );
 
   const roomPath = getUrl("room/" + party.name);
   const roomLink = `${window.location.origin}${roomPath}`;
@@ -372,12 +366,12 @@ export function PartyPrepare() {
           <Placeholder note="цвет, поза, аксессуары">
             <div className={characterRow}>
               <div className={characterAvatar}>
-                <PlayerFigure color={figureColor(myIndex)} height={64} />
+                <PlayerFigure color={colors[localId] || playerColors[0]} height={64} />
               </div>
               <div className={characterInfo}>
                 <b>Ваш персонаж</b>
                 <div className={characterColors}>
-                  {FIGURE_COLORS.map((color) => (
+                  {playerColors.map((color) => (
                     <span key={color} style={{ backgroundColor: color }} />
                   ))}
                 </div>
@@ -504,10 +498,10 @@ export function PartyPrepare() {
             <span>Игроки · {party.newPlayers.length}</span>
             <span>ждём ещё…</span>
           </div>
-          {party.newPlayers.map((p, i) => (
+          {party.newPlayers.map((p) => (
             <div key={p.id} className={playerRow}>
               <div className={figureSlot}>
-                <PlayerFigure color={figureColor(i)} />
+                <PlayerFigure color={colors[p.id]} />
               </div>
               <b>{p.name}</b>
               {p.id === party.host && (

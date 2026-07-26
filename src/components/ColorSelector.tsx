@@ -1,40 +1,51 @@
+import React from "react";
+import { css } from "@linaria/core";
 import { colors } from "../config.ts";
-
-const size = 28;
-const gap = 8;
 
 type Props = {
   value: string;
   onChange: (color: string) => void;
 };
 
+const root = css`
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 6px;
+
+  @media (max-width: 807px) {
+    grid-template-columns: repeat(6, 1fr);
+    gap: 8px;
+  }
+`;
+
+const swatch = css`
+  aspect-ratio: 1;
+  border: none;
+  border-radius: 8px;
+  padding: 0;
+  cursor: pointer;
+  /* светлые маркеры не теряются на белом */
+  box-shadow: inset 0 0 0 1px var(--desk);
+`;
+
+const selected = css`
+  box-shadow:
+    inset 0 0 0 1px var(--desk),
+    0 0 0 2px #fff,
+    0 0 0 4px var(--brand);
+`;
+
 export function ColorSelector({ value, onChange }: Props) {
   return (
-    <div
-      style={{
-        flexWrap: "wrap",
-        display: "flex",
-        gap: gap + "px",
-        justifyContent: "space-between",
-      }}
-    >
-      {colors.map((color, i) => (
+    <div className={root}>
+      {colors.map((color) => (
         <button
           key={color}
+          type="button"
+          title={color}
           onClick={() => onChange(color)}
-          style={{
-            width: size + "px",
-            height: size + "px",
-            border: color === "#ffffff" ? `1px solid #333` : `none`,
-            borderRadius: "100%",
-            padding: "0",
-            backgroundColor: color,
-            cursor: "pointer",
-            boxShadow:
-              color === value
-                ? "0 0 0 2px #fff, 0 0 0 5px rgb(0, 123, 255)"
-                : "none",
-          }}
+          className={`${swatch} ${color === value ? selected : ""}`}
+          style={{ backgroundColor: color }}
         />
       ))}
     </div>

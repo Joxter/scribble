@@ -74,6 +74,18 @@ export const smoothConf = {
 
 export const widths = [3, 8, 15, 20, 25];
 
+// цвета фигурок игроков; раздаются по порядку в комнате
+export const playerColors = [
+  "#3498db",
+  "#2ecc71",
+  "#ff69b4",
+  "#9b59b6",
+  "#ffa729",
+  "#34495e",
+  "#fa3224",
+  "#8b4513",
+];
+
 export const colors = [
   "#111111",
   "#34495e",
