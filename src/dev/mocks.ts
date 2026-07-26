@@ -237,14 +237,33 @@ function mockPaintings(): Painting[] {
 
 export type MockScreen = {
   title: string;
+  // какую страницу рендерить: стартовый экран живёт вне комнаты
+  page?: "start";
   make: () => {
-    party: NewParty;
+    party: NewParty | null;
     canvas: CurrentCanvas;
     paintings?: Painting[];
+    myParties?: { id: string; name: string; status: NewParty["status"] }[];
   };
 };
 
 export const mockScreens = {
+  start: {
+    title: "Старт",
+    page: "start",
+    make: () => ({ party: null, canvas: [] }),
+  },
+  startWithGame: {
+    title: "Старт: есть игра",
+    page: "start",
+    make: () => ({
+      party: null,
+      canvas: [],
+      myParties: [
+        { id: "mock-party-id", name: "dev-room", status: GAME_STATUS.inProgress },
+      ],
+    }),
+  },
   prepareHost: {
     title: "Комната: я хост",
     make: () => ({ party: prepareParty(ME.id), canvas: [] }),

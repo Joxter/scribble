@@ -4,8 +4,10 @@ import { css } from "@linaria/core";
 import { useUnit } from "effector-react";
 import { getUrl } from "../utils.ts";
 import { BUILD_INFO } from "../config.ts";
-import { $player } from "../model/game-new.model.ts";
+import { $player, $playerColors } from "../model/game-new.model.ts";
 import { DeveloperTools } from "./DeveloperTools.tsx";
+import { PlayerFigure } from "./PlayerFigure.tsx";
+import { playerColors } from "../config.ts";
 
 type Props = {
   children: React.ReactNode;
@@ -42,14 +44,27 @@ const title = css`
   margin: 0;
 `;
 
+const playerBadge = css`
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+`;
+
+const playerName = css`
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--ink);
+`;
+
 const profileLink = css`
   text-decoration: none;
-  color: var(--slate);
-  font-size: 14px;
-  font-weight: 700;
+  color: var(--brand-dark);
+  font-size: 13px;
+  font-weight: 800;
 
   &:hover {
-    color: var(--ink);
+    text-decoration: underline;
   }
 `;
 
@@ -81,6 +96,7 @@ const footer = css`
 
 export function PageLayout({ children }: Props) {
   const player = useUnit($player);
+  const colors = useUnit($playerColors);
   const timeAgo = Date.now() - BUILD_INFO.buildTimestamp;
 
   return (
@@ -90,9 +106,16 @@ export function PageLayout({ children }: Props) {
           <h1 className={title}>Scribble</h1>
         </Link>
         {player && (
-          <Link href={getUrl("profile")} className={profileLink}>
-            {player.name}
-          </Link>
+          <div className={playerBadge}>
+            <PlayerFigure
+              color={colors[player.id] || playerColors[0]}
+              height={26}
+            />
+            <span className={playerName}>{player.name}</span>
+            <Link href={getUrl("profile")} className={profileLink}>
+              изменить
+            </Link>
+          </div>
         )}
       </header>
 
