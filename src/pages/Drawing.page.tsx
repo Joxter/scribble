@@ -57,9 +57,28 @@ const players = css`
   overflow: hidden;
 `;
 
-const fullWidthAspect = css`
-  width: 100%;
-  aspect-ratio: 1;
+const roundHeader = css`
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 0 12px;
+`;
+
+const roundTitle = css`
+  font-size: 20px;
+  font-weight: 900;
+  color: var(--ink);
+`;
+
+const roundSub = css`
+  font-size: 15px;
+  color: var(--slate);
+  font-weight: 700;
+
+  b {
+    color: var(--ink);
+    font-weight: 900;
+  }
 `;
 
 const drawingToolsContainer = css`
@@ -83,22 +102,22 @@ export function DrawingPage() {
       <Fps />
       <div className={page}>
         <div className={header}>
-          <Timeout />
-          {drawing.iam && (
-            <p className={textCenter}>
-              <b>{drawing.word}</b>
-            </p>
+          {choosingWord.choose ? (
+            <RoundEndHeader />
+          ) : (
+            <>
+              <Timeout />
+              {drawing.iam && (
+                <p className={textCenter}>
+                  <b>{drawing.word}</b>
+                </p>
+              )}
+            </>
           )}
         </div>
 
         <div className={canvasSection}>
-          {choosingWord.choose ? (
-            <div className={fullWidthAspect}>
-              <DrawResults />
-            </div>
-          ) : (
-            <Canvas />
-          )}
+          {choosingWord.choose ? <DrawResults /> : <Canvas />}
         </div>
         <div className={footer}>
           {drawing.iam ? (
@@ -134,4 +153,28 @@ function Timeout() {
   }
 
   return <p>time: {timeout.left} sec</p>;
+}
+
+function RoundEndHeader() {
+  const events = useUnit(party.$allChatEvents);
+
+  const lastEnded = events.findLast((e) => e.type === "drawing-ended");
+  const lastWord = events.findLast((e) => e.type === "new-selected-word");
+
+  const title = !lastEnded
+    ? "Новый раунд!"
+    : lastEnded.payload.reason === "timeout"
+      ? "Время вышло!"
+      : "Все отгадали!";
+
+  return (
+    <div className={roundHeader}>
+      <span className={roundTitle}>{title}</span>
+      {lastEnded && lastWord && (
+        <span className={roundSub}>
+          слово было <b>{lastWord.payload.word}</b>
+        </span>
+      )}
+    </div>
+  );
 }

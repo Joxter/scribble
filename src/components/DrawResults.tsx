@@ -1,85 +1,50 @@
 import React from "react";
 import { css } from "@linaria/core";
 import { useUnit } from "effector-react";
-import {
-  $choosingWord,
-  $currentPlayers,
-  $localId,
-  $newParty,
-} from "../model/game-new.model.ts";
+import { $choosingWord } from "../model/game-new.model.ts";
 import { ChooseWord } from "./ChooseWord.tsx";
+import { PaintingReactions } from "./PaintingReactions.tsx";
+import { ScoreList } from "./ScoreList.tsx";
 
-const container = css`
-  border: 1px solid #999;
-  padding: 16px;
-  display: grid;
-  justify-items: start;
-  align-content: start;
-  gap: 8px;
+const panel = css`
+  height: 100%;
+  min-height: 360px;
+  background-color: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  box-shadow: 0 14px 26px -18px rgba(30, 40, 50, 0.4);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 `;
 
-const currentUser = css`
-  font-weight: bold;
+const scores = css`
+  flex: 1;
+  padding: 10px 16px;
+  overflow-y: auto;
 `;
 
-type Props = {
-  // gameProgress: GameProgress;
-};
+const chooseSection = css`
+  border-top: 1px solid var(--sunken);
+  padding: 12px 16px;
+`;
 
-export function DrawResults({}: Props) {
-  const party = useUnit($newParty);
-  const currentPlayers = useUnit($currentPlayers);
+export function DrawResults() {
   const choosingWord = useUnit($choosingWord);
-  const localId = useUnit($localId);
 
-  if (!party) return null;
+  if (!choosingWord.choose) return null;
 
-  const { gameProgress } = party;
+  return (
+    <div className={panel}>
+      <PaintingReactions />
 
-  const lastResults =
-    gameProgress.at(-1)?.at(-1) || gameProgress.at(-2)?.at(-1);
-
-  if (!lastResults) {
-    // very first round
-    // return <div className={container}>no last result</div>;
-  }
-
-  if (choosingWord.choose && choosingWord.who) {
-    return (
-      <div className={container}>
-        {choosingWord.iam ? (
-          <ChooseWord words={choosingWord.words} />
-        ) : (
-          <p>{currentPlayers[choosingWord.who].name} выбирает слово</p>
-        )}
-        <br />
-        {lastResults && (
-          <>
-            <h3>Очки за "рисунок-нейм":</h3>
-            <ul>
-              {Object.entries(lastResults.scores).map(([userId, timestamp]) => {
-                const iso = new Date(timestamp).toTimeString().split(" ")[0];
-
-                // показывать накопленные очки + полученные
-                return (
-                  <li
-                    key={userId}
-                    className={userId === localId ? currentUser : ""}
-                  >
-                    {currentPlayers[userId].name}: {iso}
-                  </li>
-                );
-              })}
-            </ul>
-
-            <p>тут будет рисунок и реакции</p>
-          </>
-        )}
+      <div className={scores}>
+        <ScoreList />
       </div>
-    );
-  }
 
-  if (!lastResults) {
-    return <div className={container}>something went wrong</div>;
-  }
+      <div className={chooseSection}>
+        <ChooseWord />
+      </div>
+    </div>
+  );
 }

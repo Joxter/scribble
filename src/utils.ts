@@ -1,6 +1,6 @@
 import { VecLike } from "./freehand/Vec";
 import { Store } from "effector";
-import { IsRevealed } from "./types.ts";
+import { GameProgress, IsRevealed } from "./types.ts";
 import { words } from "../dictionaries/ru-300-chatgpt.ts";
 
 export const canvasSize = 600;
@@ -300,4 +300,40 @@ export function promiseInLineTODO<T extends any[], R>() {
       });
     }
   };
+}
+
+export function calculateTurnPoints(
+  turn: GameProgress[number][number],
+): Record<string, number> {
+  const points: Record<string, number> = {};
+
+  const sortedGuessers = Object.entries(turn.scores).sort(
+    ([, timeA], [, timeB]) => timeA - timeB,
+  );
+
+  sortedGuessers.forEach(([playerId], index) => {
+    points[playerId] = Math.max(100 - index * 10, 10);
+  });
+
+  if (sortedGuessers.length > 0) {
+    points[turn.whoDrawId] = (points[turn.whoDrawId] || 0) + 50;
+  }
+
+  return points;
+}
+
+export function calculateTotalScores(
+  gameProgress: GameProgress,
+): Record<string, number> {
+  const totals: Record<string, number> = {};
+
+  gameProgress.forEach((round) => {
+    round.forEach((turn) => {
+      Object.entries(calculateTurnPoints(turn)).forEach(([playerId, pts]) => {
+        totals[playerId] = (totals[playerId] || 0) + pts;
+      });
+    });
+  });
+
+  return totals;
 }

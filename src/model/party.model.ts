@@ -62,6 +62,13 @@ export function createParty($localId: Store<string>) {
     );
   });
 
+  // последний завершённый ход: в начале нового раунда он лежит в предыдущем
+  const $lastTurn = $newParty.map((p) => {
+    if (!p) return null;
+    const { gameProgress } = p;
+    return gameProgress.at(-1)?.at(-1) || gameProgress.at(-2)?.at(-1) || null;
+  });
+
   const $guessed = $newParty.map((p) => {
     if (!p) return {};
     return p.gameState.state === "drawing" ? p.gameState.guessed : {};
@@ -184,6 +191,7 @@ export function createParty($localId: Store<string>) {
     $allChatEvents,
     $currentPlayers,
     $partyPaintingIds,
+    $lastTurn,
     $guessed,
     $choosingWord,
     $drawingState,

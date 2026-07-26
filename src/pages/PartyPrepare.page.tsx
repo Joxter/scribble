@@ -11,7 +11,12 @@ import { css } from "@linaria/core";
 import { TextField } from "../components/TextField.tsx";
 import { Button } from "../components/Button.tsx";
 import { Select } from "../components/Select.tsx";
-import { PlayerFigure, figureColor } from "../components/PlayerFigure.tsx";
+import {
+  FIGURE_COLORS,
+  PlayerFigure,
+  figureColor,
+} from "../components/PlayerFigure.tsx";
+import { Placeholder } from "../components/Placeholder.tsx";
 import {
   closeParty,
   editUserName,
@@ -115,6 +120,46 @@ const linkText = css`
 const copyButton = css`
   margin-left: auto;
   white-space: nowrap;
+`;
+
+const characterRow = css`
+  display: flex;
+  gap: 16px;
+  align-items: center;
+`;
+
+const characterAvatar = css`
+  width: 72px;
+  height: 82px;
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--brand-bg);
+  border-radius: 12px;
+`;
+
+const characterInfo = css`
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  & > b {
+    font-size: 15px;
+    font-weight: 800;
+    color: var(--ink);
+  }
+`;
+
+const characterColors = css`
+  display: flex;
+  gap: 6px;
+
+  & > span {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+  }
 `;
 
 const paramRow = css`
@@ -279,6 +324,11 @@ export function PartyPrepare() {
     (party.host && currentPlayers[party.host]?.name) || party.host;
   const imHost = localId === party.host;
 
+  const myIndex = Math.max(
+    party.newPlayers.findIndex((p) => p.id === localId),
+    0,
+  );
+
   const roomPath = getUrl("room/" + party.name);
   const roomLink = `${window.location.origin}${roomPath}`;
 
@@ -318,6 +368,22 @@ export function PartyPrepare() {
               {copied ? "Скопировано ✓" : "Копировать"}
             </Button>
           </div>
+
+          <Placeholder note="цвет, поза, аксессуары">
+            <div className={characterRow}>
+              <div className={characterAvatar}>
+                <PlayerFigure color={figureColor(myIndex)} height={64} />
+              </div>
+              <div className={characterInfo}>
+                <b>Ваш персонаж</b>
+                <div className={characterColors}>
+                  {FIGURE_COLORS.map((color) => (
+                    <span key={color} style={{ backgroundColor: color }} />
+                  ))}
+                </div>
+              </div>
+            </div>
+          </Placeholder>
 
           <div className={paramRows}>
             <form

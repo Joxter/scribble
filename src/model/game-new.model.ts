@@ -32,6 +32,7 @@ export const {
   $allChatEvents,
   $currentPlayers,
   $partyPaintingIds,
+  $lastTurn,
   $guessed,
   $choosingWord,
 } = party;
