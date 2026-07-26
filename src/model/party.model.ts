@@ -1,5 +1,5 @@
 import { combine, createEvent, createStore, Store } from "effector";
-import { AllChatMessages, GAME_STATUS, Party } from "../types.ts";
+import { AllChatMessages, GAME_STATUS, Painting, Party } from "../types.ts";
 import { liveQuery } from "../utils.ts";
 import { playerColors } from "../config.ts";
 import { interval } from "patronum";
@@ -78,6 +78,32 @@ export function createParty($localId: Store<string>) {
     if (!p) return null;
     const { gameProgress } = p;
     return gameProgress.at(-1)?.at(-1) || gameProgress.at(-2)?.at(-1) || null;
+  });
+
+  // рисунки партии: в gameProgress лежат только id, сами картины — отдельная сущность
+  const $partyPaintings = createStore<Painting[]>([]);
+  const partyPaintingsLoaded = createEvent<Painting[]>();
+  $partyPaintings.on(partyPaintingsLoaded, (_, list) => list);
+
+  // подписываемся по строковому ключу: массив id пересоздаётся на каждый апдейт party
+  const $paintingIdsKey = $partyPaintingIds.map((ids) => ids.join(","));
+
+  liveQuery($paintingIdsKey, (key) => {
+    const ids = key ? key.split(",") : [];
+
+    if (!ids.length) {
+      partyPaintingsLoaded([]);
+      return () => {};
+    }
+
+    return db.subscribeQuery(
+      { paintings: { $: { where: { id: { $in: ids } } } } },
+      (resp) => {
+        if (resp.data?.paintings) {
+          partyPaintingsLoaded(resp.data.paintings as Painting[]);
+        }
+      },
+    );
   });
 
   const $guessed = $newParty.map((p) => {
@@ -203,6 +229,7 @@ export function createParty($localId: Store<string>) {
     $currentPlayers,
     $playerColors,
     $partyPaintingIds,
+    $partyPaintings,
     $lastTurn,
     $guessed,
     $choosingWord,

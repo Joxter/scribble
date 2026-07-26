@@ -46,11 +46,19 @@ function renderCanvas(
 
 type Props = {
   canvas: CanvasLine[];
+  // внутреннее разрешение отрисовки; при fill не совпадает с экранным размером
   size?: number;
+  // растянуть по ширине контейнера, оставаясь квадратом
+  fill?: boolean;
   className?: string;
 };
 
-export function ReadOnlyCanvas({ canvas, size = 200, className }: Props) {
+export function ReadOnlyCanvas({
+  canvas,
+  size = 200,
+  fill,
+  className,
+}: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
@@ -62,12 +70,13 @@ export function ReadOnlyCanvas({ canvas, size = 200, className }: Props) {
   }, [canvas, size]);
 
   const containerStyle = {
-    width: `${size}px`,
-    height: `${size}px`,
+    width: fill ? "100%" : `${size}px`,
+    height: fill ? "auto" : `${size}px`,
+    aspectRatio: fill ? ("1" as const) : undefined,
     position: "relative" as const,
     background: "#f6eee2",
-    borderRadius: "4px",
-    boxShadow: `0 2px 8px rgba(0, 0, 0, 0.1)`,
+    borderRadius: "9px",
+    boxShadow: "inset 0 0 0 1px #e8dfcb",
   };
 
   const canvasStyle = {
@@ -76,7 +85,7 @@ export function ReadOnlyCanvas({ canvas, size = 200, className }: Props) {
     left: 0,
     width: "100%",
     height: "100%",
-    borderRadius: "4px",
+    borderRadius: "9px",
   };
 
   return (

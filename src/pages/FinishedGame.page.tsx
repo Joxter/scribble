@@ -1,106 +1,209 @@
 import React from "react";
-import { ListOfPlayers } from "../drawing/ListOfPlayers.tsx";
 import { css } from "@linaria/core";
+import { useUnit } from "effector-react";
 import { ChatMessages } from "../drawing/ChatMessages.tsx";
+import { RoomHeader } from "../drawing/RoomHeader.tsx";
+import { PlayerFigures } from "../drawing/PlayerFigures.tsx";
+import { GameInputField } from "../drawing/GameInputField.tsx";
 import { Fps } from "../components/Fps.tsx";
 import { PageLayout } from "../components/PageLayout.tsx";
-import { useUnit } from "effector-react";
-import {
-  $currentPlayers,
-  $newParty,
-  $partyPaintingIds,
-} from "../model/game-new.model.ts";
+import { Podium } from "../components/Podium.tsx";
+import { FinalStandings } from "../components/FinalStandings.tsx";
+import { PaintingsGallery } from "../components/PaintingsGallery.tsx";
+import { Button } from "../components/Button.tsx";
+import { $localId, $newParty } from "../model/game-new.model.ts";
+import { restartParty } from "../db-things.ts";
 import { calculateTotalScores } from "../utils.ts";
 
 const page = css`
-  display: grid;
-  gap: 8px;
-  width: 100%;
-  max-width: 500px;
-  grid-template-areas:
-    "header"
-    "canvas"
-    "footer"
-    "players";
-  grid-template-rows: min-content 1fr min-content min-content;
-  margin: 0 auto;
+  display: flex;
+  gap: 16px;
+  align-items: stretch;
+  justify-content: center;
 
-  @media (width > 808px) {
-    grid-template-areas:
-      "header ."
-      "canvas players"
-      "footer .";
-    grid-template-columns: 500px 300px;
-    grid-template-rows: auto 500px auto;
-    max-width: none;
+  @media (max-width: 807px) {
+    flex-direction: column;
+    align-items: center;
+  }
+`;
+
+const leftColumn = css`
+  width: 500px;
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+
+  @media (max-width: 807px) {
+    width: 100%;
+    max-width: 500px;
+  }
+`;
+
+const rightColumn = css`
+  width: 300px;
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+
+  @media (max-width: 807px) {
+    width: 100%;
+    max-width: 500px;
   }
 `;
 
 const header = css`
-  grid-area: header;
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 0 4px;
+  min-height: 32px;
 `;
 
-const canvasSection = css`
-  grid-area: canvas;
-  width: 100%;
-  padding: 8px;
+const title = css`
+  font-size: 20px;
+  font-weight: 900;
+  color: var(--ink);
 `;
 
-const footer = css`
-  grid-area: footer;
+const subtitle = css`
+  font-size: 15px;
+  color: var(--slate);
+  font-weight: 700;
+
+  & b {
+    color: var(--ink);
+    font-weight: 900;
+  }
 `;
 
-const playersSection = css`
-  grid-area: players;
-  display: grid;
-  gap: 8px;
+const panel = css`
+  height: 360px;
+  background-color: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  box-shadow: 0 14px 26px -18px rgba(30, 40, 50, 0.4);
+  display: flex;
+  overflow: hidden;
+
+  @media (max-width: 479px) {
+    height: auto;
+    flex-direction: column;
+  }
+`;
+
+const standingsPane = css`
+  width: 196px;
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px;
+  border-right: 1px solid var(--sunken);
+  overflow: hidden;
+
+  @media (max-width: 479px) {
+    width: 100%;
+    border-right: none;
+    border-bottom: 1px solid var(--sunken);
+  }
+`;
+
+const resultsPane = css`
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px;
+  overflow: hidden;
+  min-width: 0;
+`;
+
+const lobbyButton = css`
+  margin-top: auto;
+  flex: none;
+  padding: 11px;
+  border-radius: 14px;
+`;
+
+const againNote = css`
+  margin-top: auto;
+  font-size: 11px;
+  color: var(--muted);
+  text-align: center;
+`;
+
+const chatWindow = css`
+  flex: 1;
+  min-height: 240px;
+  background-color: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  display: flex;
+  flex-direction: column;
   overflow: hidden;
 `;
 
 export function FinishedGamePage() {
-  const [party, players] = useUnit([
-    $newParty,
-    $currentPlayers,
-    $partyPaintingIds,
-  ]);
+  const party = useUnit($newParty);
+  const localId = useUnit($localId);
 
   if (!party) return null;
 
-  const playerScores = calculateTotalScores(party.gameProgress);
+  const totals = calculateTotalScores(party.gameProgress);
+  const winner = party.newPlayers
+    .map((p) => ({ ...p, score: totals[p.id] || 0 }))
+    .sort((a, b) => b.score - a.score)[0];
 
-  // Sort players by score
-  const topPlayers = Object.keys(players)
-    .map((playerId) => ({
-      player: players[playerId],
-      score: playerScores[playerId] || 0,
-    }))
-    .sort((a, b) => b.score - a.score);
+  const imHost = localId === party.host;
 
   return (
     <PageLayout>
       <Fps />
       <div className={page}>
-        <div className={header}></div>
-
-        <div className={canvasSection}>
-          <p>Игра закончена!</p>
-          <div>
-            <h2>Топ игроков:</h2>
-            <ol>
-              {topPlayers.map(({ player, score }) => (
-                <li key={player.id}>
-                  {player.name} - {score} очков
-                </li>
-              ))}
-            </ol>
+        <div className={leftColumn}>
+          <div className={header}>
+            <span className={title}>Игра окончена!</span>
+            {winner && (
+              <span className={subtitle}>
+                победил(а) <b>{winner.name}</b>
+              </span>
+            )}
           </div>
-          <p>todo: рисунки</p>
-          <p>todo: ещё раз</p>
+
+          <div className={panel}>
+            <div className={standingsPane}>
+              <FinalStandings />
+              {imHost ? (
+                <Button
+                  className={lobbyButton}
+                  onClick={() => restartParty(party)}
+                >
+                  В лобби
+                </Button>
+              ) : (
+                <span className={againNote}>
+                  Хост может вернуть всех в лобби
+                </span>
+              )}
+            </div>
+
+            <div className={resultsPane}>
+              <Podium />
+              <PaintingsGallery />
+            </div>
+          </div>
+
+          <GameInputField />
         </div>
-        <div className={footer}></div>
-        <div className={playersSection}>
-          <ListOfPlayers />
-          <ChatMessages />
+
+        <div className={rightColumn}>
+          <RoomHeader />
+          <div className={chatWindow}>
+            <ChatMessages />
+            <PlayerFigures />
+          </div>
         </div>
       </div>
     </PageLayout>

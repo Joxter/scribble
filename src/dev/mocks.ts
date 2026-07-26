@@ -5,6 +5,7 @@ import {
   GAME_STATUS,
   GameProgress,
   IsRevealed,
+  Painting,
   UserMessageEvent,
 } from "../types.ts";
 import { generateClues } from "../utils.ts";
@@ -127,7 +128,7 @@ function choosingParty(chooserId: string): NewParty {
   };
 }
 
-function finishedParty(): NewParty {
+function finishedParty(hostId: string = ANNA.id): NewParty {
   const round1 = [
     finishedTurn(ME.id, [ANNA.id, BORIS.id, VIKA.id], "mock-p-1"),
     finishedTurn(ANNA.id, [ME.id, VIKA.id], "mock-p-2"),
@@ -143,6 +144,7 @@ function finishedParty(): NewParty {
 
   return {
     ...baseParty(),
+    host: hostId,
     status: GAME_STATUS.finished,
     gameState: { state: "game-finished" },
     gameProgress: [round1, round2, []],
@@ -197,9 +199,49 @@ function doodle(): CurrentCanvas {
   ];
 }
 
-type MockScreen = {
+// рисунки партии для галереи на финальном экране: разные, чтобы отличать друг от друга
+function mockPaintings(): Painting[] {
+  const lines = doodle();
+  const variants: CurrentCanvas[] = [
+    lines,
+    [lines[3], lines[4]],
+    [lines[0], lines[1], lines[4]],
+    [lines[2], lines[3]],
+    [lines[1], lines[4]],
+    [lines[0], lines[3]],
+    [lines[2], lines[4]],
+    [lines[0], lines[1], lines[2]],
+    [lines[3]],
+    [lines[1], lines[2], lines[4]],
+  ];
+  const words = [
+    "носорог",
+    "самолёт",
+    "радуга",
+    "чайник",
+    "слон",
+    "барабан",
+    "ракета",
+    "зонт",
+    "мельница",
+    "велосипед",
+  ];
+
+  return words.map((word, i) => ({
+    id: `mock-p-${i + 1}`,
+    playerId: allPlayers[i % allPlayers.length].id,
+    word,
+    canvas: variants[i],
+  }));
+}
+
+export type MockScreen = {
   title: string;
-  make: () => { party: NewParty; canvas: CurrentCanvas };
+  make: () => {
+    party: NewParty;
+    canvas: CurrentCanvas;
+    paintings?: Painting[];
+  };
 };
 
 export const mockScreens = {
@@ -228,7 +270,19 @@ export const mockScreens = {
     make: () => ({ party: drawingParty(ANNA.id), canvas: doodle() }),
   },
   finished: {
-    title: "Финал",
-    make: () => ({ party: finishedParty(), canvas: [] }),
+    title: "Финал: я гость",
+    make: () => ({
+      party: finishedParty(),
+      canvas: [],
+      paintings: mockPaintings(),
+    }),
+  },
+  finishedHost: {
+    title: "Финал: я хост",
+    make: () => ({
+      party: finishedParty(ME.id),
+      canvas: [],
+      paintings: mockPaintings(),
+    }),
   },
 } satisfies Record<string, MockScreen>;

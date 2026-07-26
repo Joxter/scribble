@@ -123,6 +123,18 @@ export async function leaveParty(userId: string, partyId: string) {
   return res;
 }
 
+// вернуть всех в настройки комнаты: чистим прогресс и историю чата
+export async function restartParty(party: NewParty) {
+  return db.transact([
+    ...party.roomEvents.map((ev) => db.tx.roomEvent[ev.id].delete()),
+    db.tx.party[party.id].update({
+      status: GAME_STATUS.prepare,
+      gameState: { state: "game-prepare" },
+      gameProgress: [[]],
+    }),
+  ]);
+}
+
 export async function closeParty(partyId: string) {
   const res = await db.transact([
     db.tx.party[partyId].update({ status: GAME_STATUS.finished }),

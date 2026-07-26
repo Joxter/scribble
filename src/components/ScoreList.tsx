@@ -10,11 +10,6 @@ import {
 import { PlayerFigure } from "./PlayerFigure.tsx";
 import { calculateTotalScores, calculateTurnPoints } from "../utils.ts";
 
-type Props = {
-  // очки за последний ход; на финале партии показываем только сумму
-  showDelta?: boolean;
-};
-
 const root = css`
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -66,7 +61,7 @@ const empty = css`
   padding: 16px 0;
 `;
 
-export function ScoreList({ showDelta = true }: Props) {
+export function ScoreList() {
   const party = useUnit($newParty);
   const lastTurn = useUnit($lastTurn);
   const localId = useUnit($localId);
@@ -102,15 +97,10 @@ export function ScoreList({ showDelta = true }: Props) {
                 {r.id === localId ? " (вы)" : ""}
               </div>
               <div className={points}>
-                {showDelta && (
-                  <>
-                    <span className={r.delta > 0 ? delta : deltaZero}>
-                      +{r.delta}
-                    </span>{" "}
-                    ·{" "}
-                  </>
-                )}
-                {r.total}
+                <span className={r.delta > 0 ? delta : deltaZero}>
+                  +{r.delta}
+                </span>{" "}
+                · {r.total}
               </div>
             </div>
           </div>

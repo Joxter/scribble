@@ -2,8 +2,13 @@ import React, { useMemo, useState } from "react";
 import { fork } from "effector";
 import { Provider } from "effector-react";
 import { css } from "@linaria/core";
-import { $newParty, $player, currentLine } from "../model/game-new.model.ts";
-import { mockScreens, ME } from "../dev/mocks.ts";
+import {
+  $newParty,
+  $partyPaintings,
+  $player,
+  currentLine,
+} from "../model/game-new.model.ts";
+import { mockScreens, ME, MockScreen } from "../dev/mocks.ts";
 import { PaperTweaker } from "../dev/PaperTweaker.tsx";
 import { PartyPrepare } from "./PartyPrepare.page.tsx";
 
@@ -47,13 +52,15 @@ export function DevPage() {
   const [screenKey, setScreenKey] = useState<ScreenKey>("prepareHost");
 
   const scope = useMemo(() => {
-    const { party, canvas } = mockScreens[screenKey].make();
+    const screen: MockScreen = mockScreens[screenKey];
+    const { party, canvas, paintings } = screen.make();
 
     return fork({
       values: [
         [$player, { id: ME.id, name: ME.name }],
         [$newParty, party],
         [currentLine.$currentDrawing, canvas],
+        [$partyPaintings, paintings || []],
       ],
     });
   }, [screenKey]);

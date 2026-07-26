@@ -33,6 +33,7 @@ export const {
   $currentPlayers,
   $playerColors,
   $partyPaintingIds,
+  $partyPaintings,
   $lastTurn,
   $guessed,
   $choosingWord,
