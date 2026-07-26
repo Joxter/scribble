@@ -15,9 +15,8 @@ const container = css`
   display: flex;
   flex-direction: column;
   align-items: center;
-  background-color: #f9fafb;
+  background-color: var(--desk);
   padding: 12px;
-  line-height: 1;
 `;
 
 const headerBar = css`
@@ -37,20 +36,20 @@ const logoLink = css`
 
 const title = css`
   font-size: 30px;
-  font-weight: bold;
-  color: #1f2937;
+  font-weight: 900;
+  letter-spacing: -0.5px;
+  color: var(--ink);
   margin: 0;
 `;
 
 const profileLink = css`
   text-decoration: none;
-  color: #6b7280;
+  color: var(--slate);
   font-size: 14px;
-  font-weight: 500;
-  transition: color 0.2s;
+  font-weight: 700;
 
   &:hover {
-    color: #1f2937;
+    color: var(--ink);
   }
 `;
 
@@ -62,13 +61,21 @@ const content = css`
 
 const footer = css`
   margin-top: auto;
+  padding-top: 24px;
   display: flex;
   gap: 8px 32px;
   font-size: 14px;
   flex-wrap: wrap;
+  color: var(--muted);
 
   & a {
     text-decoration: none;
+    color: var(--slate);
+    font-weight: 700;
+  }
+
+  & a:hover {
+    color: var(--ink);
   }
 `;
 

@@ -1,13 +1,47 @@
 :root {
+    /* surfaces */
+    --desk: #dfe3e8;
+    --canvas: #f6eee2;
+    --canvas-edge: #e8dfcb;
+    --panel: #ffffff;
+    --sunken: #eef1f4;
+    --line: #e4e7eb;
+    --line-strong: #d7dce2;
+    --keycap-edge: #cfd6dd;
+
+    /* text */
+    --ink: #232a31;
+    --slate: #34495e;
+    --muted: #7a828c;
+
+    /* semantic */
+    --brand: #3498db;
+    --brand-dark: #2b7bb9;
+    --brand-bg: #eef7fd;
+    --brand-border: #bfe0f4;
+    --success: #2ecc71;
+    --success-text: #1f9d54;
+    --success-bg: #e3f7ea;
+    --success-border: #b7e6c8;
+    --danger: #fa3224;
+    --danger-text: #c02a1e;
+    --danger-border: #f3c9c4;
+    --warn: #ffa729;
+    --warn-text: #b5730a;
+    --warn-bg: #fff2d6;
+    --warn-border: #f0dca0;
+
+    --font-mono: "JetBrains Mono", ui-monospace, monospace;
+
     font-family:
-        system-ui, "Segoe UI", Roboto, Helvetica, Arial, sans-serif,
+        "Nunito", system-ui, "Segoe UI", Roboto, Helvetica, Arial, sans-serif,
         "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
     font-size: 16px;
-    line-height: 24px;
-    font-weight: 400;
+    line-height: 1.5;
+    font-weight: 600;
 
-    color: #213547;
-    background-color: #ffffff;
+    color: var(--ink);
+    background-color: var(--desk);
 }
 
 * {

@@ -12,32 +12,39 @@ type Props<T> = {
 const root = css`
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
 
   label {
-    font-size: 12px;
-    font-weight: 500;
-    color: #374151;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--slate);
   }
 
   select {
-    padding: 8px 12px;
-    font-size: 14px;
-    border: 1px solid #d1d5db;
-    border-radius: 4px;
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--ink);
+    background-color: var(--sunken);
+    border: 1px solid var(--line-strong);
+    border-radius: 12px;
+    padding: 11px 34px 11px 14px;
     outline: none;
-    transition: outline 0.2s;
-    background-color: white;
     cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%237a828c' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
 
     &:focus {
-      outline: 2px solid #3b82f6;
+      background-color: #fff;
+      border-color: var(--brand);
+      box-shadow: 0 0 0 4px rgba(52, 152, 219, 0.18);
     }
 
     &:disabled {
-      background-color: #f3f4f6;
       cursor: not-allowed;
-      opacity: 0.6;
+      color: var(--muted);
     }
   }
 `;

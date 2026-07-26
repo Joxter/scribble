@@ -13,24 +13,35 @@ type Props = {
 const root = css`
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
 
   label {
-    font-size: 12px;
-    font-weight: 500;
-    color: #374151;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--slate);
   }
 
   input {
-    padding: 8px 12px;
-    font-size: 14px;
-    border: 1px solid #d1d5db;
-    border-radius: 4px;
+    font-family: inherit;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--ink);
+    background-color: var(--sunken);
+    border: 1px solid var(--line-strong);
+    border-radius: 12px;
+    padding: 11px 14px;
     outline: none;
-    transition: outline 0.2s;
+    width: 100%;
+
+    &::placeholder {
+      color: var(--muted);
+      font-weight: 600;
+    }
 
     &:focus {
-      outline: 2px solid #3b82f6;
+      background-color: #fff;
+      border-color: var(--brand);
+      box-shadow: 0 0 0 4px rgba(52, 152, 219, 0.18);
     }
   }
 `;
