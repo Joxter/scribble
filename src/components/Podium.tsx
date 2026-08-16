@@ -1,7 +1,7 @@
 import React from "react";
 import { css } from "@linaria/core";
 import { useUnit } from "effector-react";
-import { $newParty, $playerColors } from "../model/game-new.model.ts";
+import { $newParty, $playerAvatars } from "../model/game-new.model.ts";
 import { PlayerFigure } from "./PlayerFigure.tsx";
 import { calculateTotalScores } from "../utils.ts";
 
@@ -68,14 +68,14 @@ const STEP_HEIGHT = [38, 24, 18];
 
 export function Podium() {
   const party = useUnit($newParty);
-  const colors = useUnit($playerColors);
+  const avatars = useUnit($playerAvatars);
 
   if (!party) return null;
 
   const totals = calculateTotalScores(party.gameProgress);
 
   const top = party.newPlayers
-    .map((p) => ({ id: p.id, name: p.name, color: colors[p.id] }))
+    .map((p) => ({ id: p.id, name: p.name, avatar: avatars[p.id] }))
     .sort((a, b) => (totals[b.id] || 0) - (totals[a.id] || 0))
     .slice(0, 3);
 
@@ -94,7 +94,11 @@ export function Podium() {
             className={`${place} ${isWinner ? winnerPlace : ""}`}
           >
             {isWinner && <span className={cup}>🏆</span>}
-            <PlayerFigure color={player.color} height={isWinner ? 32 : 28} />
+            <PlayerFigure
+              color={player.avatar?.color}
+              shape={player.avatar?.shape}
+              height={isWinner ? 32 : 28}
+            />
             <span className={`${name} ${isWinner ? winnerName : ""}`}>
               {player.name}
             </span>

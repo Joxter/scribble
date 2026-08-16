@@ -1,11 +1,18 @@
 import { i } from "@instantdb/core";
-import { CurrentCanvas, GameProgress, GameState, Party } from "./src/types.ts";
+import {
+  CurrentCanvas,
+  GameProgress,
+  GameState,
+  Party,
+  PlayerAvatar,
+} from "./src/types.ts";
 
 const _schema = i.schema({
   entities: {
     $users: i.entity({
       name: i.string().optional(),
       type: i.string().optional(),
+      avatar: i.json<PlayerAvatar>().optional(),
     }),
     // 1 party = 1 game session
     party: i.entity({

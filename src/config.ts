@@ -77,7 +77,33 @@ export const widths = [3, 8, 15, 20, 25];
 // каракули на фоне сайта рисуются во весь экран, поэтому кисти крупнее
 export const doodleWidths = [10, 20, 35, 55, 80];
 
-// цвета фигурок игроков; раздаются по порядку в комнате
+// формы человечков; выбираются игроком, совпадения между игроками допустимы
+export const avatarShapes = [
+  "classic",
+  "tall",
+  "round",
+  "block",
+  "ears",
+  "tuft",
+] as const;
+
+export type AvatarShape = (typeof avatarShapes)[number];
+
+// маркерная палитра без белого и кремового: на светлой панели их не видно
+export const avatarColors = [
+  "#111111",
+  "#34495e",
+  "#8b4513",
+  "#fa3224",
+  "#ffa729",
+  "#ffd129",
+  "#2ecc71",
+  "#3498db",
+  "#9b59b6",
+  "#ff69b4",
+];
+
+// @deprecated цвет живёт в аватаре игрока; остался как запасной вариант
 export const playerColors = [
   "#3498db",
   "#2ecc71",

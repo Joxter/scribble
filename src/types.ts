@@ -1,3 +1,5 @@
+import { AvatarShape } from "./config.ts";
+
 export type CanvasLine = {
   dots: [x: number, y: number][];
   color: string;
@@ -23,6 +25,7 @@ export type Player = {
 export type Player2 = {
   id: string;
   name: string;
+  avatar: PlayerAvatar;
 };
 
 export type Prettify<T> = {
@@ -191,3 +194,8 @@ export type CanvasAndChatHistory =
   | NewWord
   | ChoosingWord
   | UserMessageEvent;
+
+export type PlayerAvatar = {
+  shape: AvatarShape;
+  color: string;
+};

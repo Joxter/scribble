@@ -7,18 +7,19 @@ import {
   $newParty,
   $partyStatus,
   $player,
-  $playerColors,
+  $playerAvatars,
 } from "../model/game-new.model.ts";
 import { css } from "@linaria/core";
 import { TextField } from "../components/TextField.tsx";
 import { Button } from "../components/Button.tsx";
 import { Select } from "../components/Select.tsx";
 import { PlayerFigure } from "../components/PlayerFigure.tsx";
-import { Placeholder } from "../components/Placeholder.tsx";
+import { AvatarPicker } from "../components/AvatarPicker.tsx";
 import { BackgroundDoodle } from "../components/BackgroundDoodle.tsx";
-import { playerColors } from "../config.ts";
+import { parseAvatar } from "../avatar.ts";
 import {
   closeParty,
+  editUserAvatar,
   editUserName,
   kickPlayer,
   leaveParty,
@@ -156,44 +157,16 @@ const copyButton = css`
   white-space: nowrap;
 `;
 
-const characterRow = css`
-  display: flex;
-  gap: 16px;
-  align-items: center;
-`;
-
-const characterAvatar = css`
-  width: 72px;
-  height: 82px;
-  flex: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: var(--brand-bg);
-  border-radius: 12px;
-`;
-
-const characterInfo = css`
+const characterBlock = css`
   display: flex;
   flex-direction: column;
-  gap: 8px;
-
-  & > b {
-    font-size: 15px;
-    font-weight: 800;
-    color: var(--ink);
-  }
+  gap: 10px;
 `;
 
-const characterColors = css`
-  display: flex;
-  gap: 6px;
-
-  & > span {
-    width: 22px;
-    height: 22px;
-    border-radius: 50%;
-  }
+const characterTitle = css`
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--ink);
 `;
 
 const paramRow = css`
@@ -323,7 +296,9 @@ export function PartyPrepare() {
   ]);
   const player = useUnit($player);
   const localId = useUnit($localId);
-  const colors = useUnit($playerColors);
+  const avatars = useUnit($playerAvatars);
+  // свой человечек берётся из профиля: он обновляется сразу после клика
+  const myAvatar = player?.avatar || parseAvatar(null, localId);
   const [name, setName] = useState(player?.name || "");
   const [copied, setCopied] = useState(false);
 
@@ -416,24 +391,13 @@ export function PartyPrepare() {
             </Button>
           </div>
 
-          <Placeholder note="цвет, поза, аксессуары">
-            <div className={characterRow}>
-              <div className={characterAvatar}>
-                <PlayerFigure
-                  color={colors[localId] || playerColors[0]}
-                  height={64}
-                />
-              </div>
-              <div className={characterInfo}>
-                <b>Ваш персонаж</b>
-                <div className={characterColors}>
-                  {playerColors.map((color) => (
-                    <span key={color} style={{ backgroundColor: color }} />
-                  ))}
-                </div>
-              </div>
-            </div>
-          </Placeholder>
+          <div className={characterBlock}>
+            <b className={characterTitle}>Ваш персонаж</b>
+            <AvatarPicker
+              value={myAvatar}
+              onChange={(avatar) => editUserAvatar(localId, avatar)}
+            />
+          </div>
 
           <div className={paramRows}>
             <form
@@ -557,7 +521,10 @@ export function PartyPrepare() {
           {party.newPlayers.map((p) => (
             <div key={p.id} className={playerRow}>
               <div className={figureSlot}>
-                <PlayerFigure color={colors[p.id]} />
+                <PlayerFigure
+                  color={avatars[p.id]?.color}
+                  shape={avatars[p.id]?.shape}
+                />
               </div>
               <b>{p.name}</b>
               {p.id === party.host && (

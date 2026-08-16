@@ -10,10 +10,26 @@ import {
 } from "../types.ts";
 import { generateClues } from "../utils.ts";
 
-export const ME = { id: "mock-me", name: "Джо" };
-export const ANNA = { id: "mock-anna", name: "Аня" };
-export const BORIS = { id: "mock-boris", name: "Боря" };
-export const VIKA = { id: "mock-vika", name: "Вика" };
+export const ME = {
+  id: "mock-me",
+  name: "Джо",
+  avatar: { shape: "classic", color: "#3498db" },
+} as const;
+export const ANNA = {
+  id: "mock-anna",
+  name: "Аня",
+  avatar: { shape: "round", color: "#ff69b4" },
+} as const;
+export const BORIS = {
+  id: "mock-boris",
+  name: "Боря",
+  avatar: { shape: "block", color: "#2ecc71" },
+} as const;
+export const VIKA = {
+  id: "mock-vika",
+  name: "Вика",
+  avatar: { shape: "tuft", color: "#ffa729" },
+} as const;
 
 const allPlayers = [ME, ANNA, BORIS, VIKA];
 
@@ -48,7 +64,11 @@ function baseParty(): NewParty {
     gameProgress: [[]],
     staticPlayerIds: allPlayers.map((p) => p.id),
     gameParams: { rounds: 5, wordSuggestions: 3, drawTime: DRAW_TIME },
-    newPlayers: allPlayers.map((p) => ({ id: p.id, name: p.name })),
+    newPlayers: allPlayers.map((p) => ({
+      id: p.id,
+      name: p.name,
+      avatar: p.avatar,
+    })),
     roomEvents: [],
   };
 }
@@ -68,7 +88,11 @@ function finishedTurn(
 
 function drawingEvents(artistId: string): AllChatMessages[] {
   return [
-    { id: nextEventId(), type: "game-started", payload: { playerId: artistId } },
+    {
+      id: nextEventId(),
+      type: "game-started",
+      payload: { playerId: artistId },
+    },
     {
       id: nextEventId(),
       type: "new-selected-word",
@@ -112,7 +136,9 @@ function choosingParty(chooserId: string): NewParty {
       playerId: chooserId,
       words: [WORD, "самолёт", "радуга"],
     },
-    gameProgress: [[finishedTurn(ANNA.id, [ME.id, BORIS.id, VIKA.id], "mock-p-1")]],
+    gameProgress: [
+      [finishedTurn(ANNA.id, [ME.id, BORIS.id, VIKA.id], "mock-p-1")],
+    ],
     roomEvents: [
       ...drawingEvents(ANNA.id),
       {
@@ -120,7 +146,10 @@ function choosingParty(chooserId: string): NewParty {
         type: "drawing-ended",
         payload: {
           reason: "all-revealed",
-          revealed: { [ME.id]: Date.now() - 20_000, [VIKA.id]: Date.now() - 8_000 },
+          revealed: {
+            [ME.id]: Date.now() - 20_000,
+            [VIKA.id]: Date.now() - 8_000,
+          },
           nextPlayerId: chooserId,
         },
       },
@@ -191,11 +220,44 @@ function circle(cx: number, cy: number, r: number): [number, number][] {
 // домик с солнцем, чтобы канвас не был пустым
 function doodle(): CurrentCanvas {
   return [
-    { color: "#8b4513", width: 8, dots: interpolate([[150, 270], [300, 140], [450, 270]]) },
-    { color: "#8b4513", width: 8, dots: interpolate([[180, 270], [180, 450], [420, 450], [420, 270]]) },
-    { color: "#34495e", width: 8, dots: interpolate([[270, 450], [270, 350], [330, 350], [330, 450]]) },
+    {
+      color: "#8b4513",
+      width: 8,
+      dots: interpolate([
+        [150, 270],
+        [300, 140],
+        [450, 270],
+      ]),
+    },
+    {
+      color: "#8b4513",
+      width: 8,
+      dots: interpolate([
+        [180, 270],
+        [180, 450],
+        [420, 450],
+        [420, 270],
+      ]),
+    },
+    {
+      color: "#34495e",
+      width: 8,
+      dots: interpolate([
+        [270, 450],
+        [270, 350],
+        [330, 350],
+        [330, 450],
+      ]),
+    },
     { color: "#ffd129", width: 8, dots: circle(505, 95, 40) },
-    { color: "#2ecc71", width: 15, dots: interpolate([[40, 480], [560, 480]]) },
+    {
+      color: "#2ecc71",
+      width: 15,
+      dots: interpolate([
+        [40, 480],
+        [560, 480],
+      ]),
+    },
   ];
 }
 
@@ -260,7 +322,11 @@ export const mockScreens = {
       party: null,
       canvas: [],
       myParties: [
-        { id: "mock-party-id", name: "dev-room", status: GAME_STATUS.inProgress },
+        {
+          id: "mock-party-id",
+          name: "dev-room",
+          status: GAME_STATUS.inProgress,
+        },
       ],
     }),
   },

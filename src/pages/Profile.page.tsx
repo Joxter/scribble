@@ -4,15 +4,22 @@ import { css } from "@linaria/core";
 import { Link } from "wouter";
 import { PageLayout } from "../components/PageLayout.tsx";
 import { TextField } from "../components/TextField.tsx";
+import { AvatarPicker } from "../components/AvatarPicker.tsx";
 import { $player, party } from "../model/game-new.model.ts";
-import { editUserName } from "../db-things.ts";
+import { editUserAvatar, editUserName } from "../db-things.ts";
 import { getUrl } from "../utils.ts";
 
 const section = css`
   display: flex;
   flex-direction: column;
   gap: 16px;
-  max-width: 320px;
+  max-width: 420px;
+`;
+
+const characterTitle = css`
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--ink);
 `;
 
 const nameRow = css`
@@ -80,6 +87,16 @@ export function ProfilePage() {
             Сохранить
           </button>
         </div>
+
+        {player && (
+          <>
+            <b className={characterTitle}>Ваш персонаж</b>
+            <AvatarPicker
+              value={player.avatar}
+              onChange={(avatar) => editUserAvatar(player.id, avatar)}
+            />
+          </>
+        )}
 
         <h3 style={{ margin: 0, fontSize: 16, color: "#1f2937" }}>
           Мои комнаты

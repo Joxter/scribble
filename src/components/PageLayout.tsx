@@ -4,10 +4,9 @@ import { css } from "@linaria/core";
 import { useUnit } from "effector-react";
 import { getUrl } from "../utils.ts";
 import { BUILD_INFO } from "../config.ts";
-import { $player, $playerColors } from "../model/game-new.model.ts";
+import { $player } from "../model/game-new.model.ts";
 import { DeveloperTools } from "./DeveloperTools.tsx";
 import { PlayerFigure } from "./PlayerFigure.tsx";
-import { playerColors } from "../config.ts";
 import { Button } from "./Button.tsx";
 import { $doodleEnabled, doodleToggled } from "../model/doodle.model.ts";
 
@@ -111,7 +110,6 @@ const footer = css`
 
 export function PageLayout({ children, background }: Props) {
   const player = useUnit($player);
-  const colors = useUnit($playerColors);
   const [doodleEnabled, toggleDoodle] = useUnit([
     $doodleEnabled,
     doodleToggled,
@@ -130,7 +128,8 @@ export function PageLayout({ children, background }: Props) {
         {player && (
           <div className={playerBadge}>
             <PlayerFigure
-              color={colors[player.id] || playerColors[0]}
+              color={player.avatar.color}
+              shape={player.avatar.shape}
               height={26}
             />
             <span className={playerName}>{player.name}</span>

@@ -1,7 +1,13 @@
 import { combine, createEvent, createStore, Store } from "effector";
-import { AllChatMessages, GAME_STATUS, Painting, Party } from "../types.ts";
+import {
+  AllChatMessages,
+  GAME_STATUS,
+  Painting,
+  Party,
+  PlayerAvatar,
+} from "../types.ts";
 import { liveQuery } from "../utils.ts";
-import { playerColors } from "../config.ts";
+import { parseAvatar } from "../avatar.ts";
 import { interval } from "patronum";
 import { db } from "../DB.ts";
 import { AppSchema } from "../../instant.schema.ts";
@@ -68,12 +74,17 @@ export function createParty($localId: Store<string>) {
     return Object.fromEntries(p?.newPlayers.map((it) => [it.id, it]) || []);
   });
 
-  const $playerColors = $newParty.map((p) => {
+  // человечек игрока: форма и цвет живут в его профиле, у старых игроков
+  // поля нет — parseAvatar выдаёт стабильный вариант по id
+  const $playerAvatars = $newParty.map((p) => {
     const entries =
-      p?.newPlayers.map((pl, i) => [
-        pl.id,
-        playerColors[i % playerColors.length],
-      ]) || [];
+      p?.newPlayers.map((pl) => [pl.id, parseAvatar(pl.avatar, pl.id)]) || [];
+
+    return Object.fromEntries(entries) as Record<string, PlayerAvatar>;
+  });
+
+  const $playerColors = $playerAvatars.map((avatars) => {
+    const entries = Object.entries(avatars).map(([id, a]) => [id, a.color]);
 
     return Object.fromEntries(entries) as Record<string, string>;
   });
@@ -246,6 +257,7 @@ export function createParty($localId: Store<string>) {
     $allMyParties,
     $allChatEvents,
     $currentPlayers,
+    $playerAvatars,
     $playerColors,
     $partyPaintingIds,
     $partyPaintings,

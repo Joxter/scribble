@@ -64,7 +64,7 @@ export function DevPage() {
 
     return fork({
       values: [
-        [$player, { id: ME.id, name: ME.name }],
+        [$player, { id: ME.id, name: ME.name, avatar: ME.avatar }],
         [$newParty, mockParty],
         [currentLine.$currentDrawing, canvas],
         [$partyPaintings, paintings || []],

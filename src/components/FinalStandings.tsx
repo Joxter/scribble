@@ -1,7 +1,7 @@
 import React from "react";
 import { css } from "@linaria/core";
 import { useUnit } from "effector-react";
-import { $newParty, $playerColors } from "../model/game-new.model.ts";
+import { $newParty, $playerAvatars } from "../model/game-new.model.ts";
 import { PlayerFigure } from "./PlayerFigure.tsx";
 import { calculateTotalScores } from "../utils.ts";
 
@@ -46,7 +46,7 @@ const winnerScore = css`
 
 export function FinalStandings() {
   const party = useUnit($newParty);
-  const colors = useUnit($playerColors);
+  const avatars = useUnit($playerAvatars);
 
   if (!party) return null;
 
@@ -56,7 +56,7 @@ export function FinalStandings() {
     .map((p) => ({
       id: p.id,
       name: p.name,
-      color: colors[p.id],
+      avatar: avatars[p.id],
       score: totals[p.id] || 0,
     }))
     .sort((a, b) => b.score - a.score);
@@ -65,7 +65,11 @@ export function FinalStandings() {
     <div className={root}>
       {ranked.map((player, i) => (
         <div key={player.id} className={row}>
-          <PlayerFigure color={player.color} height={26} />
+          <PlayerFigure
+            color={player.avatar?.color}
+            shape={player.avatar?.shape}
+            height={26}
+          />
           <span className={`${name} ${i === 0 ? winnerName : ""}`}>
             {player.name}
           </span>

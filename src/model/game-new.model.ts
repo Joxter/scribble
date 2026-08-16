@@ -32,6 +32,7 @@ export const {
   $partyStatus,
   $allChatEvents,
   $currentPlayers,
+  $playerAvatars,
   $playerColors,
   $partyPaintingIds,
   $partyPaintings,

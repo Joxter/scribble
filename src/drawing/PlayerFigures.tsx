@@ -6,7 +6,7 @@ import {
   $guessed,
   $localId,
   $newParty,
-  $playerColors,
+  $playerAvatars,
 } from "../model/game-new.model.ts";
 import { PlayerFigure } from "../components/PlayerFigure.tsx";
 
@@ -62,7 +62,7 @@ export function PlayerFigures() {
   const drawing = useUnit($drawing);
   const guessed = useUnit($guessed);
   const localId = useUnit($localId);
-  const colors = useUnit($playerColors);
+  const avatars = useUnit($playerAvatars);
 
   if (!party) return null;
 
@@ -78,7 +78,10 @@ export function PlayerFigures() {
 
         return (
           <div key={player.id} className={slot} title={player.name}>
-            <PlayerFigure color={colors[player.id]} />
+            <PlayerFigure
+              color={avatars[player.id]?.color}
+              shape={avatars[player.id]?.shape}
+            />
             {isArtist && (
               <span className={`${badge} ${badgeDrawing}`} title="рисует">
                 ✎

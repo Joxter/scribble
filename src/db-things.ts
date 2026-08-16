@@ -9,12 +9,14 @@ import {
   IsRevealed,
   Party,
   Player2,
+  PlayerAvatar,
   UserMessageEvent,
 } from "./types.ts";
 import { id } from "@instantdb/core";
 import { generateClues, newRandomWords, wordToZeroClue } from "./utils.ts";
 import { currentLine } from "./model/game-new.model.ts";
 import { getUsername } from "./code-worlds.ts";
+import { parseAvatar, randomAvatar } from "./avatar.ts";
 import { NewParty } from "./model/party.model.ts";
 
 // @deprecated - Use editUserName instead. This function updates the old players entity which is deprecated.
@@ -26,6 +28,10 @@ export async function editPlayerName(localId: string, name: string) {
 
 export async function editUserName(userId: string, newName: string) {
   return db.transact([db.tx.$users[userId].update({ name: newName })]);
+}
+
+export async function editUserAvatar(userId: string, avatar: PlayerAvatar) {
+  return db.transact([db.tx.$users[userId].update({ avatar })]);
 }
 
 export async function getPreparePartyByName(name: string) {
@@ -281,9 +287,15 @@ export function authOrCreateUser(cb: (user: Player2) => void) {
         return user;
       } else {
         return db.auth.signInAsGuest().then(({ user: newUser }) => {
-          return editUserName(newUser.id, getUsername()).then(() => {
-            return newUser;
-          });
+          // новичок сразу получает случайного человечка, менять его необязательно
+          return db
+            .transact([
+              db.tx.$users[newUser.id].update({
+                name: getUsername(),
+                avatar: randomAvatar(),
+              }),
+            ])
+            .then(() => newUser);
         });
       }
     })
@@ -299,9 +311,14 @@ export function authOrCreateUser(cb: (user: Player2) => void) {
             cb({
               id: user.id,
               name: data!.$users[0].name || "",
+              avatar: parseAvatar(data!.$users[0].avatar, user.id),
             });
           } else {
-            cb({ id: user.id, name: "error" });
+            cb({
+              id: user.id,
+              name: "error",
+              avatar: parseAvatar(null, user.id),
+            });
           }
         },
       );

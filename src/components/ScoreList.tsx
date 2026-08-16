@@ -5,7 +5,7 @@ import {
   $lastTurn,
   $localId,
   $newParty,
-  $playerColors,
+  $playerAvatars,
 } from "../model/game-new.model.ts";
 import { PlayerFigure } from "./PlayerFigure.tsx";
 import { calculateTotalScores, calculateTurnPoints } from "../utils.ts";
@@ -65,7 +65,7 @@ export function ScoreList() {
   const party = useUnit($newParty);
   const lastTurn = useUnit($lastTurn);
   const localId = useUnit($localId);
-  const colors = useUnit($playerColors);
+  const avatars = useUnit($playerAvatars);
 
   if (!party) return null;
 
@@ -76,7 +76,7 @@ export function ScoreList() {
     .map((p) => ({
       id: p.id,
       name: p.name,
-      color: colors[p.id],
+      avatar: avatars[p.id],
       delta: turnPoints[p.id] || 0,
       total: totals[p.id] || 0,
     }))
@@ -89,7 +89,11 @@ export function ScoreList() {
         rows.map((r) => (
           <div key={r.id} className={row}>
             <div className={figureSlot}>
-              <PlayerFigure color={r.color} height={28} />
+              <PlayerFigure
+                color={r.avatar?.color}
+                shape={r.avatar?.shape}
+                height={28}
+              />
             </div>
             <div>
               <div className={name}>
