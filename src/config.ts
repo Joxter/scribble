@@ -79,12 +79,12 @@ export const doodleWidths = [10, 20, 35, 55, 80];
 
 // формы человечков; выбираются игроком, совпадения между игроками допустимы
 export const avatarShapes = [
-  "classic",
+  "neutral",
+  "small",
   "tall",
-  "round",
-  "block",
-  "ears",
-  "tuft",
+  "big",
+  "skirt",
+  "buff",
 ] as const;
 
 export type AvatarShape = (typeof avatarShapes)[number];

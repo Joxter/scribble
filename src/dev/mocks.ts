@@ -13,22 +13,22 @@ import { generateClues } from "../utils.ts";
 export const ME = {
   id: "mock-me",
   name: "Джо",
-  avatar: { shape: "classic", color: "#3498db" },
+  avatar: { shape: "neutral", color: "#3498db" },
 } as const;
 export const ANNA = {
   id: "mock-anna",
   name: "Аня",
-  avatar: { shape: "round", color: "#ff69b4" },
+  avatar: { shape: "skirt", color: "#ff69b4" },
 } as const;
 export const BORIS = {
   id: "mock-boris",
   name: "Боря",
-  avatar: { shape: "block", color: "#2ecc71" },
+  avatar: { shape: "buff", color: "#2ecc71" },
 } as const;
 export const VIKA = {
   id: "mock-vika",
   name: "Вика",
-  avatar: { shape: "tuft", color: "#ffa729" },
+  avatar: { shape: "tall", color: "#ffa729" },
 } as const;
 
 const allPlayers = [ME, ANNA, BORIS, VIKA];

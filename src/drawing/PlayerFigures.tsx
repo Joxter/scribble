@@ -8,53 +8,15 @@ import {
   $newParty,
   $playerAvatars,
 } from "../model/game-new.model.ts";
-import { PlayerFigure } from "../components/PlayerFigure.tsx";
+import { FigureTile } from "../components/FigureTile.tsx";
 
 const root = css`
   display: flex;
-  align-items: flex-end;
-  gap: 12px;
+  align-items: flex-start;
+  gap: 8px;
   flex-wrap: wrap;
-  padding: 10px 16px;
+  padding: 2px 12px 6px;
   border-top: 1px solid var(--sunken);
-`;
-
-const slot = css`
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2px;
-`;
-
-const badge = css`
-  position: absolute;
-  top: -3px;
-  right: -6px;
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
-  color: #fff;
-  font-size: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 0 0 2px #fff;
-`;
-
-const badgeDrawing = css`
-  background-color: var(--brand);
-`;
-
-const badgeGuessed = css`
-  background-color: var(--success);
-`;
-
-const meLabel = css`
-  font-size: 8px;
-  font-weight: 800;
-  color: var(--brand-dark);
-  letter-spacing: 0.3px;
 `;
 
 export function PlayerFigures() {
@@ -72,30 +34,22 @@ export function PlayerFigures() {
 
   return (
     <div className={root}>
-      {party.newPlayers.map((player) => {
-        const isArtist = player.id === artistId || player.id === chooserId;
-        const hasGuessed = Boolean(guessed[player.id]);
-
-        return (
-          <div key={player.id} className={slot} title={player.name}>
-            <PlayerFigure
-              color={avatars[player.id]?.color}
-              shape={avatars[player.id]?.shape}
-            />
-            {isArtist && (
-              <span className={`${badge} ${badgeDrawing}`} title="рисует">
-                ✎
-              </span>
-            )}
-            {!isArtist && hasGuessed && (
-              <span className={`${badge} ${badgeGuessed}`} title="отгадал">
-                ✓
-              </span>
-            )}
-            {player.id === localId && <span className={meLabel}>ВЫ</span>}
-          </div>
-        );
-      })}
+      {party.newPlayers.map((player) => (
+        <FigureTile
+          key={player.id}
+          avatar={avatars[player.id]}
+          role={
+            player.id === artistId
+              ? "drawing"
+              : player.id === chooserId
+                ? "choosing"
+                : undefined
+          }
+          guessed={Boolean(guessed[player.id])}
+          isMe={player.id === localId}
+          title={player.name}
+        />
+      ))}
     </div>
   );
 }
