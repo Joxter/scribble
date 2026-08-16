@@ -89,7 +89,10 @@ A real-time collaborative drawing application built with React and InstantDB. Cr
   - [x] ~~показывать очки в списке игроков~~ (новый дизайн списка их не показывает)
 - [x] финал: можно создать ещё одну игру (с теми же игроками) — кнопка "В лобби"
 - [x] UI: "игра не найдена" для несуществующей/закрытой комнаты
-- [ ] UI: развить человечков — крупно текущий рисующий и следующий, остальные кратко
+- [x] человечки: шесть форм + личный цвет, редактор в лобби и профиле
+  - [x] формы и статусы по дизайн-системе 3 (плитка роли, жетон, черта "вы")
+  - [ ] ПОСЛЕ ПУША СХЕМЫ: проверить, что аватар сохраняется ($users.avatar)
+  - [ ] крупно текущий рисующий и следующий, остальные кратко
 - [ ] проверить вёрстку: чат на мобилках + правки на десктопе
 
 ## После релиза (backlog)
@@ -101,9 +104,12 @@ A real-time collaborative drawing application built with React and InstantDB. Cr
 - [ ] кнопка выхода/кика во время игры (софтделит из снапшота игроков)
 - [ ] настоящий бэкенд-таймер, не зависящий от клиента рисующего (сейчас таймаут отслеживает браузер того, кто рисует — если он закроет вкладку, ход зависнет)
 - [ ] бекенд: сервер подписывается на новые сообщения в комнатах со статусом in-progress
-- [ ] кикнутый игрок должен редиректиться на главную
 - [ ] если хост вышел из комнаты, то им назначается кто-то другой (с минимальным id?)
 - [ ] цензурить отгаданное слово, если его написали снова
+- [ ] presence комнаты (в схеме объявлена, но не используется): статус "отключён" у человечка и "X печатает…" в чате
+- [ ] человечек подпрыгивает на новое сообщение от своего игрока
+- [ ] ховер/тап по человечку: имя, очки, статус (сейчас только нативный title)
+- [ ] тесты на calculateTurnPoints и calculateTotalScores
 
  ## Features
 
@@ -114,6 +120,8 @@ A real-time collaborative drawing application built with React and InstantDB. Cr
   - Color picker
   - Adjustable brush sizes
   - Undo functionality
+- **Player Figures**: каждый игрок выбирает форму и цвет человечка, статус в игре показывает плитка и жетон
+- **Background Doodle**: в лобби можно порисовать прямо по фону страницы и выгрузить каракули в PNG
 - **Responsive Design**: Optimized for various screen sizes
 
 ## Tech Stack
@@ -207,6 +215,8 @@ npm run deploy
 This will build the project and deploy it to the `gh-pages` branch.
 
 ## Development Notes
+
+- Схема БД лежит в `instant.schema.ts`; после её изменения нужен `npm run push-instant`, иначе запись новых полей будет падать
 
 - The app uses a demo configuration with a hardcoded party ID
 - The drawing engine uses SVG paths for smooth, scalable strokes
