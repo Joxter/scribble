@@ -8,6 +8,8 @@ import { $player, $playerColors } from "../model/game-new.model.ts";
 import { DeveloperTools } from "./DeveloperTools.tsx";
 import { PlayerFigure } from "./PlayerFigure.tsx";
 import { playerColors } from "../config.ts";
+import { Button } from "./Button.tsx";
+import { $doodleEnabled, doodleToggled } from "../model/doodle.model.ts";
 
 type Props = {
   children: React.ReactNode;
@@ -74,6 +76,13 @@ const profileLink = css`
   }
 `;
 
+/* бейдж игрока забирает свободное место своим margin-left: auto,
+   поэтому кнопка встаёт вплотную к имени */
+const doodleToggle = css`
+  margin-left: 8px;
+  white-space: nowrap;
+`;
+
 const content = css`
   width: 100%;
   max-width: 820px;
@@ -103,10 +112,16 @@ const footer = css`
 export function PageLayout({ children, background }: Props) {
   const player = useUnit($player);
   const colors = useUnit($playerColors);
+  const [doodleEnabled, toggleDoodle] = useUnit([
+    $doodleEnabled,
+    doodleToggled,
+  ]);
   const timeAgo = Date.now() - BUILD_INFO.buildTimestamp;
 
   return (
-    <div className={`${container} ${background ? withBackground : ""}`}>
+    <div
+      className={`${container} ${background && doodleEnabled ? withBackground : ""}`}
+    >
       {background}
       <header className={headerBar}>
         <Link href={getUrl("")} className={logoLink}>
@@ -123,6 +138,16 @@ export function PageLayout({ children, background }: Props) {
               изменить
             </Link>
           </div>
+        )}
+        {background && (
+          <Button
+            variant="text"
+            size={1}
+            className={doodleToggle}
+            onClick={() => toggleDoodle()}
+          >
+            {doodleEnabled ? "✏️ Готово" : "✏️ Порисовать"}
+          </Button>
         )}
       </header>
 

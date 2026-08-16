@@ -1,11 +1,13 @@
 import React, { useEffect, useRef, useState } from "react";
 import { css } from "@linaria/core";
+import { useUnit } from "effector-react";
 import { svgInk } from "../freehand/svgInk.ts";
 import { Vec } from "../freehand/Vec.ts";
 import { colors, doodleWidths } from "../config.ts";
 import { ColorSelector } from "./ColorSelector.tsx";
 import { WidthSelector } from "./WidthSelector.tsx";
 import { Button } from "./Button.tsx";
+import { $doodleEnabled } from "../model/doodle.model.ts";
 
 const PIXEL_RATIO = window.devicePixelRatio || 1;
 
@@ -47,24 +49,6 @@ function paintStroke(ctx: CanvasRenderingContext2D, stroke: Stroke) {
 
 // на этих элементах жест — это клик по интерфейсу, а не штрих по фону
 const UI_SELECTOR = "button, a, input, select, textarea, label, [data-ui]";
-
-const STORAGE_KEY = "scribble:background-doodle";
-
-function readEnabled() {
-  try {
-    return localStorage.getItem(STORAGE_KEY) === "on";
-  } catch {
-    return false;
-  }
-}
-
-function saveEnabled(enabled: boolean) {
-  try {
-    localStorage.setItem(STORAGE_KEY, enabled ? "on" : "off");
-  } catch {
-    // приватный режим — переживём без запоминания
-  }
-}
 
 // каракули живут в координатах вьюпорта и лежат под всей вёрсткой.
 // события ловим на window: канвас лежит под #app, хит-тест до него не доходит
@@ -114,14 +98,6 @@ const drawingMode = css`
   }
 `;
 
-const toggleButton = css`
-  position: fixed;
-  z-index: 40;
-  right: 16px;
-  bottom: 16px;
-  pointer-events: auto;
-`;
-
 const palette = css`
   width: 300px;
 
@@ -152,16 +128,9 @@ export function BackgroundDoodle() {
     color: colors[9],
     width: doodleWidths[1],
   });
-  const [enabled, setEnabled] = useState(readEnabled);
+  const enabled = useUnit($doodleEnabled);
 
   paramsRef.current = params;
-
-  function toggle() {
-    setEnabled((prev) => {
-      saveEnabled(!prev);
-      return !prev;
-    });
-  }
 
   useEffect(() => {
     if (!enabled) return;
@@ -246,17 +215,6 @@ export function BackgroundDoodle() {
       <canvas ref={paintedRef} className={layer} />
       <canvas ref={liveRef} className={layer} />
 
-      {!enabled && (
-        <Button
-          variant="secondary"
-          size={1}
-          className={toggleButton}
-          onClick={toggle}
-        >
-          ✏️ Порисовать
-        </Button>
-      )}
-
       {enabled && (
         <div className={panel} data-ui>
           <div className={palette}>
@@ -278,9 +236,6 @@ export function BackgroundDoodle() {
               onClick={() => setStrokes(strokes.slice(0, -1))}
             >
               ↶ Отменить
-            </Button>
-            <Button variant="text" size={1} onClick={toggle}>
-              Готово
             </Button>
           </div>
         </div>
