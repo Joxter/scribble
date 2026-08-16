@@ -14,6 +14,7 @@ import { Button } from "../components/Button.tsx";
 import { Select } from "../components/Select.tsx";
 import { PlayerFigure } from "../components/PlayerFigure.tsx";
 import { Placeholder } from "../components/Placeholder.tsx";
+import { BackgroundDoodle } from "../components/BackgroundDoodle.tsx";
 import { playerColors } from "../config.ts";
 import {
   closeParty,
@@ -334,7 +335,7 @@ export function PartyPrepare() {
   }
 
   return (
-    <PageLayout>
+    <PageLayout background={<BackgroundDoodle />}>
       <div className={layout}>
         <section className={card}>
           <div className={cardHeader}>

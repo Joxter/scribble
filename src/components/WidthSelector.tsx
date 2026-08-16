@@ -5,6 +5,7 @@ import { widths } from "../config.ts";
 type Props = {
   value: number;
   onChange: (width: number) => void;
+  options?: number[];
 };
 
 const root = css`
@@ -43,10 +44,10 @@ const selected = css`
 // толщина линии на канвасе крупнее, чем читаемая точка в панели
 const DOT_SIZES = [4, 7, 11, 15, 20];
 
-export function WidthSelector({ value, onChange }: Props) {
+export function WidthSelector({ value, onChange, options = widths }: Props) {
   return (
     <div className={root}>
-      {widths.map((width, i) => {
+      {options.map((width, i) => {
         const size = DOT_SIZES[i] || DOT_SIZES.at(-1)!;
 
         return (

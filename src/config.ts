@@ -74,6 +74,9 @@ export const smoothConf = {
 
 export const widths = [3, 8, 15, 20, 25];
 
+// каракули на фоне сайта рисуются во весь экран, поэтому кисти крупнее
+export const doodleWidths = [10, 20, 35, 55, 80];
+
 // цвета фигурок игроков; раздаются по порядку в комнате
 export const playerColors = [
   "#3498db",

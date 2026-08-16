@@ -11,6 +11,7 @@ import { playerColors } from "../config.ts";
 
 type Props = {
   children: React.ReactNode;
+  background?: React.ReactNode;
 };
 
 const container = css`
@@ -19,6 +20,11 @@ const container = css`
   flex-direction: column;
   align-items: center;
   padding: 12px;
+`;
+
+/* снизу оставляем место под плавающую панель инструментов */
+const withBackground = css`
+  padding-bottom: 150px;
 `;
 
 const headerBar = css`
@@ -94,13 +100,14 @@ const footer = css`
   }
 `;
 
-export function PageLayout({ children }: Props) {
+export function PageLayout({ children, background }: Props) {
   const player = useUnit($player);
   const colors = useUnit($playerColors);
   const timeAgo = Date.now() - BUILD_INFO.buildTimestamp;
 
   return (
-    <div className={container}>
+    <div className={`${container} ${background ? withBackground : ""}`}>
+      {background}
       <header className={headerBar}>
         <Link href={getUrl("")} className={logoLink}>
           <h1 className={title}>Scribble</h1>
