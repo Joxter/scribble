@@ -15,12 +15,16 @@ type Point = [x: number, y: number];
 type Stroke = { dots: Point[]; color: string; width: number };
 type Viewport = { width: number; height: number };
 
-function setupCanvas(canvas: HTMLCanvasElement, viewport: Viewport) {
+function setupCanvas(
+  canvas: HTMLCanvasElement,
+  viewport: Viewport,
+  ratio = PIXEL_RATIO,
+) {
   const ctx = canvas.getContext("2d")!;
 
-  canvas.width = viewport.width * PIXEL_RATIO;
-  canvas.height = viewport.height * PIXEL_RATIO;
-  ctx.scale(PIXEL_RATIO, PIXEL_RATIO);
+  canvas.width = viewport.width * ratio;
+  canvas.height = viewport.height * ratio;
+  ctx.scale(ratio, ratio);
   ctx.clearRect(0, 0, viewport.width, viewport.height);
 
   return ctx;
@@ -45,6 +49,27 @@ function paintStroke(ctx: CanvasRenderingContext2D, stroke: Stroke) {
   );
 
   ctx.fill(new Path2D(d));
+}
+
+// экспорт идёт мимо экранных канвасов: там нет интерфейса сайта,
+// зато нужен запас по плотности пикселей на дисплеях без ретины
+function exportPng(strokes: Stroke[], viewport: Viewport) {
+  const canvas = document.createElement("canvas");
+  const ctx = setupCanvas(canvas, viewport, Math.max(2, PIXEL_RATIO));
+
+  strokes.forEach((it) => paintStroke(ctx, it));
+
+  canvas.toBlob((blob) => {
+    if (!blob) return;
+
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+
+    link.href = url;
+    link.download = `scribble-${Date.now()}.png`;
+    link.click();
+    URL.revokeObjectURL(url);
+  }, "image/png");
 }
 
 // на этих элементах жест — это клик по интерфейсу, а не штрих по фону
@@ -236,6 +261,14 @@ export function BackgroundDoodle() {
               onClick={() => setStrokes(strokes.slice(0, -1))}
             >
               ↶ Отменить
+            </Button>
+            <Button
+              variant="secondary"
+              size={1}
+              disabled={strokes.length === 0}
+              onClick={() => exportPng(strokes, viewport)}
+            >
+              ⬇ PNG
             </Button>
           </div>
         </div>
