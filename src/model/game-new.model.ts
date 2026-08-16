@@ -29,6 +29,7 @@ export const party = createParty($localId);
 
 export const {
   $newParty,
+  $partyStatus,
   $allChatEvents,
   $currentPlayers,
   $playerColors,

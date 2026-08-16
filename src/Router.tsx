@@ -8,16 +8,22 @@ import { AllPartiesPage } from "./pages/AllParties.page.tsx";
 import { ProfilePage } from "./pages/Profile.page.tsx";
 import { DevPage } from "./pages/Dev.page.tsx";
 import { useUnit } from "effector-react";
-import { $player, party } from "./model/game-new.model.ts";
+import { $localId, $newParty, $player, party } from "./model/game-new.model.ts";
 import { getUrl } from "./utils.ts";
 import { PageLayout } from "./components/PageLayout.tsx";
 
 export function Router() {
-  const [party222, partyName] = useUnit([
+  const [party222, partyName, partyStatus, openedParty, localId] = useUnit([
     party.$allMyParties,
     party.$pagePartyName,
+    party.$partyStatus,
+    $newParty,
+    $localId,
   ]);
   const partyy = party222.find((p) => p.name === partyName);
+  const imInOpenedParty = Boolean(
+    openedParty?.newPlayers.some((p) => p.id === localId),
+  );
 
   const [location, navigate] = useLocation();
   const player = useUnit($player);
@@ -26,12 +32,19 @@ export function Router() {
     if (!player) return;
     if (location.startsWith(getUrl("dev"))) return;
 
+    if (location.startsWith(getUrl("room/"))) {
+      // пока комната грузится или не нашлась, решает страница комнаты:
+      // домой отправляем только из чужой комнаты
+      if (partyStatus === "found" && !imInOpenedParty) {
+        navigate(getUrl(""));
+      }
+      return;
+    }
+
     if (partyy) {
       navigate(getUrl("room/" + partyy.name));
-    } else {
-      navigate(getUrl(""));
     }
-  }, [partyy, player]);
+  }, [partyy, player, partyStatus, imInOpenedParty]);
 
   if (!player) return null;
 

@@ -41,7 +41,19 @@ export function createParty($localId: Store<string>) {
 
   const $newParty = createStore<NewParty | null>(null);
   const newPartyLoaded = createEvent<NewParty>();
+  const partyNotFound = createEvent();
   $newParty.on(newPartyLoaded, (_, parties) => parties);
+  $newParty.on(partyNotFound, () => null);
+  // при переходе в другую комнату старые данные показывать нельзя
+  $newParty.on($pagePartyName.updates, () => null);
+
+  // пока база не ответила, комнату нельзя считать несуществующей
+  const $partyStatus = createStore<"idle" | "loading" | "found" | "missing">(
+    "idle",
+  );
+  $partyStatus.on($pagePartyName.updates, () => "loading");
+  $partyStatus.on(newPartyLoaded, () => "found");
+  $partyStatus.on(partyNotFound, () => "missing");
 
   const allPartiesLoaded = createEvent<DbParty[]>();
   const $allMyParties = createStore<DbParty[]>([]);
@@ -209,12 +221,18 @@ export function createParty($localId: Store<string>) {
         },
       },
       (resp) => {
-        if (resp.data) {
-          if (resp.data.party) {
-            newPartyLoaded(resp.data.party[0] as NewParty);
-            return;
+        if (resp.data?.party) {
+          const found = resp.data.party[0];
+
+          if (found) {
+            newPartyLoaded(found as NewParty);
+          } else {
+            partyNotFound();
           }
+          return;
         }
+        // ошибку тоже показываем как «комнаты нет», иначе экран висит в загрузке
+        partyNotFound();
         console.warn("Something went wrong");
         console.log(resp);
       },
@@ -224,6 +242,7 @@ export function createParty($localId: Store<string>) {
   return {
     newPartyLoaded,
     $newParty,
+    $partyStatus,
     $allMyParties,
     $allChatEvents,
     $currentPlayers,

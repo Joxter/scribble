@@ -5,6 +5,7 @@ import {
   $currentPlayers,
   $localId,
   $newParty,
+  $partyStatus,
   $player,
   $playerColors,
 } from "../model/game-new.model.ts";
@@ -24,11 +25,45 @@ import {
   startParty,
   updateGameParams,
 } from "../db-things.ts";
-import { useLocation } from "wouter";
+import { Link, useLocation } from "wouter";
 import { getUrl } from "../utils.ts";
 import { GAME_STATUS } from "../types.ts";
 import { DrawingPage } from "./Drawing.page.tsx";
 import { FinishedGamePage } from "./FinishedGame.page.tsx";
+
+const notice = css`
+  width: 500px;
+  max-width: 100%;
+  margin: 40px auto 0;
+  background-color: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  box-shadow: 0 20px 40px -28px rgba(30, 40, 50, 0.5);
+  padding: 30px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  text-align: center;
+`;
+
+const noticeTitle = css`
+  font-size: 24px;
+  font-weight: 900;
+  letter-spacing: -0.3px;
+`;
+
+const noticeText = css`
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--slate);
+  margin: 0;
+`;
+
+const noticeAction = css`
+  margin-top: 6px;
+  text-decoration: none;
+`;
 
 const layout = css`
   display: flex;
@@ -281,7 +316,11 @@ const leaveAction = css`
 `;
 
 export function PartyPrepare() {
-  const [party, currentPlayers] = useUnit([$newParty, $currentPlayers]);
+  const [party, currentPlayers, partyStatus] = useUnit([
+    $newParty,
+    $currentPlayers,
+    $partyStatus,
+  ]);
   const player = useUnit($player);
   const localId = useUnit($localId);
   const colors = useUnit($playerColors);
@@ -297,10 +336,22 @@ export function PartyPrepare() {
   }, [player]);
 
   if (!party) {
+    // база ещё не ответила: «комнаты нет» здесь было бы враньём
+    if (partyStatus !== "missing") {
+      return (
+        <PageLayout>
+          <div className={notice}>
+            <span className={noticeTitle}>Открываем комнату…</span>
+          </div>
+        </PageLayout>
+      );
+    }
+
     return (
-      <PageLayout>
-        <p>группа не найдена</p>
-      </PageLayout>
+      <RoomNotice
+        title="Комната не найдена"
+        text="Похоже, ссылка устарела или комнату уже закрыли."
+      />
     );
   }
 
@@ -314,9 +365,10 @@ export function PartyPrepare() {
 
   if (party.status !== "prepare") {
     return (
-      <PageLayout>
-        <p>группа уже играет или закончила играть</p>
-      </PageLayout>
+      <RoomNotice
+        title="Комната закрыта"
+        text="Эта игра уже идёт или закончилась."
+      />
     );
   }
 
@@ -367,7 +419,10 @@ export function PartyPrepare() {
           <Placeholder note="цвет, поза, аксессуары">
             <div className={characterRow}>
               <div className={characterAvatar}>
-                <PlayerFigure color={colors[localId] || playerColors[0]} height={64} />
+                <PlayerFigure
+                  color={colors[localId] || playerColors[0]}
+                  height={64}
+                />
               </div>
               <div className={characterInfo}>
                 <b>Ваш персонаж</b>
@@ -533,6 +588,25 @@ export function PartyPrepare() {
             </div>
           ))}
         </aside>
+      </div>
+    </PageLayout>
+  );
+}
+
+type NoticeProps = {
+  title: string;
+  text: string;
+};
+
+function RoomNotice({ title, text }: NoticeProps) {
+  return (
+    <PageLayout>
+      <div className={notice}>
+        <span className={noticeTitle}>{title}</span>
+        <p className={noticeText}>{text}</p>
+        <Link href={getUrl("")} className={noticeAction}>
+          <Button variant="primary">На главную</Button>
+        </Link>
       </div>
     </PageLayout>
   );
