@@ -32,6 +32,13 @@
     --warn-bg: #fff2d6;
     --warn-border: #f0dca0;
 
+    /* сетка игрового экрана: эти размеры одинаковы на всех экранах игры,
+       чтобы холст, чат и панель под холстом не прыгали при смене состояния */
+    --col-main: 500px;
+    --col-side: 300px;
+    --row-head: 34px;
+    --row-under: 96px;
+
     --font-mono: "JetBrains Mono", ui-monospace, monospace;
 
     font-family:

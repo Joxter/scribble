@@ -8,10 +8,18 @@ import {
   messageSent,
 } from "../model/game-new.model.ts";
 
+/* высота общая с панелью инструментов, см. --row-under */
 const root = css`
   display: flex;
   flex-direction: column;
   gap: 10px;
+  height: var(--row-under);
+  flex: none;
+
+  @media (max-width: 807px) {
+    height: auto;
+    min-height: var(--row-under);
+  }
 `;
 
 const clueRow = css`
@@ -43,9 +51,11 @@ const letterCount = css`
   font-weight: 700;
 `;
 
+/* поле всегда у нижнего края блока: без подсказки оно не уезжает вверх */
 const inputRow = css`
   display: flex;
   gap: 10px;
+  margin-top: auto;
 `;
 
 const input = css`

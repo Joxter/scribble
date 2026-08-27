@@ -12,10 +12,16 @@ const container = css`
   flex: 1;
   display: flex;
   flex-direction: column;
-  align-content: start;
-  gap: 6px;
   padding: 12px 14px;
   overflow-y: auto;
+`;
+
+/* сообщения прижаты к низу: пока их мало, пустое место остаётся сверху */
+const list = css`
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
   word-break: break-word;
 `;
 
@@ -92,94 +98,100 @@ export function ChatMessages() {
 
   return (
     <div ref={scrollRef} className={container}>
-      {events.slice(-50).map((ev, i) => {
-        const key = ev.type + i;
+      <div className={list}>
+        {events.slice(-50).map((ev, i) => {
+          const key = ev.type + i;
 
-        if (ev.type === "user-message") {
-          const { text, playerId, isRevealed } = ev.payload;
+          if (ev.type === "user-message") {
+            const { text, playerId, isRevealed } = ev.payload;
 
-          if (isRevealed === "revealed") {
+            if (isRevealed === "revealed") {
+              return (
+                <div key={key} className={`${pill} ${pillRevealed}`}>
+                  ✓ {nameOf(playerId)} отгадал(а) слово!
+                </div>
+              );
+            }
+
+            if (isRevealed === "almost") {
+              return (
+                <div key={key} className={`${pill} ${pillAlmost}`}>
+                  <b>{nameOf(playerId)}</b> — почти отгадал(а)!
+                </div>
+              );
+            }
+
             return (
-              <div key={key} className={`${pill} ${pillRevealed}`}>
-                ✓ {nameOf(playerId)} отгадал(а) слово!
+              <div key={key} className={message}>
+                <span
+                  className={dot}
+                  style={{ backgroundColor: colors[playerId] }}
+                />
+                <b>{nameOf(playerId)}</b>
+                <span>{text}</span>
               </div>
             );
           }
 
-          if (isRevealed === "almost") {
+          if (ev.type === "new-selected-word") {
+            const { word } = ev.payload;
+
             return (
-              <div key={key} className={`${pill} ${pillAlmost}`}>
-                <b>{nameOf(playerId)}</b> — почти отгадал(а)!
-              </div>
+              <p key={key} className={system}>
+                Слово выбрано!{" "}
+                <b className={clueMask}>
+                  {word.replace(/\S/g, "_")} (
+                  {word
+                    .split(" ")
+                    .map((it) => it.length)
+                    .join(" ")}
+                  )
+                </b>
+              </p>
             );
           }
 
-          return (
-            <div key={key} className={message}>
-              <span
-                className={dot}
-                style={{ backgroundColor: colors[playerId] }}
-              />
-              <b>{nameOf(playerId)}</b>
-              <span>{text}</span>
-            </div>
-          );
-        }
+          if (ev.type === "drawing-ended") {
+            const timeout = ev.payload.reason === "timeout";
 
-        if (ev.type === "new-selected-word") {
-          const { word } = ev.payload;
+            return (
+              <p
+                key={key}
+                className={`${system} ${timeout ? systemDanger : ""}`}
+              >
+                {timeout ? "Время вышло!" : "Все отгадали!"}{" "}
+                {nameOf(ev.payload.nextPlayerId)} выбирает новое слово
+              </p>
+            );
+          }
 
-          return (
-            <p key={key} className={system}>
-              Слово выбрано!{" "}
-              <b className={clueMask}>
-                {word.replace(/\S/g, "_")} (
-                {word
-                  .split(" ")
-                  .map((it) => it.length)
-                  .join(" ")}
-                )
-              </b>
-            </p>
-          );
-        }
+          if (ev.type === "game-started") {
+            return (
+              <p key={key} className={system}>
+                Игра началась! {nameOf(ev.payload.playerId)} выбирает первое
+                слово
+              </p>
+            );
+          }
 
-        if (ev.type === "drawing-ended") {
-          const timeout = ev.payload.reason === "timeout";
+          if (ev.type === "game-finished") {
+            return (
+              <p key={key} className={system}>
+                Игра окончена!
+              </p>
+            );
+          }
 
-          return (
-            <p key={key} className={`${system} ${timeout ? systemDanger : ""}`}>
-              {timeout ? "Время вышло!" : "Все отгадали!"}{" "}
-              {nameOf(ev.payload.nextPlayerId)} выбирает новое слово
-            </p>
-          );
-        }
+          // неизвестное событие — показываем тип, чтобы заметить
+          const unknown: { type: string } = ev;
 
-        if (ev.type === "game-started") {
           return (
             <p key={key} className={system}>
-              Игра началась! {nameOf(ev.payload.playerId)} выбирает первое слово
+              [{unknown.type}]
             </p>
           );
-        }
-
-        if (ev.type === "game-finished") {
-          return (
-            <p key={key} className={system}>
-              Игра окончена!
-            </p>
-          );
-        }
-
-        // неизвестное событие — показываем тип, чтобы заметить
-        const unknown: { type: string } = ev;
-
-        return (
-          <p key={key} className={system}>
-            [{unknown.type}]
-          </p>
-        );
-      })}
+        })}
+      </div>
     </div>
   );
 }

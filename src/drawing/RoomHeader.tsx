@@ -9,16 +9,25 @@ const root = css`
   align-items: center;
   gap: 10px;
   padding: 0 4px;
+  height: var(--row-head);
+  flex: none;
 `;
 
+/* имена комнат — три словаря через дефис, длинное режем многоточием:
+   строка заголовка фиксированной высоты, переносить некуда */
 const name = css`
   font-size: 20px;
   font-weight: 900;
   color: var(--ink);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 `;
 
 const rounds = css`
   margin-left: auto;
+  flex: none;
   font-size: 20px;
   font-weight: 800;
   color: var(--slate);

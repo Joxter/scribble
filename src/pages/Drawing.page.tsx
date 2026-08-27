@@ -31,7 +31,7 @@ const page = css`
 `;
 
 const leftColumn = css`
-  width: 500px;
+  width: var(--col-main);
   flex: none;
   display: flex;
   flex-direction: column;
@@ -39,12 +39,12 @@ const leftColumn = css`
 
   @media (max-width: 807px) {
     width: 100%;
-    max-width: 500px;
+    max-width: var(--col-main);
   }
 `;
 
 const rightColumn = css`
-  width: 300px;
+  width: var(--col-side);
   flex: none;
   display: flex;
   flex-direction: column;
@@ -52,7 +52,7 @@ const rightColumn = css`
 
   @media (max-width: 807px) {
     width: 100%;
-    max-width: 500px;
+    max-width: var(--col-main);
   }
 `;
 
@@ -72,13 +72,19 @@ const header = css`
   align-items: center;
   gap: 10px;
   padding: 0 4px;
-  min-height: 32px;
+  height: var(--row-head);
+  flex: none;
+  overflow: hidden;
 `;
 
 const artistLine = css`
   font-size: 20px;
   font-weight: 700;
   color: var(--slate);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 
   & b {
     font-weight: 900;
@@ -94,12 +100,17 @@ const roundTitle = css`
   font-size: 20px;
   font-weight: 900;
   color: var(--ink);
+  flex: none;
 `;
 
 const roundSub = css`
   font-size: 15px;
   color: var(--slate);
   font-weight: 700;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 
   & b {
     color: var(--ink);

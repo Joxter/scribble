@@ -6,9 +6,10 @@ import { ChooseWord } from "./ChooseWord.tsx";
 import { PaintingReactions } from "./PaintingReactions.tsx";
 import { ScoreList } from "./ScoreList.tsx";
 
+/* квадрат в размер холста: выбор слова стоит там же, где палитра художника */
 const panel = css`
-  height: 100%;
-  min-height: 360px;
+  width: 100%;
+  aspect-ratio: 1;
   background-color: var(--panel);
   border: 1px solid var(--line);
   border-radius: 18px;
@@ -24,9 +25,17 @@ const scores = css`
   overflow-y: auto;
 `;
 
+/* высота одна и та же с кнопками слов и со строкой «выбирает слово…»:
+   список очков над ней не дёргается между раундами. на узком экране кнопки
+   переносятся на вторую строку — тогда секция растёт, а не режет их */
 const chooseSection = css`
   border-top: 1px solid var(--sunken);
   padding: 12px 16px;
+  min-height: 108px;
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 `;
 
 export function DrawResults() {

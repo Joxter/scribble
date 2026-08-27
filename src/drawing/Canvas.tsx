@@ -60,7 +60,7 @@ function renderPolylines(ctx: CanvasRenderingContext2D, polylinePaths: any[]) {
 const containerStyle = {
   margin: "0 auto",
   width: "100%",
-  maxWidth: "500px",
+  maxWidth: "var(--col-main)",
   aspectRatio: "1 / 1" as const,
   position: "relative" as const,
   background: "#f6eee2",

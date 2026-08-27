@@ -6,11 +6,20 @@ import { ColorSelector } from "../components/ColorSelector.tsx";
 import { Button } from "../components/Button.tsx";
 import { currentLine } from "../model/game-new.model.ts";
 
+/* высота общая с полем отгадки: под холстом ничего не прыгает при смене роли */
 const root = css`
   display: flex;
   flex-direction: column;
+  justify-content: space-between;
   gap: 10px;
   padding: 2px 4px 0;
+  height: var(--row-under);
+  flex: none;
+
+  @media (max-width: 807px) {
+    height: auto;
+    min-height: var(--row-under);
+  }
 `;
 
 const bottomRow = css`
