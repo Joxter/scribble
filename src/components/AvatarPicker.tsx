@@ -107,7 +107,8 @@ export function AvatarPicker({ value, onChange }: Props) {
               className={`${shapeButton} ${shape === value.shape ? shapeSelected : ""}`}
               onClick={() => onChange({ ...value, shape })}
             >
-              <PlayerFigure color={value.color} shape={shape} height={30} />
+              {/* опции формы всегда чёрные: выбор цвета их не красит */}
+              <PlayerFigure color="var(--ink)" shape={shape} height={30} />
             </button>
           ))}
         </div>

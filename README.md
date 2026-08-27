@@ -3,6 +3,7 @@
 A real-time collaborative drawing application built with React and InstantDB. Create drawings together with others in real-time with smooth brush strokes and intuitive controls.
 
 ## TODO
+
 - [x] установил и настроил линарию!
 - [x] Внутри комнаты есть кнопка "Начать", но она ПОКА НЕ РАБОТАЕТ
 - [x] Создание комнат в статусе подготовки
@@ -22,7 +23,7 @@ A real-time collaborative drawing application built with React and InstantDB. Cr
   - [x] фиксируется список игроков в массив
   - [x] переключается страница в рисование
 - [x] реанимировать состояние игры
-  - [x] корректное стартовое состояние игры 
+  - [x] корректное стартовое состояние игры
     - [x] генерируются слова
     - [x] кто-то назначен рисовальщиком
     - [x] игроки видят чат/хост/инстрмуенты согласно своим ролям
@@ -78,7 +79,7 @@ A real-time collaborative drawing application built with React and InstantDB. Cr
   - [x] ~~как-то связать локальный ID со снапшотом~~
 - [x] "сервер"
   - [x] считает сколько игроков отгадали и меняет состояние игры
-- [x] поле ввода отгадок с _ и открытыми буквами
+- [x] поле ввода отгадок с \_ и открытыми буквами
 
 ## До релиза
 
@@ -92,7 +93,6 @@ A real-time collaborative drawing application built with React and InstantDB. Cr
 - [x] человечки: шесть форм + личный цвет, редактор в лобби и профиле
   - [x] формы и статусы по дизайн-системе 3 (плитка роли, жетон, черта "вы")
   - [ ] ПОСЛЕ ПУША СХЕМЫ: проверить, что аватар сохраняется ($users.avatar)
-  - [ ] крупно текущий рисующий и следующий, остальные кратко
 - [ ] проверить вёрстку: чат на мобилках + правки на десктопе
 
 ## После релиза (backlog)
@@ -111,7 +111,7 @@ A real-time collaborative drawing application built with React and InstantDB. Cr
 - [ ] ховер/тап по человечку: имя, очки, статус (сейчас только нативный title)
 - [ ] тесты на calculateTurnPoints и calculateTotalScores
 
- ## Features
+## Features
 
 - **Real-time Collaboration**: Multiple users can draw simultaneously with instant synchronization
 - **Smooth Drawing**: Powered by `perfect-freehand` for natural, pressure-sensitive strokes
