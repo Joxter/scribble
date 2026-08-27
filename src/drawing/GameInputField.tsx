@@ -13,12 +13,12 @@ const root = css`
   display: flex;
   flex-direction: column;
   gap: 10px;
-  height: var(--row-under);
+  min-height: var(--row-under);
   flex: none;
 
-  @media (max-width: 807px) {
-    height: auto;
-    min-height: var(--row-under);
+  /* на мобилке равнять не с чем: поле идёт сразу под холстом, без пустоты */
+  @media (max-width: 815px) {
+    min-height: 0;
   }
 `;
 

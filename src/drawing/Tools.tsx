@@ -13,12 +13,11 @@ const root = css`
   justify-content: space-between;
   gap: 10px;
   padding: 2px 4px 0;
-  height: var(--row-under);
+  min-height: var(--row-under);
   flex: none;
 
-  @media (max-width: 807px) {
-    height: auto;
-    min-height: var(--row-under);
+  @media (max-width: 815px) {
+    min-height: 0;
   }
 `;
 

@@ -24,7 +24,7 @@ const page = css`
   align-items: stretch;
   justify-content: center;
 
-  @media (max-width: 807px) {
+  @media (max-width: 815px) {
     flex-direction: column;
     align-items: center;
   }
@@ -37,7 +37,7 @@ const leftColumn = css`
   flex-direction: column;
   gap: 10px;
 
-  @media (max-width: 807px) {
+  @media (max-width: 815px) {
     width: 100%;
     max-width: var(--col-main);
   }
@@ -50,7 +50,7 @@ const rightColumn = css`
   flex-direction: column;
   gap: 10px;
 
-  @media (max-width: 807px) {
+  @media (max-width: 815px) {
     width: 100%;
     max-width: var(--col-main);
   }
@@ -65,6 +65,11 @@ const chatWindow = css`
   display: flex;
   flex-direction: column;
   overflow: hidden;
+
+  @media (max-width: 815px) {
+    flex: none;
+    height: var(--chat-mobile);
+  }
 `;
 
 const header = css`

@@ -102,7 +102,7 @@ const panel = css`
   box-shadow: 0 18px 34px -20px rgba(30, 40, 50, 0.55);
   padding: 12px 14px;
 
-  @media (max-width: 807px) {
+  @media (max-width: 815px) {
     left: 12px;
     right: 12px;
     transform: none;
@@ -126,7 +126,7 @@ const drawingMode = css`
 const palette = css`
   width: 300px;
 
-  @media (max-width: 807px) {
+  @media (max-width: 815px) {
     width: auto;
   }
 `;

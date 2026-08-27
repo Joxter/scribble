@@ -10,6 +10,11 @@ import { ScoreList } from "./ScoreList.tsx";
 const panel = css`
   width: 100%;
   aspect-ratio: 1;
+
+  /* в одну колонку квадрат не нужен: тянемся по содержимому */
+  @media (max-width: 815px) {
+    aspect-ratio: auto;
+  }
   background-color: var(--panel);
   border: 1px solid var(--line);
   border-radius: 18px;

@@ -18,7 +18,7 @@ const layout = css`
   align-items: stretch;
   justify-content: center;
 
-  @media (max-width: 807px) {
+  @media (max-width: 815px) {
     flex-direction: column;
     align-items: center;
   }
@@ -36,7 +36,7 @@ const card = css`
   flex-direction: column;
   gap: 18px;
 
-  @media (max-width: 807px) {
+  @media (max-width: 815px) {
     width: 100%;
     max-width: 500px;
   }
@@ -162,7 +162,7 @@ const rules = css`
   gap: 12px;
   padding-top: 4px;
 
-  @media (max-width: 807px) {
+  @media (max-width: 815px) {
     width: 100%;
     max-width: 500px;
   }

@@ -72,7 +72,7 @@ const layout = css`
   align-items: flex-start;
   justify-content: center;
 
-  @media (max-width: 807px) {
+  @media (max-width: 815px) {
     flex-direction: column;
     align-items: stretch;
     max-width: 500px;
@@ -92,7 +92,7 @@ const card = css`
   flex-direction: column;
   gap: 18px;
 
-  @media (max-width: 807px) {
+  @media (max-width: 815px) {
     width: 100%;
   }
 `;
@@ -210,7 +210,7 @@ const players = css`
   gap: 4px;
   padding-top: 6px;
 
-  @media (max-width: 807px) {
+  @media (max-width: 815px) {
     width: 100%;
   }
 `;

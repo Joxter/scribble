@@ -12,7 +12,7 @@ const root = css`
   grid-template-columns: repeat(12, 1fr);
   gap: 6px;
 
-  @media (max-width: 807px) {
+  @media (max-width: 815px) {
     grid-template-columns: repeat(6, 1fr);
     gap: 8px;
   }

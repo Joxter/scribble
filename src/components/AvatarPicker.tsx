@@ -68,7 +68,7 @@ const colorRow = css`
   grid-template-columns: repeat(10, 1fr);
   gap: 6px;
 
-  @media (max-width: 807px) {
+  @media (max-width: 815px) {
     grid-template-columns: repeat(5, 1fr);
     gap: 8px;
   }

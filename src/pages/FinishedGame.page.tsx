@@ -21,35 +21,35 @@ const page = css`
   align-items: stretch;
   justify-content: center;
 
-  @media (max-width: 807px) {
+  @media (max-width: 815px) {
     flex-direction: column;
     align-items: center;
   }
 `;
 
 const leftColumn = css`
-  width: 500px;
+  width: var(--col-main);
   flex: none;
   display: flex;
   flex-direction: column;
   gap: 10px;
 
-  @media (max-width: 807px) {
+  @media (max-width: 815px) {
     width: 100%;
-    max-width: 500px;
+    max-width: var(--col-main);
   }
 `;
 
 const rightColumn = css`
-  width: 300px;
+  width: var(--col-side);
   flex: none;
   display: flex;
   flex-direction: column;
   gap: 10px;
 
-  @media (max-width: 807px) {
+  @media (max-width: 815px) {
     width: 100%;
-    max-width: 500px;
+    max-width: var(--col-main);
   }
 `;
 
@@ -58,19 +58,26 @@ const header = css`
   align-items: baseline;
   gap: 10px;
   padding: 0 4px;
-  min-height: 32px;
+  height: var(--row-head);
+  flex: none;
+  overflow: hidden;
 `;
 
 const title = css`
   font-size: 20px;
   font-weight: 900;
   color: var(--ink);
+  flex: none;
 `;
 
 const subtitle = css`
   font-size: 15px;
   color: var(--slate);
   font-weight: 700;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 
   & b {
     color: var(--ink);
@@ -78,8 +85,10 @@ const subtitle = css`
   }
 `;
 
+/* тот же квадрат, что холст и окно выбора слова, см. --col-main */
 const panel = css`
-  height: 360px;
+  width: 100%;
+  aspect-ratio: 1;
   background-color: var(--panel);
   border: 1px solid var(--line);
   border-radius: 18px;
@@ -87,8 +96,12 @@ const panel = css`
   display: flex;
   overflow: hidden;
 
+  /* в одну колонку квадрат не нужен: тянемся по содержимому */
+  @media (max-width: 815px) {
+    aspect-ratio: auto;
+  }
+
   @media (max-width: 479px) {
-    height: auto;
     flex-direction: column;
   }
 `;
@@ -143,6 +156,11 @@ const chatWindow = css`
   display: flex;
   flex-direction: column;
   overflow: hidden;
+
+  @media (max-width: 815px) {
+    flex: none;
+    height: var(--chat-mobile);
+  }
 `;
 
 export function FinishedGamePage() {
