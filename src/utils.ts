@@ -33,10 +33,6 @@ export function queryToStore<T>(store: Store<T>, cb: (val: T) => () => void) {
   });
 }
 
-export function randomFrom<T>(arr: T[]): T {
-  return arr[Math.floor(Math.random() * arr.length)];
-}
-
 export function toPairs(arr: number[]): Array<[number, number]> {
   const pairs: Array<[number, number]> = [];
 
@@ -68,14 +64,16 @@ export function fix2(n: number | string) {
   return n;
 }
 
+// в словаре есть дубликаты, поэтому уникальных слов меньше, чем words.length
+const uniqWords = [...new Set(words)];
+
 export function newRandomWords(count: number) {
+  const pool = [...uniqWords];
   const arr: string[] = [];
 
-  while (arr.length < count) {
-    const w = randomFrom(words);
-    if (!arr.includes(w)) {
-      arr.push(w);
-    }
+  while (arr.length < Math.min(count, uniqWords.length)) {
+    const i = Math.floor(Math.random() * pool.length);
+    arr.push(pool.splice(i, 1)[0]!);
   }
 
   return arr;

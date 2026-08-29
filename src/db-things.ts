@@ -88,7 +88,7 @@ export async function startParty(_party: NewParty) {
       gameState: {
         state: "choosing-word",
         playerId: players[0],
-        words: newRandomWords(3),
+        words: newRandomWords(party.gameParams.wordSuggestions ?? 3),
       },
     }),
     db.tx.roomEvent[id()]

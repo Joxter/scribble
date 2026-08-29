@@ -33,13 +33,21 @@ type ActiveParty = {
 
 let activeParties: ActiveParty[] = [];
 
-// ponytail: растёт вместе с числом сыгранных ходов, чистится только рестартом.
-// Хватает надолго; если станет проблемой — чистить при уходе комнаты из in-progress.
+// ponytail: обе мапы растут вместе с числом сыгранных ходов, чистятся только
+// рестартом. Хватает надолго; если станет проблемой — чистить при уходе комнаты
+// из in-progress.
 const endedTurns = new Set<string>();
+// gameState.startedAt пишет браузер рисующего, и его часы могут сколь угодно
+// расходиться с нашими. Раньше это гасилось тем, что тот же клиент и засекал,
+// и завершал ход. Теперь решение за сервером, поэтому и время меряем своё.
+// ponytail: при рестарте сервера идущий ход получит свежий отсчёт заново.
+const turnSeenAt = new Map<string, number>();
 
 db.subscribeQuery(query, (resp) => {
   if (resp.type === "error") {
     console.error("subscribeQuery:", resp.error);
+    // подписка мертва — сами не воскреснем, пусть перезапустит docker
+    if (resp.isClosed) process.exit(1);
     return;
   }
   activeParties = resp.data.party as ActiveParty[];
@@ -50,22 +58,38 @@ setInterval(checkAll, 1000);
 
 function checkAll() {
   for (const party of activeParties) {
-    const { gameState, gameParams, staticPlayerIds } = party;
-    if (gameState.state !== "drawing") continue;
-    if (endedTurns.has(gameState.drawingId)) continue;
-
-    const allGuessed =
-      Object.keys(gameState.guessed).length >= staticPlayerIds.length - 1;
-    const timedOut =
-      Date.now() - gameState.startedAt >= gameParams.drawTime * 1000;
-    if (!allGuessed && !timedOut) continue;
-
-    endedTurns.add(gameState.drawingId);
-    endTurn(party, !allGuessed).catch((err) => {
-      endedTurns.delete(gameState.drawingId);
-      console.error("endTurn:", party.id, err);
-    });
+    // кривая запись в одной комнате не должна ронять таймеры всех остальных
+    try {
+      checkParty(party);
+    } catch (err) {
+      console.error("checkParty:", party.id, err);
+    }
   }
+}
+
+function checkParty(party: ActiveParty) {
+  const { gameState, gameParams, staticPlayerIds } = party;
+  if (gameState.state !== "drawing") return;
+  if (endedTurns.has(gameState.drawingId)) return;
+
+  let seenAt = turnSeenAt.get(gameState.drawingId);
+  if (seenAt === undefined) {
+    seenAt = Date.now();
+    turnSeenAt.set(gameState.drawingId, seenAt);
+  }
+
+  // в одиночной комнате отгадывать некому, такой ход живёт только по таймеру
+  const allGuessed =
+    staticPlayerIds.length > 1 &&
+    Object.keys(gameState.guessed).length >= staticPlayerIds.length - 1;
+  const timedOut = Date.now() - seenAt >= (gameParams.drawTime ?? 60) * 1000;
+  if (!allGuessed && !timedOut) return;
+
+  endedTurns.add(gameState.drawingId);
+  endTurn(party, !allGuessed).catch((err) => {
+    endedTurns.delete(gameState.drawingId);
+    console.error("endTurn:", party.id, err);
+  });
 }
 
 async function endTurn(party: ActiveParty, byTimeout: boolean) {
@@ -84,10 +108,11 @@ async function endTurn(party: ActiveParty, byTimeout: boolean) {
   const nextI = newPlayers.findIndex((p) => p.id === gameState.playerId) + 1;
   let next: { id: string } | undefined = newPlayers[nextI];
 
-  if (!next) {
-    // круг закончился
+  // круг закончился. gameProgress стартует как [[]], то есть его длина — это
+  // номер текущего круга; новый заводим, только если он реально будет сыгран
+  if (!next && gameProgress.length < gameParams.rounds) {
     gameProgress.push([]);
-    if (gameProgress.length < gameParams.rounds) next = newPlayers[0];
+    next = newPlayers[0];
   }
 
   if (!next) {
@@ -123,7 +148,7 @@ async function endTurn(party: ActiveParty, byTimeout: boolean) {
       gameState: {
         state: "choosing-word",
         playerId: next.id,
-        words: pickWords(gameParams.wordSuggestions),
+        words: pickWords(gameParams.wordSuggestions ?? 3),
       },
       gameProgress,
     }),
@@ -131,12 +156,19 @@ async function endTurn(party: ActiveParty, byTimeout: boolean) {
   ]);
 }
 
+// Дубль newRandomWords из src/utils.ts. Не переиспользуем: тот модуль тянет
+// ./freehand/Vec без расширения и в ноде не грузится (см. README/Deploy).
+// В словаре есть дубликаты, поэтому уникальных слов меньше, чем words.length
+const uniqWords = [...new Set(words)];
+
 function pickWords(count: number) {
-  const picked = new Set<string>();
-  while (picked.size < Math.min(count, words.length)) {
-    picked.add(words[Math.floor(Math.random() * words.length)]!);
+  const pool = [...uniqWords];
+  const picked: string[] = [];
+  while (picked.length < Math.min(count, uniqWords.length)) {
+    const i = Math.floor(Math.random() * pool.length);
+    picked.push(pool.splice(i, 1)[0]!);
   }
-  return [...picked];
+  return picked;
 }
 
 console.log("scribble server: watching in-progress parties");

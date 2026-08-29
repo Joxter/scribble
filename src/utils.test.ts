@@ -4,6 +4,7 @@ import {
   clamp,
   compareWords,
   generateClues,
+  newRandomWords,
   toPairs,
   wordToZeroClue,
 } from "./utils.ts";
@@ -117,5 +118,17 @@ describe("toPairs", () => {
 
   test("drops a trailing unpaired element", () => {
     expect(toPairs([1, 2, 3])).toEqual([[1, 2]]);
+  });
+});
+
+describe("newRandomWords", () => {
+  test("returns the requested amount, without repeats", () => {
+    const got = newRandomWords(4);
+    expect(got).toHaveLength(4);
+    expect(new Set(got).size).toBe(4);
+  });
+
+  test("does not hang when asked for more words than the dictionary has", () => {
+    expect(newRandomWords(100_000).length).toBeLessThan(100_000);
   });
 });
