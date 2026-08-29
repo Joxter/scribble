@@ -1,16 +1,13 @@
-FROM node:22-alpine
+FROM node:24-alpine
 
 WORKDIR /app
 
-# Copy package files
 COPY package*.json ./
+RUN npm ci --omit=dev
 
-# Install dependencies
-RUN npm ci --only=production
-
-# Copy backend source
+COPY instant.schema.ts ./
+COPY src/types.ts src/config.ts ./src/
+COPY dictionaries ./dictionaries
 COPY backend ./backend
 
-EXPOSE 3000
-
-CMD ["node", "--experimental-strip-types", "backend/server.ts"]
+CMD ["node", "backend/server.ts"]

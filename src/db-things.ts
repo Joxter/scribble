@@ -1,11 +1,7 @@
 import { db } from "./DB.ts";
 import {
   CurrentCanvas,
-  DrawingEndedEvent,
   GAME_STATUS,
-  GameFinishedEvent,
-  GameProgress,
-  GameStateDrawing,
   IsRevealed,
   Party,
   Player2,
@@ -230,53 +226,6 @@ export function selectWord(localId: string, party: NewParty, word: string) {
         startedAt: Date.now(),
       },
     }),
-  ]);
-}
-
-export function drawingEndedtransitionToNextPlayer(
-  nextPlayerId: string,
-  gameState: GameStateDrawing,
-  partyId: string,
-  newGameProgress: GameProgress,
-  itTimeout?: boolean,
-) {
-  const event: Omit<DrawingEndedEvent, "id"> = {
-    type: "drawing-ended",
-    payload: {
-      reason: itTimeout ? "timeout" : "all-revealed",
-      revealed: gameState.guessed,
-      nextPlayerId: nextPlayerId,
-    },
-  };
-
-  return db.transact([
-    db.tx.party[partyId].update({
-      gameState: {
-        state: "choosing-word",
-        playerId: nextPlayerId,
-        words: newRandomWords(3),
-      },
-      gameProgress: newGameProgress,
-    }),
-    db.tx.roomEvent[id()].create(event).link({ party: partyId }),
-  ]);
-}
-
-export function gameFinished(partyId: string, newGameProgress: GameProgress) {
-  const event: Omit<GameFinishedEvent, "id"> = {
-    type: "game-finished",
-    payload: {
-      reason: "no-more-rounds",
-    },
-  };
-
-  return db.transact([
-    db.tx.party[partyId].update({
-      gameState: { state: "game-finished" },
-      status: GAME_STATUS.finished,
-      gameProgress: newGameProgress,
-    }),
-    db.tx.roomEvent[id()].create(event).link({ party: partyId }),
   ]);
 }
 

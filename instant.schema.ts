@@ -1,5 +1,5 @@
 import { i } from "@instantdb/core";
-import {
+import type {
   CurrentCanvas,
   GameProgress,
   GameState,

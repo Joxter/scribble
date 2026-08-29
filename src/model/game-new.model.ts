@@ -1,15 +1,9 @@
-import { combine, createEvent, createStore, sample } from "effector";
+import { createEvent, createStore, sample } from "effector";
 import { Player2 } from "../types.ts";
 import { calcRevealed } from "../utils.ts";
 import { mergeLogi } from "./utils.ts";
 import { createDrawing } from "./drawing.model.ts";
-import {
-  authOrCreateUser,
-  gameFinished,
-  selectWord,
-  sendMessage,
-  drawingEndedtransitionToNextPlayer,
-} from "../db-things.ts";
+import { authOrCreateUser, selectWord, sendMessage } from "../db-things.ts";
 import { createParty } from "./party.model.ts";
 
 const user = createUser();
@@ -48,7 +42,7 @@ const drawing = createDrawing({
   $timeout: party.$timeout,
 });
 
-export const { $drawing, $isServer, currentLine } = drawing;
+export const { $drawing, currentLine } = drawing;
 
 sample({
   source: [$localId, $newParty] as const,
@@ -57,116 +51,6 @@ sample({
 }).watch(([[localId, party], word]) => {
   if (party) selectWord(localId, party, word);
 });
-
-// when every guessed
-combine($guessed, $newParty, $isServer).watch(([guessed, party, isServer]) => {
-  if (!party) return;
-
-  const { newPlayers, staticPlayerIds, gameState, gameProgress, gameParams } =
-    party;
-
-  if (isServer && gameState.state === "drawing") {
-    // ВСЕ УГАДАЛИ
-
-    if (Object.keys(guessed).length === staticPlayerIds.length - 1) {
-      const artist = gameState.playerId;
-      const nextPlayerI = newPlayers.findIndex((p) => p.id === artist) + 1;
-
-      if (gameProgress.length === 0) {
-        gameProgress.push([]);
-      }
-
-      gameProgress.at(-1)!.push({
-        paintingId: gameState.drawingId,
-        whoDrawId: gameState.playerId,
-        scores: gameState.guessed,
-      });
-
-      if (newPlayers[nextPlayerI]) {
-        // продолжается текущий круг
-        drawingEndedtransitionToNextPlayer(
-          newPlayers[nextPlayerI].id,
-          gameState,
-          party.id,
-          gameProgress,
-        );
-      } else {
-        // начинаем следующий круг
-
-        gameProgress.push([]);
-        if (gameProgress.length < gameParams.rounds) {
-          log(`nextPlayerChoosingWord: ${newPlayers[0].id}`);
-          // если ещё есть место для раундов
-          drawingEndedtransitionToNextPlayer(
-            newPlayers[0].id,
-            gameState,
-            party.id,
-            gameProgress,
-          );
-        } else {
-          log("game finished!");
-          gameFinished(party.id, gameProgress);
-        }
-      }
-    }
-  }
-});
-
-combine($newParty, $isServer, party.$timeout).watch(
-  ([party, isServer, timeout]) => {
-    // событие, когда закончилось время
-
-    if (!party) return;
-    if (!isServer) return;
-
-    const { newPlayers, gameState, gameProgress, gameParams } = party;
-
-    if (gameState.state !== "drawing") return;
-    if (timeout === null || timeout.left > 0) return;
-
-    const artist = gameState.playerId;
-    const nextPlayerI = newPlayers.findIndex((p) => p.id === artist) + 1;
-
-    if (gameProgress.length === 0) {
-      gameProgress.push([]);
-    }
-
-    gameProgress.at(-1)!.push({
-      paintingId: gameState.drawingId,
-      whoDrawId: gameState.playerId,
-      scores: gameState.guessed,
-    });
-
-    if (newPlayers[nextPlayerI]) {
-      // продолжается текущий круг
-      drawingEndedtransitionToNextPlayer(
-        newPlayers[nextPlayerI].id,
-        gameState,
-        party.id,
-        gameProgress,
-        true,
-      );
-    } else {
-      // начинаем следующий круг
-
-      gameProgress.push([]);
-      if (gameProgress.length < gameParams.rounds) {
-        log(`nextPlayerChoosingWord: ${newPlayers[0].id}`);
-        // если ещё есть место для раундов
-        drawingEndedtransitionToNextPlayer(
-          newPlayers[0].id,
-          gameState,
-          party.id,
-          gameProgress,
-          true,
-        );
-      } else {
-        log("game finished!");
-        gameFinished(party.id, gameProgress);
-      }
-    }
-  },
-);
 
 sample({
   source: [$localId, $newParty] as const,

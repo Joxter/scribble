@@ -1,4 +1,4 @@
-import { AvatarShape } from "./config.ts";
+import type { AvatarShape } from "./config.ts";
 
 export type CanvasLine = {
   dots: [x: number, y: number][];

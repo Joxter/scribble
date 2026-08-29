@@ -1,99 +1,142 @@
-import Fastify from "fastify";
-import cors from "@fastify/cors";
-import helmet from "@fastify/helmet";
-import { db } from "./instant-db.ts";
+import { id, init } from "@instantdb/admin";
+import schema from "../instant.schema.ts";
+import {
+  GAME_STATUS,
+  type DrawingEndedEvent,
+  type GameFinishedEvent,
+  type GameProgress,
+  type Party,
+} from "../src/types.ts";
+import { words } from "../dictionaries/ru-300-chatgpt.ts";
 
-type ServerConfig = {
-  port: number;
-  host: string;
+const db = init({
+  appId: process.env.INSTANT_APP_ID!,
+  adminToken: process.env.INSTANT_APP_ADMIN_TOKEN!,
+  schema,
+});
+
+const query = {
+  party: {
+    $: { where: { status: GAME_STATUS.inProgress } },
+    newPlayers: {},
+  },
+} as const;
+
+type ActiveParty = {
+  id: string;
+  gameState: Party["gameState"];
+  gameProgress: GameProgress;
+  gameParams: Party["gameParams"];
+  staticPlayerIds: string[];
+  newPlayers: { id: string }[];
 };
 
-const fastify = Fastify({ logger: true });
+let activeParties: ActiveParty[] = [];
 
-// Register plugins
-await fastify.register(cors, {
-  origin: true,
+// ponytail: растёт вместе с числом сыгранных ходов, чистится только рестартом.
+// Хватает надолго; если станет проблемой — чистить при уходе комнаты из in-progress.
+const endedTurns = new Set<string>();
+
+db.subscribeQuery(query, (resp) => {
+  if (resp.type === "error") {
+    console.error("subscribeQuery:", resp.error);
+    return;
+  }
+  activeParties = resp.data.party as ActiveParty[];
+  checkAll();
 });
 
-await fastify.register(helmet, {
-  contentSecurityPolicy: false,
-});
+setInterval(checkAll, 1000);
 
-let i = 0;
-// GET endpoint that returns HTML
-fastify.get("/", async (request, reply) => {
-  reply.type("text/html");
-  return `
-    <!DOCTYPE html>
-    <html lang="en">
-      <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Fastify Server</title>
-        <style>
-          body {
-            font-family: system-ui, -apple-system, sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-          }
-          .container {
-            text-align: center;
-            padding: 2em;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 10px;
-            backdrop-filter: blur(10px);
-          }
-          h1 {
-            margin: 0 0 0.5em 0;
-            font-size: 3em;
-          }
-          p {
-            margin: 0;
-            font-size: 1.2em;
-            opacity: 0.9;
-          }
-        </style>
-      </head>
-      <body>
-        <div class="container">
-          <h1>🚀 Fastify Server</h1>
-          <p>Server is running successfully!</p>
-          <p>${i++}</p>
-        </div>
-      </body>
-    </html>
-  `;
-});
+function checkAll() {
+  for (const party of activeParties) {
+    const { gameState, gameParams, staticPlayerIds } = party;
+    if (gameState.state !== "drawing") continue;
+    if (endedTurns.has(gameState.drawingId)) continue;
 
-// Start the server
-async function start() {
-  try {
-    const config: ServerConfig = {
-      port: Number(process.env.PORT) || 3000,
-      host: "0.0.0.0",
-    };
+    const allGuessed =
+      Object.keys(gameState.guessed).length >= staticPlayerIds.length - 1;
+    const timedOut =
+      Date.now() - gameState.startedAt >= gameParams.drawTime * 1000;
+    if (!allGuessed && !timedOut) continue;
 
-    await fastify.listen(config);
-    console.log(`Server is running on http://localhost:${config.port}`);
-  } catch (err) {
-    fastify.log.error(err);
-    process.exit(1);
+    endedTurns.add(gameState.drawingId);
+    endTurn(party, !allGuessed).catch((err) => {
+      endedTurns.delete(gameState.drawingId);
+      console.error("endTurn:", party.id, err);
+    });
   }
 }
 
-// Graceful shutdown
-async function closeGracefully(signal: string) {
-  console.log(`Received ${signal}, closing server gracefully...`);
-  await fastify.close();
-  process.exit(0);
+async function endTurn(party: ActiveParty, byTimeout: boolean) {
+  const { gameState, gameParams, newPlayers } = party;
+  if (gameState.state !== "drawing") return;
+
+  // снапшот подписки переиспользуется, копируем перед мутацией
+  const gameProgress: GameProgress = structuredClone(party.gameProgress);
+  if (gameProgress.length === 0) gameProgress.push([]);
+  gameProgress.at(-1)!.push({
+    paintingId: gameState.drawingId,
+    whoDrawId: gameState.playerId,
+    scores: gameState.guessed,
+  });
+
+  const nextI = newPlayers.findIndex((p) => p.id === gameState.playerId) + 1;
+  let next: { id: string } | undefined = newPlayers[nextI];
+
+  if (!next) {
+    // круг закончился
+    gameProgress.push([]);
+    if (gameProgress.length < gameParams.rounds) next = newPlayers[0];
+  }
+
+  if (!next) {
+    const finished: Omit<GameFinishedEvent, "id"> = {
+      type: "game-finished",
+      payload: { reason: "no-more-rounds" },
+    };
+    console.log(`party ${party.id}: game finished`);
+    await db.transact([
+      db.tx.party[party.id]!.update({
+        gameState: { state: "game-finished" },
+        status: GAME_STATUS.finished,
+        gameProgress,
+      }),
+      db.tx.roomEvent[id()]!.create(finished).link({ party: party.id }),
+    ]);
+    return;
+  }
+
+  const ended: Omit<DrawingEndedEvent, "id"> = {
+    type: "drawing-ended",
+    payload: {
+      reason: byTimeout ? "timeout" : "all-revealed",
+      revealed: gameState.guessed,
+      nextPlayerId: next.id,
+    },
+  };
+  console.log(
+    `party ${party.id}: turn ended (${ended.payload.reason}), next ${next.id}`,
+  );
+  await db.transact([
+    db.tx.party[party.id]!.update({
+      gameState: {
+        state: "choosing-word",
+        playerId: next.id,
+        words: pickWords(gameParams.wordSuggestions),
+      },
+      gameProgress,
+    }),
+    db.tx.roomEvent[id()]!.create(ended).link({ party: party.id }),
+  ]);
 }
 
-process.on("SIGTERM", () => closeGracefully("SIGTERM"));
-process.on("SIGINT", () => closeGracefully("SIGINT"));
+function pickWords(count: number) {
+  const picked = new Set<string>();
+  while (picked.size < Math.min(count, words.length)) {
+    picked.add(words[Math.floor(Math.random() * words.length)]!);
+  }
+  return [...picked];
+}
 
-start();
+console.log("scribble server: watching in-progress parties");

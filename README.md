@@ -105,8 +105,8 @@ A real-time collaborative drawing application built with React and InstantDB. Cr
 - [ ] разобраться с вёрсткой очков игроков: в квадратном окне выбора слова список растянут, под ним пустота
 - [ ] финал: видно все рисунки, сыгранные за игру
 - [ ] кнопка выхода/кика во время игры (софтделит из снапшота игроков)
-- [ ] настоящий бэкенд-таймер, не зависящий от клиента рисующего (сейчас таймаут отслеживает браузер того, кто рисует — если он закроет вкладку, ход зависнет)
-- [ ] бекенд: сервер подписывается на новые сообщения в комнатах со статусом in-progress
+- [x] настоящий бэкенд-таймер, не зависящий от клиента рисующего (`backend/server.ts`)
+- [x] бекенд: сервер подписывается на новые сообщения в комнатах со статусом in-progress
 - [ ] если хост вышел из комнаты, то им назначается кто-то другой (с минимальным id?)
 - [ ] цензурить отгаданное слово, если его написали снова
 - [ ] presence комнаты (в схеме объявлена, но не используется): статус "отключён" у человечка и "X печатает…" в чате
@@ -175,10 +175,35 @@ The application will be available at `http://localhost:5173` (or the port shown 
 ## Available Scripts
 
 - `npm run dev` - Start development server
+- `npm run server` - Start the game server (needs `.env` with `INSTANT_APP_ID` and `INSTANT_APP_ADMIN_TOKEN`)
 - `npm run build` - Build for production
 - `npm run check-types` - Run TypeScript type checking
 - `npm run deploy` - Build and deploy to GitHub Pages
 - `npx instant-cli@latest push` - Push new schema for Instand DB
+
+## Deploy (backend)
+
+Сервер ведёт таймер ходов. **Без него игра встанет**: как только время на рисунок
+истекает, ход переключает именно он, клиент это больше не делает.
+
+Локально:
+
+```bash
+cp .env.example .env   # заполнить из instantdb.com/dash
+npm run server         # или: docker compose up -d --build
+```
+
+На дроплете — нужен только docker, репозиторий и `.env`:
+
+```bash
+git clone <repo> && cd scribble
+cp .env.example .env && nano .env
+docker compose up -d --build
+docker compose logs -f
+```
+
+Обновление — `git pull && docker compose up -d --build`.
+Портов сервер не слушает, входящий трафик ему не нужен.
 
 ## Key Components
 

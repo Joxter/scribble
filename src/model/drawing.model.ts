@@ -179,8 +179,6 @@ export function createDrawing(params: {
     return t.drawing && t.iam;
   });
 
-  const $isServer = $imDrawing;
-
   const currentLine = createCurrentLine();
 
   const $currentDrawingId = $newParty.map((p) => {
@@ -235,7 +233,6 @@ export function createDrawing(params: {
 
   return {
     $drawing,
-    $isServer,
     currentLine,
     $currentDrawingId,
   };
