@@ -322,6 +322,31 @@ export function calculateTurnPoints(
   return points;
 }
 
+// Кто рисует следующим после закончившегося хода; null — кругов больше нет.
+// playedRounds — длина gameProgress уже с записанным в неё ходом, то есть
+// номер идущего круга. Решает сервер (backend/server.ts), здесь — чтобы
+// правило было одно и его можно было прогнать тестом.
+export function nextTurn(
+  players: string[],
+  currentPlayerId: string,
+  playedRounds: number,
+  rounds: number,
+): { playerId: string; newRound: boolean } | null {
+  // рисующий вышел из комнаты по ходу дела — indexOf даст -1, и круг пойдёт
+  // с первого игрока заново. Так было и до переезда таймера на сервер.
+  const next = players[players.indexOf(currentPlayerId) + 1];
+  if (next) return { playerId: next, newRound: false };
+
+  // круг закончился. Новый заводим, только если он реально будет сыгран:
+  // иначе игра заканчивалась бы на круг раньше настройки, а в gameProgress
+  // оставался пустой хвост.
+  if (playedRounds < rounds && players[0]) {
+    return { playerId: players[0], newRound: true };
+  }
+
+  return null;
+}
+
 export function calculateTotalScores(
   gameProgress: GameProgress,
 ): Record<string, number> {

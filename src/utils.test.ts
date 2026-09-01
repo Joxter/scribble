@@ -5,6 +5,7 @@ import {
   compareWords,
   generateClues,
   newRandomWords,
+  nextTurn,
   toPairs,
   wordToZeroClue,
 } from "./utils.ts";
@@ -130,5 +131,58 @@ describe("newRandomWords", () => {
 
   test("does not hang when asked for more words than the dictionary has", () => {
     expect(newRandomWords(100_000).length).toBeLessThan(100_000);
+  });
+});
+
+describe("nextTurn", () => {
+  // Крутит партию так же, как backend/server.ts: закончившийся ход
+  // записывается в последний круг, потом спрашиваем, кто следующий.
+  // Возвращает gameProgress по именам рисовавших.
+  function playGame(players: string[], rounds: number) {
+    const progress: string[][] = [[]];
+    let current = players[0]!;
+
+    for (let guard = 0; guard < 100; guard++) {
+      progress.at(-1)!.push(current);
+
+      const next = nextTurn(players, current, progress.length, rounds);
+      if (!next) return progress;
+      if (next.newRound) progress.push([]);
+      current = next.playerId;
+    }
+
+    throw new Error("партия не закончилась за 100 ходов");
+  }
+
+  test("играет ровно столько кругов, сколько в настройках", () => {
+    expect(playGame(["A", "B"], 3)).toEqual([
+      ["A", "B"],
+      ["A", "B"],
+      ["A", "B"],
+    ]);
+    expect(playGame(["A", "B", "C"], 1)).toEqual([["A", "B", "C"]]);
+    expect(playGame(["A"], 2)).toEqual([["A"], ["A"]]);
+  });
+
+  // Из-за этого игра заканчивалась на круг раньше настройки, а шапка
+  // "N / rounds" считает круги по длине gameProgress и врала на единицу.
+  test("не оставляет пустой круг в конце", () => {
+    for (const rounds of [1, 3, 5, 10]) {
+      const progress = playGame(["A", "B"], rounds);
+      expect(progress.length).toBe(rounds);
+      expect(progress.at(-1)).not.toEqual([]);
+    }
+  });
+
+  test("внутри круга передаёт ход по порядку", () => {
+    expect(nextTurn(["A", "B", "C"], "A", 1, 3)).toEqual({
+      playerId: "B",
+      newRound: false,
+    });
+    expect(nextTurn(["A", "B", "C"], "C", 1, 3)).toEqual({
+      playerId: "A",
+      newRound: true,
+    });
+    expect(nextTurn(["A", "B", "C"], "C", 3, 3)).toBe(null);
   });
 });

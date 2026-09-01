@@ -7,7 +7,11 @@ import {
   type GameProgress,
   type Party,
 } from "../src/types.ts";
-import { calculateTotalScores, newRandomWords } from "../src/utils.ts";
+import {
+  calculateTotalScores,
+  newRandomWords,
+  nextTurn,
+} from "../src/utils.ts";
 import { notify } from "./notify.ts";
 
 const db = init({
@@ -149,15 +153,13 @@ async function endTurn(party: ActiveParty, byTimeout: boolean) {
     scores: gameState.guessed,
   });
 
-  const nextI = newPlayers.findIndex((p) => p.id === gameState.playerId) + 1;
-  let next: { id: string } | undefined = newPlayers[nextI];
-
-  // круг закончился. gameProgress стартует как [[]], то есть его длина — это
-  // номер текущего круга; новый заводим, только если он реально будет сыгран
-  if (!next && gameProgress.length < gameParams.rounds) {
-    gameProgress.push([]);
-    next = newPlayers[0];
-  }
+  const next = nextTurn(
+    newPlayers.map((p) => p.id),
+    gameState.playerId,
+    gameProgress.length,
+    gameParams.rounds,
+  );
+  if (next?.newRound) gameProgress.push([]);
 
   if (!next) {
     const finished: Omit<GameFinishedEvent, "id"> = {
@@ -186,17 +188,17 @@ async function endTurn(party: ActiveParty, byTimeout: boolean) {
     payload: {
       reason: byTimeout ? "timeout" : "all-revealed",
       revealed: gameState.guessed,
-      nextPlayerId: next.id,
+      nextPlayerId: next.playerId,
     },
   };
   console.log(
-    `party ${party.id}: turn ended (${ended.payload.reason}), next ${next.id}`,
+    `party ${party.id}: turn ended (${ended.payload.reason}), next ${next.playerId}`,
   );
   await db.transact([
     db.tx.party[party.id]!.update({
       gameState: {
         state: "choosing-word",
-        playerId: next.id,
+        playerId: next.playerId,
         words: newRandomWords(gameParams.wordSuggestions ?? 3),
       },
       gameProgress,
