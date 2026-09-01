@@ -7,7 +7,8 @@ import {
   type GameProgress,
   type Party,
 } from "../src/types.ts";
-import { words } from "../dictionaries/ru-300-chatgpt.ts";
+import { calculateTotalScores, newRandomWords } from "../src/utils.ts";
+import { notify } from "./notify.ts";
 
 const db = init({
   appId: process.env.INSTANT_APP_ID!,
@@ -24,14 +25,21 @@ const query = {
 
 type ActiveParty = {
   id: string;
+  name: string;
   gameState: Party["gameState"];
   gameProgress: GameProgress;
   gameParams: Party["gameParams"];
   staticPlayerIds: string[];
-  newPlayers: { id: string }[];
+  newPlayers: { id: string; name?: string }[];
 };
 
 let activeParties: ActiveParty[] = [];
+
+// Комнаты, про старт которых уже сообщили. Держится по текущему снапшоту, так
+// что комната, ушедшая из in-progress, при новой игре сообщит о себе снова.
+const startedParties = new Set<string>();
+// В первом снапшоте после рестарта лежат уже идущие игры, а не новые.
+let firstSnapshot = true;
 
 // ponytail: обе мапы растут вместе с числом сыгранных ходов, чистятся только
 // рестартом. Хватает надолго; если станет проблемой — чистить при уходе комнаты
@@ -40,6 +48,8 @@ const endedTurns = new Set<string>();
 // gameState.startedAt пишет браузер рисующего, и его часы могут сколь угодно
 // расходиться с нашими. Раньше это гасилось тем, что тот же клиент и засекал,
 // и завершал ход. Теперь решение за сервером, поэтому и время меряем своё.
+// Своё время сервер тут же и записывает обратно в startedAt (см. checkParty),
+// иначе клиентский таймер показывал бы одно, а ход заканчивался по другому.
 // ponytail: при рестарте сервера идущий ход получит свежий отсчёт заново.
 const turnSeenAt = new Map<string, number>();
 
@@ -47,14 +57,40 @@ db.subscribeQuery(query, (resp) => {
   if (resp.type === "error") {
     console.error("subscribeQuery:", resp.error);
     // подписка мертва — сами не воскреснем, пусть перезапустит docker
-    if (resp.isClosed) process.exit(1);
+    if (resp.isClosed) {
+      // exit сразу оборвал бы отправку, поэтому ждём её (там свой таймаут)
+      notify(
+        `💀 scribble: подписка на InstantDB закрылась (${resp.error.message}), сервер перезапускается. Пока он лежит, ходы в играх не переключаются.`,
+      ).finally(() => process.exit(1));
+    }
     return;
   }
   activeParties = resp.data.party as ActiveParty[];
+  notifyStarted();
   checkAll();
 });
 
 setInterval(checkAll, 1000);
+
+function notifyStarted() {
+  const active = new Set(activeParties.map((p) => p.id));
+  for (const partyId of startedParties) {
+    if (!active.has(partyId)) startedParties.delete(partyId);
+  }
+
+  for (const party of activeParties) {
+    if (startedParties.has(party.id)) continue;
+    startedParties.add(party.id);
+    if (firstSnapshot) continue;
+
+    notify(
+      `🎮 Игра началась: ${party.name}\n` +
+        `Игроков: ${party.staticPlayerIds.length}, кругов: ${party.gameParams.rounds}`,
+    );
+  }
+
+  firstSnapshot = false;
+}
 
 function checkAll() {
   for (const party of activeParties) {
@@ -76,6 +112,14 @@ function checkParty(party: ActiveParty) {
   if (seenAt === undefined) {
     seenAt = Date.now();
     turnSeenAt.set(gameState.drawingId, seenAt);
+    // Клиенты рисуют таймер и открывают подсказки от startedAt, а его пишет
+    // браузер рисующего своими часами — то есть не тем временем, по которому
+    // ход реально закончится. Переписываем на своё: одна запись на ход, зато
+    // отсчёт на экране совпадает с нашим, в том числе после рестарта сервера,
+    // когда ход начинает отсчёт заново.
+    db.transact(
+      db.tx.party[party.id]!.merge({ gameState: { startedAt: seenAt } }),
+    ).catch((err) => console.error("startedAt:", party.id, err));
   }
 
   // в одиночной комнате отгадывать некому, такой ход живёт только по таймеру
@@ -121,6 +165,11 @@ async function endTurn(party: ActiveParty, byTimeout: boolean) {
       payload: { reason: "no-more-rounds" },
     };
     console.log(`party ${party.id}: game finished`);
+    notify(
+      `🏁 Игра закончена: ${party.name}\n` +
+        `Кругов сыграно: ${gameProgress.length}\n` +
+        `Счёт: ${scoreLine(gameProgress, newPlayers)}`,
+    );
     await db.transact([
       db.tx.party[party.id]!.update({
         gameState: { state: "game-finished" },
@@ -148,7 +197,7 @@ async function endTurn(party: ActiveParty, byTimeout: boolean) {
       gameState: {
         state: "choosing-word",
         playerId: next.id,
-        words: pickWords(gameParams.wordSuggestions ?? 3),
+        words: newRandomWords(gameParams.wordSuggestions ?? 3),
       },
       gameProgress,
     }),
@@ -156,19 +205,21 @@ async function endTurn(party: ActiveParty, byTimeout: boolean) {
   ]);
 }
 
-// Дубль newRandomWords из src/utils.ts. Не переиспользуем: тот модуль тянет
-// ./freehand/Vec без расширения и в ноде не грузится (см. README/Deploy).
-// В словаре есть дубликаты, поэтому уникальных слов меньше, чем words.length
-const uniqWords = [...new Set(words)];
+function scoreLine(
+  gameProgress: GameProgress,
+  players: ActiveParty["newPlayers"],
+) {
+  const totals = calculateTotalScores(gameProgress);
+  const byScore = Object.entries(totals).sort((a, b) => b[1] - a[1]);
+  if (byScore.length === 0) return "никто ничего не отгадал";
 
-function pickWords(count: number) {
-  const pool = [...uniqWords];
-  const picked: string[] = [];
-  while (picked.length < Math.min(count, uniqWords.length)) {
-    const i = Math.floor(Math.random() * pool.length);
-    picked.push(pool.splice(i, 1)[0]!);
-  }
-  return picked;
+  return byScore
+    .map(([playerId, points]) => {
+      const player = players.find((p) => p.id === playerId);
+      return `${player?.name ?? playerId.slice(0, 8)} ${points}`;
+    })
+    .join(", ");
 }
 
 console.log("scribble server: watching in-progress parties");
+notify("▲ scribble: сервер запустился");

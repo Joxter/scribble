@@ -1,0 +1,69 @@
+# Собираем образ бэкенда на гитхабе и кладём в ghcr.io — дроплет только тянет.
+# Сборка на боксе (1 vCPU) конкурировала бы за память с чужими сервисами рядом.
+# См. README, раздел Deploy (backend).
+name: publish
+
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+# Два пуша подряд иначе гоняются за тег latest, и его выигрывает тот, кто
+# закончил последним. Деплой пинит sha и на это не смотрит, но compose
+# откатывается на latest.
+concurrency:
+  group: publish
+  cancel-in-progress: false
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm run check-types
+      - run: npm run test:run
+      - run: node --check backend/server.ts
+      # Нода стрипает типы без анализа: импорт, использованный только как тип,
+      # остаётся настоящим импортом и падает в рантайме — как и импорт без
+      # расширения .ts. Ни tsc, ни --check этого не видят, ловится только
+      # настоящей загрузкой модулей, которые сервер тянет из src/.
+      - run: node --input-type=module -e 'await import("./backend/notify.ts"); await import("./instant.schema.ts"); await import("./src/utils.ts")'
+
+  publish:
+    # Выкладывать образ, который не прошёл свои же тесты, значит переносить
+    # поломку на дроплет, где заметить её стоит одного деплоя.
+    needs: test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          # Встроенного токена хватает, чтобы пушить в пакеты этого же репозитория,
+          # так что своего секрета публикации не нужно. Дроплет тянет по PAT,
+          # который уже лежит в /root/.docker/config.json от соседних проектов.
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: backend/Dockerfile
+          push: true
+          # Прописано строчными руками: владелец — "Joxter", а пути в реестре
+          # должны быть в нижнем регистре.
+          tags: |
+            ghcr.io/joxter/scribble/backend:${{ github.sha }}
+            ghcr.io/joxter/scribble/backend:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

@@ -1,7 +1,9 @@
-node_modules
-dist
-.git
-.idea
-.DS_Store
-*.log
-.env
+# В контекст едет только то, что нужно серверу: остальное либо большое
+# (svg-дампы, claude-design, node_modules), либо секретное (.env).
+*
+!package.json
+!package-lock.json
+!instant.schema.ts
+!backend
+!src
+!dictionaries

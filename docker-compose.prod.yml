@@ -1,0 +1,14 @@
+# Крутится на дроплете из /sites/scribble. Выкатывается через ./update.sh,
+# который пинит IMAGE_TAG на выкатываемый коммит.
+services:
+  backend:
+    image: ghcr.io/joxter/scribble/backend:${IMAGE_TAG:-latest}
+    # INSTANT_APP_ID, INSTANT_APP_ADMIN_TOKEN, TG_BOT_TOKEN, TG_CHAT_ID.
+    # chmod 600 — админский токен обходит все правила доступа приложения.
+    env_file: .env
+    init: true # иначе node как PID 1 игнорирует SIGTERM и docker stop ждёт SIGKILL
+    restart: unless-stopped
+    # Портов сервер не слушает: он подписан на InstantDB и ходит только наружу.
+    # Держит в памяти список идущих комнат, так что лимит далеко за нормой и
+    # нужен лишь чтобы утечка не утащила за собой весь бокс.
+    mem_limit: 256m

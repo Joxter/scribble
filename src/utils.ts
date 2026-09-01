@@ -1,6 +1,8 @@
-import { VecLike } from "./freehand/Vec";
-import { Store } from "effector";
-import { GameProgress, IsRevealed } from "./types.ts";
+// Модуль грузится и бэкендом (см. README/Deploy), а нода не резолвит импорты
+// без расширения и не умеет стирать типы, не помеченные `import type`.
+import type { VecLike } from "./freehand/Vec.ts";
+import type { Store } from "effector";
+import type { GameProgress, IsRevealed } from "./types.ts";
 import { words } from "../dictionaries/ru-300-chatgpt.ts";
 
 export const canvasSize = 600;
