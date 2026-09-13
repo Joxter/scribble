@@ -7,12 +7,15 @@ import { Button } from "../components/Button.tsx";
 import { AvatarPicker } from "../components/AvatarPicker.tsx";
 import { ReadOnlyCanvas } from "../components/ReadOnlyCanvas.tsx";
 import { $localId, $player, party } from "../model/game-new.model.ts";
-import { $myPaintings, loadMyPaintings } from "../model/all-paintings.model.ts";
+import {
+  $myPaintings,
+  loadMyPaintings,
+  type MyPainting,
+} from "../model/all-paintings.model.ts";
 import { doEventsUndo } from "../model/utils.ts";
 import { editUserAvatar, editUserName } from "../db-things.ts";
-import { countReactions, paintingRooms } from "../utils.ts";
+import { countReactions } from "../utils.ts";
 import { parseAvatar } from "../avatar.ts";
-import type { Painting } from "../types.ts";
 
 const layout = css`
   display: flex;
@@ -237,20 +240,24 @@ export function ProfilePage() {
   });
   const reactionsTotal = Object.values(byEmoji).reduce((a, b) => a + b, 0);
 
-  // комнаты идут в том же порядке, что в подписке (новые сверху); рисунки,
-  // чью комнату не видно (кикнули, комната закрыта), собираются в конце
-  const rooms = paintingRooms(myParties);
-  const groups: { key: string; title: string; items: Painting[] }[] = [];
+  // комнату рисунок знает сам (связь partyPaintings), порядок групп — по
+  // первому попавшемуся рисунку, то есть по самому свежему
+  const groups: { key: string; title: string; items: MyPainting[] }[] = [];
 
-  myParties.forEach((room) => {
-    const items = paintings.filter((it) => rooms[it.id] === room.name);
-    if (items.length) groups.push({ key: room.id, title: room.name, items });
+  paintings.forEach((painting) => {
+    const key = painting.party?.id || "others";
+    const group = groups.find((it) => it.key === key);
+
+    if (group) {
+      group.items.push(painting);
+    } else {
+      groups.push({
+        key,
+        title: painting.party?.name || "Комната не сохранилась",
+        items: [painting],
+      });
+    }
   });
-
-  const others = paintings.filter((it) => !rooms[it.id]);
-  if (others.length) {
-    groups.push({ key: "others", title: "Другие комнаты", items: others });
-  }
 
   return (
     <PageLayout>

@@ -107,24 +107,6 @@ export function countReactions(
   return totals;
 }
 
-// Рисунок не знает своей комнаты: связь «комната → paintingId» лежит только
-// в её gameProgress. Отсюда карта, по которой профиль группирует галерею.
-export function paintingRooms(
-  parties: { name: string; gameProgress?: GameProgress }[],
-): Record<string, string> {
-  const rooms: Record<string, string> = {};
-
-  parties.forEach((party) => {
-    (party.gameProgress || []).forEach((round) => {
-      round.forEach((turn) => {
-        if (turn.paintingId) rooms[turn.paintingId] = party.name;
-      });
-    });
-  });
-
-  return rooms;
-}
-
 export function clamp(n: number, min: number, max: number): number;
 export function clamp(n: number, min: number, max?: number): number {
   return Math.max(min, typeof max !== "undefined" ? Math.min(n, max) : n);

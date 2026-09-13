@@ -220,11 +220,14 @@ export function selectWord(localId: string, party: NewParty, word: string) {
         payload: { playerId: localId, word },
       })
       .link({ party: party.id }),
-    db.tx.paintings[drawingId].create({
-      canvas: [],
-      playerId: localId,
-      word,
-    }),
+    db.tx.paintings[drawingId]
+      .create({
+        canvas: [],
+        playerId: localId,
+        word,
+      })
+      // комната у рисунка своя: gameProgress партии обнуляется на «В лобби»
+      .link({ party: party.id }),
     db.tx.party[party.id].update({
       gameState: {
         state: "drawing",

@@ -55,6 +55,13 @@ const _schema = i.schema({
       forward: { on: "party", has: "many", label: "roomEvents" },
       reverse: { on: "roomEvent", has: "one", label: "party" },
     },
+    // Рисунок знает свою комнату сам. Раньше связь жила только в
+    // party.gameProgress, а его стирает restartParty («В лобби»): после
+    // второй игры в той же комнате все рисунки первой оставались ничьи.
+    partyPaintings: {
+      forward: { on: "party", has: "many", label: "paintings" },
+      reverse: { on: "paintings", has: "one", label: "party" },
+    },
     partyNewPlayers: {
       forward: { on: "party", has: "many", label: "newPlayers" },
       reverse: { on: "$users", has: "many", label: "parties" },
