@@ -21,6 +21,7 @@ import {
   closeParty,
   editUserAvatar,
   editUserName,
+  joinToParty,
   kickPlayer,
   leaveParty,
   startParty,
@@ -29,6 +30,7 @@ import {
 import { Link, useLocation } from "wouter";
 import { getUrl } from "../utils.ts";
 import { GAME_STATUS } from "../types.ts";
+import type { NewParty } from "../model/party.model.ts";
 import { DrawingPage } from "./Drawing.page.tsx";
 import { FinishedGamePage } from "./FinishedGame.page.tsx";
 
@@ -347,6 +349,12 @@ export function PartyPrepare() {
     );
   }
 
+  // пришли по ссылке-приглашению: в комнате нас ещё нет. Вход — кнопкой, а не
+  // сам собой: автовход возвращал бы кикнутого игрока сразу после кика
+  if (!party.newPlayers.some((p) => p.id === localId)) {
+    return <JoinNotice party={party} localId={localId} />;
+  }
+
   const hostName =
     (party.host && currentPlayers[party.host]?.name) || party.host;
   const imHost = localId === party.host;
@@ -574,6 +582,36 @@ function RoomNotice({ title, text }: NoticeProps) {
         <Link href={getUrl("")} className={noticeAction}>
           <Button variant="primary">На главную</Button>
         </Link>
+      </div>
+    </PageLayout>
+  );
+}
+
+type JoinProps = {
+  party: NewParty;
+  localId: string;
+};
+
+function JoinNotice({ party, localId }: JoinProps) {
+  const [busy, setBusy] = useState(false);
+
+  return (
+    <PageLayout>
+      <div className={notice}>
+        <span className={noticeTitle}>Комната {party.name}</span>
+        <p className={noticeText}>
+          Вас пригласили в игру. Внутри игроков: {party.newPlayers.length}.
+        </p>
+        <Button
+          className={noticeAction}
+          disabled={busy}
+          onClick={() => {
+            setBusy(true);
+            joinToParty(localId, party.id).catch(() => setBusy(false));
+          }}
+        >
+          Войти в комнату
+        </Button>
       </div>
     </PageLayout>
   );

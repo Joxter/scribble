@@ -11,6 +11,7 @@ import { useUnit } from "effector-react";
 import { $localId, $newParty, $player, party } from "./model/game-new.model.ts";
 import { getUrl } from "./utils.ts";
 import { PageLayout } from "./components/PageLayout.tsx";
+import { GAME_STATUS } from "./types.ts";
 
 export function Router() {
   const [party222, partyName, partyStatus, openedParty, localId] = useUnit([
@@ -34,8 +35,14 @@ export function Router() {
 
     if (location.startsWith(getUrl("room/"))) {
       // пока комната грузится или не нашлась, решает страница комнаты:
-      // домой отправляем только из чужой комнаты
-      if (partyStatus === "found" && !imInOpenedParty) {
+      // домой отправляем только из чужой комнаты. Лобби — не чужое: по ссылке
+      // приглашения сюда приходит как раз тот, кого в комнате ещё нет, и
+      // страница предложит ему войти
+      if (
+        partyStatus === "found" &&
+        !imInOpenedParty &&
+        openedParty?.status !== GAME_STATUS.prepare
+      ) {
         navigate(getUrl(""));
       }
       return;
