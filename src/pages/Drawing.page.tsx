@@ -116,6 +116,16 @@ const secretWord = css`
   letter-spacing: 0.5px;
 `;
 
+/* буквы, которые игроки уже видят в подсказке: рисующему видно, что утекло */
+const openLetter = css`
+  color: var(--success-text);
+  border-bottom: 2px solid var(--success-border);
+`;
+
+/* что вообще может быть скрыто: пробелы и дефисы открыты всегда,
+   подчёркивать их незачем. Тот же набор, что в wordToZeroClue */
+const HIDABLE = /[^\s\-!,.]/;
+
 const roundTitle = css`
   font-size: 20px;
   font-weight: 900;
@@ -152,7 +162,9 @@ export function DrawingPage() {
 
           <div className={canvasSlot}>
             {choosingWord.choose ? <DrawResults /> : <Canvas />}
-            <GuessOverlay />
+            {/* догадки всплывают только пока рисуют: на выборе слова
+                и в остальных состояниях холста под ними нет */}
+            {drawing.drawing && <GuessOverlay />}
           </div>
 
           {/* художник рисует — вместо ввода палитра; в остальное время можно писать в чат */}
@@ -181,7 +193,21 @@ function DrawingTitle() {
       <span className={artistLine}>
         {drawing.iam ? (
           <>
-            рисуете: <b className={secretWord}>{drawing.word}</b>
+            рисуете:{" "}
+            <b
+              className={secretWord}
+              title="подчёркнутые буквы игроки уже видят"
+            >
+              {drawing.word.split("").map((char, i) =>
+                drawing.clue[i] === "_" || !HIDABLE.test(char) ? (
+                  char
+                ) : (
+                  <span key={i} className={openLetter}>
+                    {char}
+                  </span>
+                ),
+              )}
+            </b>
           </>
         ) : (
           <>
@@ -189,9 +215,12 @@ function DrawingTitle() {
           </>
         )}
       </span>
-      <span style={{ marginLeft: "auto" }}>
-        <Timer />
-      </span>
+      {/* отгадывающим таймер показан рядом с подсказкой, под холстом */}
+      {drawing.iam && (
+        <span style={{ marginLeft: "auto" }}>
+          <Timer />
+        </span>
+      )}
     </>
   );
 }

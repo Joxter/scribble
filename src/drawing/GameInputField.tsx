@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { css } from "@linaria/core";
+import { Timer } from "../components/Timer.tsx";
 import { useUnit } from "effector-react";
 import {
   $drawing,
@@ -35,6 +36,9 @@ const clue = css`
   font-weight: 700;
   letter-spacing: 7px;
   color: var(--ink);
+  /* длинное слово на узком экране переносится, а не выдавливает таймер */
+  min-width: 0;
+  overflow-wrap: anywhere;
 `;
 
 const clueHidden = css`
@@ -49,6 +53,15 @@ const letterCount = css`
   font-size: 11px;
   color: var(--muted);
   font-weight: 700;
+  flex: none;
+  white-space: nowrap;
+`;
+
+/* таймер у отгадывающих стоит здесь, у подсказки, а не в шапке: рисующему в
+   шапке видно слово, а им — только чужое имя, и смотреть туда незачем */
+const timerSlot = css`
+  margin-left: auto;
+  flex: none;
 `;
 
 /* поле всегда у нижнего края блока: без подсказки оно не уезжает вверх */
@@ -140,6 +153,9 @@ export function GameInputField() {
           </span>
           <span className={letterCount}>
             {iGuessed ? "вы отгадали!" : `${letters} букв`}
+          </span>
+          <span className={timerSlot}>
+            <Timer />
           </span>
         </div>
       )}
