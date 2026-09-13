@@ -3,7 +3,7 @@ import { css } from "@linaria/core";
 import { useUnit } from "effector-react";
 import { $newParty, $playerAvatars } from "../model/game-new.model.ts";
 import { PlayerFigure } from "./PlayerFigure.tsx";
-import { calculateTotalScores } from "../utils.ts";
+import { calculateTotalScores, rankByScore } from "../utils.ts";
 
 const root = css`
   flex: none;
@@ -74,10 +74,21 @@ export function Podium() {
 
   const totals = calculateTotalScores(party.gameProgress);
 
-  const top = party.newPlayers
-    .map((p) => ({ id: p.id, name: p.name, avatar: avatars[p.id] }))
-    .sort((a, b) => (totals[b.id] || 0) - (totals[a.id] || 0))
-    .slice(0, 3);
+  const ranked = rankByScore(
+    party.newPlayers.map((p) => ({
+      id: p.id,
+      name: p.name,
+      avatar: avatars[p.id],
+      score: totals[p.id] || 0,
+    })),
+  );
+
+  // ступеньки честны, только когда места 1-2-3 заняты по одному игроку: при
+  // ничьей (1, 2, 2, 4) вторая ступенька врёт. Тогда пьедестала нет вообще —
+  // места видно в списке слева, он есть всегда
+  if (!ranked.every((p, i) => i > 3 || p.place === i + 1)) return null;
+
+  const top = ranked.slice(0, 3);
 
   // 2-е место слева, 1-е в центре, 3-е справа
   const order = [top[1], top[0], top[2]].filter(Boolean);

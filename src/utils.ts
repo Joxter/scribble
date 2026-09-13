@@ -3,7 +3,7 @@
 import type { VecLike } from "./freehand/Vec.ts";
 import type { Store } from "effector";
 import type { GameProgress, IsRevealed } from "./types.ts";
-import { words } from "../dictionaries/ru-300-chatgpt.ts";
+import { ru } from "../dictionaries/ru.ts";
 
 export const canvasSize = 600;
 
@@ -66,8 +66,9 @@ export function fix2(n: number | string) {
   return n;
 }
 
-// в словаре есть дубликаты, поэтому уникальных слов меньше, чем words.length
-const uniqWords = [...new Set(words)];
+// списки пересекаются между собой и внутри себя, поэтому уникальных слов
+// заметно меньше, чем ru.length
+const uniqWords = [...new Set(ru)];
 
 export function newRandomWords(count: number) {
   const pool = [...uniqWords];
@@ -79,6 +80,16 @@ export function newRandomWords(count: number) {
   }
 
   return arr;
+}
+
+// Имя комнаты — то, что вводят руками, чтобы зайти: регистр и чем разделены
+// слова, значения не имеют. Пробел внутри слова тоже разделитель — имена
+// собираются из словаря, а там попадаются «солнечная система» и «НЛО».
+export function normalizeRoomName(name: string): string {
+  return name
+    .trim()
+    .toLowerCase()
+    .replace(/[\s\-_]+/g, "-");
 }
 
 export function clamp(n: number, min: number, max: number): number;
@@ -361,4 +372,19 @@ export function calculateTotalScores(
   });
 
   return totals;
+}
+
+// Места как в Mario Kart: одинаковые очки — одно место, а следующие за ними
+// места пропускаются (200, 100, 100, 50 → 1, 2, 2, 4).
+export function rankByScore<T extends { score: number }>(
+  players: T[],
+): (T & { place: number })[] {
+  const sorted = [...players].sort((a, b) => b.score - a.score);
+
+  // findIndex по отсортированному списку: первый с такими же очками и задаёт
+  // место. Игроков в партии единицы, квадрат тут дешевле аккумулятора.
+  return sorted.map((p) => ({
+    ...p,
+    place: sorted.findIndex((o) => o.score === p.score) + 1,
+  }));
 }

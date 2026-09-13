@@ -13,7 +13,7 @@ import { PaintingsGallery } from "../components/PaintingsGallery.tsx";
 import { Button } from "../components/Button.tsx";
 import { $localId, $newParty } from "../model/game-new.model.ts";
 import { restartParty } from "../db-things.ts";
-import { calculateTotalScores } from "../utils.ts";
+import { calculateTotalScores, rankByScore } from "../utils.ts";
 
 const page = css`
   display: flex;
@@ -46,10 +46,19 @@ const rightColumn = css`
   display: flex;
   flex-direction: column;
   gap: 10px;
+  /* ровно высота левой колонки (шапка + квадрат холста + панель под ним, см.
+     сетку в main.css). Без явной высоты у чата flex: 1 — это flex-basis: 0%
+     от неопределённой высоты, то есть «по содержимому»: чат рос от каждого
+     сообщения и тянул за собой страницу */
+  height: calc(var(--row-head) + var(--col-main) + var(--row-under) + 20px);
 
+  /* на узком экране чат уезжает наверх, над холстом: под холстом остаётся
+     только поле ввода, как и на игровом экране */
   @media (max-width: 815px) {
     width: 100%;
     max-width: var(--col-main);
+    height: auto;
+    order: -1;
   }
 `;
 
@@ -170,9 +179,10 @@ export function FinishedGamePage() {
   if (!party) return null;
 
   const totals = calculateTotalScores(party.gameProgress);
-  const winner = party.newPlayers
-    .map((p) => ({ ...p, score: totals[p.id] || 0 }))
-    .sort((a, b) => b.score - a.score)[0];
+  // первых мест может быть несколько: при равных очках место делится
+  const winners = rankByScore(
+    party.newPlayers.map((p) => ({ ...p, score: totals[p.id] || 0 })),
+  ).filter((p) => p.place === 1);
 
   const imHost = localId === party.host;
 
@@ -183,9 +193,10 @@ export function FinishedGamePage() {
         <div className={leftColumn}>
           <div className={header}>
             <span className={title}>Игра окончена!</span>
-            {winner && (
+            {winners.length > 0 && (
               <span className={subtitle}>
-                победил(а) <b>{winner.name}</b>
+                {winners.length === 1 ? "победил(а) " : "ничья: "}
+                <b>{winners.map((w) => w.name).join(", ")}</b>
               </span>
             )}
           </div>

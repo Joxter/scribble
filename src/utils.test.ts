@@ -6,6 +6,8 @@ import {
   generateClues,
   newRandomWords,
   nextTurn,
+  normalizeRoomName,
+  rankByScore,
   toPairs,
   wordToZeroClue,
 } from "./utils.ts";
@@ -184,5 +186,56 @@ describe("nextTurn", () => {
       newRound: true,
     });
     expect(nextTurn(["A", "B", "C"], "C", 3, 3)).toBe(null);
+  });
+});
+
+describe("rankByScore", () => {
+  test("sorts by score and numbers places from one", () => {
+    const ranked = rankByScore([
+      { id: "b", score: 100 },
+      { id: "a", score: 200 },
+      { id: "c", score: 50 },
+    ]);
+
+    expect(ranked.map((p) => [p.id, p.place])).toEqual([
+      ["a", 1],
+      ["b", 2],
+      ["c", 3],
+    ]);
+  });
+
+  test("ties share a place and eat the next ones", () => {
+    const ranked = rankByScore([
+      { id: "a", score: 200 },
+      { id: "b", score: 100 },
+      { id: "c", score: 100 },
+      { id: "d", score: 50 },
+    ]);
+
+    expect(ranked.map((p) => p.place)).toEqual([1, 2, 2, 4]);
+  });
+
+  test("everybody tied is first", () => {
+    const ranked = rankByScore([{ score: 0 }, { score: 0 }, { score: 0 }]);
+
+    expect(ranked.map((p) => p.place)).toEqual([1, 1, 1]);
+  });
+});
+
+describe("normalizeRoomName", () => {
+  test("регистр и разделители не важны", () => {
+    expect(normalizeRoomName("  Кот Лиса Ракета ")).toBe("кот-лиса-ракета");
+    expect(normalizeRoomName("КОТ-ЛИСА-РАКЕТА")).toBe("кот-лиса-ракета");
+    expect(normalizeRoomName("кот _ лиса--ракета")).toBe("кот-лиса-ракета");
+  });
+
+  test("имя из словаря с составным словом сходится с набранным руками", () => {
+    const generated = normalizeRoomName(
+      ["кот", "солнечная система", "НЛО"].join("-"),
+    );
+
+    expect(generated).toBe("кот-солнечная-система-нло");
+    expect(normalizeRoomName("Кот солнечная система НЛО")).toBe(generated);
+    expect(normalizeRoomName(generated)).toBe(generated);
   });
 });

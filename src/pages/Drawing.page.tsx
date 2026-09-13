@@ -13,6 +13,7 @@ import {
 } from "../model/game-new.model.ts";
 import { GameInputField } from "../drawing/GameInputField.tsx";
 import { ChatMessages } from "../drawing/ChatMessages.tsx";
+import { GuessOverlay } from "../drawing/GuessOverlay.tsx";
 import { Fps } from "../components/Fps.tsx";
 import { PageLayout } from "../components/PageLayout.tsx";
 import { DrawResults } from "../components/DrawResults.tsx";
@@ -49,10 +50,19 @@ const rightColumn = css`
   display: flex;
   flex-direction: column;
   gap: 10px;
+  /* ровно высота левой колонки (шапка + квадрат холста + панель под ним, см.
+     сетку в main.css). Без явной высоты у чата flex: 1 — это flex-basis: 0%
+     от неопределённой высоты, то есть «по содержимому»: чат рос от каждого
+     сообщения и тянул за собой страницу */
+  height: calc(var(--row-head) + var(--col-main) + var(--row-under) + 20px);
 
+  /* на узком экране чат уезжает наверх, над холстом: под холстом остаётся
+     только поле ввода, и фокус в нём не утаскивает рисунок за край экрана */
   @media (max-width: 815px) {
     width: 100%;
     max-width: var(--col-main);
+    height: auto;
+    order: -1;
   }
 `;
 
@@ -70,6 +80,11 @@ const chatWindow = css`
     flex: none;
     height: var(--chat-mobile);
   }
+`;
+
+/* якорь для догадок поверх рисунка: высоту задаёт сам холст */
+const canvasSlot = css`
+  position: relative;
 `;
 
 const header = css`
@@ -135,7 +150,10 @@ export function DrawingPage() {
             {choosingWord.choose ? <RoundEndTitle /> : <DrawingTitle />}
           </div>
 
-          {choosingWord.choose ? <DrawResults /> : <Canvas />}
+          <div className={canvasSlot}>
+            {choosingWord.choose ? <DrawResults /> : <Canvas />}
+            <GuessOverlay />
+          </div>
 
           {/* художник рисует — вместо ввода палитра; в остальное время можно писать в чат */}
           {drawing.iam ? <Tools /> : <GameInputField />}
