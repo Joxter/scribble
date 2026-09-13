@@ -8,11 +8,17 @@ export type CanvasLine = {
 
 export type CurrentCanvas = CanvasLine[];
 
+// Реакции считаются по игрокам, а не одним числом на эмодзи: пишутся они
+// merge-ом (db.tx.paintings[id].merge), и две одновременные реакции разных
+// игроков иначе затирали бы друг друга. Показываем сумму — countReactions.
+export type PaintingReactions = Record<string, Record<string, number>>;
+
 export type Painting = {
   canvas: CanvasLine[];
   playerId: string;
   word: string;
   id: string;
+  reactions?: PaintingReactions;
 };
 
 export type Player = {

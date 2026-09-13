@@ -129,6 +129,12 @@ export function createParty($localId: Store<string>) {
     );
   });
 
+  // рисунок только что закончившегося хода: его показывают в окне выбора слова
+  const $lastPainting = combine($lastTurn, $partyPaintings, (turn, list) => {
+    if (!turn) return null;
+    return list.find((p) => p.id === turn.paintingId) || null;
+  });
+
   const $guessed = $newParty.map((p) => {
     if (!p) return {};
     return p.gameState.state === "drawing" ? p.gameState.guessed : {};
@@ -262,6 +268,7 @@ export function createParty($localId: Store<string>) {
     $partyPaintingIds,
     $partyPaintings,
     $lastTurn,
+    $lastPainting,
     $guessed,
     $choosingWord,
     $drawingState,

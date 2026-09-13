@@ -2,7 +2,7 @@
 // без расширения и не умеет стирать типы, не помеченные `import type`.
 import type { VecLike } from "./freehand/Vec.ts";
 import type { Store } from "effector";
-import type { GameProgress, IsRevealed } from "./types.ts";
+import type { GameProgress, IsRevealed, PaintingReactions } from "./types.ts";
 import { ru } from "../dictionaries/ru.ts";
 
 export const canvasSize = 600;
@@ -90,6 +90,21 @@ export function normalizeRoomName(name: string): string {
     .trim()
     .toLowerCase()
     .replace(/[\s\-_]+/g, "-");
+}
+
+// В базе реакции разложены по игрокам, на экране нужна сумма по эмодзи
+export function countReactions(
+  reactions: PaintingReactions | undefined,
+): Record<string, number> {
+  const totals: Record<string, number> = {};
+
+  Object.values(reactions || {}).forEach((byEmoji) => {
+    Object.entries(byEmoji).forEach(([emoji, count]) => {
+      totals[emoji] = (totals[emoji] || 0) + count;
+    });
+  });
+
+  return totals;
 }
 
 export function clamp(n: number, min: number, max: number): number;

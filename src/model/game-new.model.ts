@@ -31,6 +31,7 @@ export const {
   $partyPaintingIds,
   $partyPaintings,
   $lastTurn,
+  $lastPainting,
   $guessed,
   $choosingWord,
 } = party;

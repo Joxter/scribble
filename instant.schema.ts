@@ -4,6 +4,7 @@ import type {
   GameProgress,
   GameState,
   Party,
+  PaintingReactions,
   PlayerAvatar,
 } from "./src/types.ts";
 
@@ -38,6 +39,8 @@ const _schema = i.schema({
       canvas: i.json<CurrentCanvas>(), // (line | undo)[]
       playerId: i.string(),
       word: i.string(),
+      // { [playerId]: { [emoji]: сколько раз нажал } }
+      reactions: i.json<PaintingReactions>().optional(),
     }),
     words: i.entity({
       word: i.string().unique().indexed(),

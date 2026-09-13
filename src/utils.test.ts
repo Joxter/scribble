@@ -3,6 +3,7 @@ import {
   calcRevealed,
   clamp,
   compareWords,
+  countReactions,
   generateClues,
   newRandomWords,
   nextTurn,
@@ -237,5 +238,21 @@ describe("normalizeRoomName", () => {
     expect(generated).toBe("кот-солнечная-система-нло");
     expect(normalizeRoomName("Кот солнечная система НЛО")).toBe(generated);
     expect(normalizeRoomName(generated)).toBe(generated);
+  });
+});
+
+describe("countReactions", () => {
+  test("суммирует по всем игрокам", () => {
+    expect(
+      countReactions({
+        a: { "🔥": 3, "😂": 1 },
+        b: { "🔥": 2 },
+      }),
+    ).toEqual({ "🔥": 5, "😂": 1 });
+  });
+
+  test("пусто, пока никто не нажимал", () => {
+    expect(countReactions(undefined)).toEqual({});
+    expect(countReactions({})).toEqual({});
   });
 });

@@ -3,6 +3,7 @@ import {
   CurrentCanvas,
   GAME_STATUS,
   IsRevealed,
+  Painting,
   Party,
   Player2,
   PlayerAvatar,
@@ -310,6 +311,22 @@ export function sendMessage(
         ]
       : []),
   ]);
+}
+
+// Реакция — всегда +1, нажимать можно сколько угодно раз. merge пишет только
+// свою ветку игрока: у соседа, нажавшего в ту же секунду, счётчик уцелеет.
+export function addReaction(
+  painting: Painting,
+  playerId: string,
+  emoji: string,
+) {
+  const mine = painting.reactions?.[playerId] || {};
+
+  return db.transact(
+    db.tx.paintings[painting.id].merge({
+      reactions: { [playerId]: { [emoji]: (mine[emoji] || 0) + 1 } },
+    }),
+  );
 }
 
 export function saveCanvas(drawingId: string, canvas: CurrentCanvas) {
