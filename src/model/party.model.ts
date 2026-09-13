@@ -13,7 +13,10 @@ import { db } from "../DB.ts";
 import { AppSchema } from "../../instant.schema.ts";
 import { InstaQLResult } from "@instantdb/core";
 
-type DbParty = Pick<Party, "id" | "name" | "status">;
+// gameProgress нужен профилю: рисунки не знают своей комнаты, связь
+// «комната → paintingId» лежит только здесь. В ответе подписки он и так
+// приезжает целиком, так что это бесплатно.
+type DbParty = Pick<Party, "id" | "name" | "status" | "gameProgress">;
 
 function createTickStore() {
   let startTimer_ = createEvent();
@@ -209,7 +212,12 @@ export function createParty($localId: Store<string>) {
           if (resp.data.party) {
             allPartiesLoaded(
               resp.data.party.map((p) => {
-                return { id: p.id, name: p.name, status: p.status };
+                return {
+                  id: p.id,
+                  name: p.name,
+                  status: p.status,
+                  gameProgress: p.gameProgress,
+                };
               }),
             );
             return;

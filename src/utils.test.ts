@@ -8,6 +8,7 @@ import {
   newRandomWords,
   nextTurn,
   normalizeRoomName,
+  paintingRooms,
   rankByScore,
   toPairs,
   wordToZeroClue,
@@ -254,5 +255,27 @@ describe("countReactions", () => {
   test("пусто, пока никто не нажимал", () => {
     expect(countReactions(undefined)).toEqual({});
     expect(countReactions({})).toEqual({});
+  });
+});
+
+describe("paintingRooms", () => {
+  const turn = (paintingId: string) => ({
+    whoDrawId: "a",
+    scores: {},
+    paintingId,
+  });
+
+  test("собирает карту рисунок → комната по всем кругам", () => {
+    expect(
+      paintingRooms([
+        { name: "dev-room", gameProgress: [[turn("p1"), turn("p2")]] },
+        { name: "вторая", gameProgress: [[turn("p3")], [turn("p4")]] },
+      ]),
+    ).toEqual({ p1: "dev-room", p2: "dev-room", p3: "вторая", p4: "вторая" });
+  });
+
+  test("комната без сыгранных ходов ничего не добавляет", () => {
+    expect(paintingRooms([{ name: "пустая", gameProgress: [[]] }])).toEqual({});
+    expect(paintingRooms([{ name: "старая" }])).toEqual({});
   });
 });

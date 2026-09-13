@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useUnit } from "effector-react";
 import { css } from "@linaria/core";
-import { Link, useLocation } from "wouter";
+import { useLocation } from "wouter";
 import { getUrl, newRandomWords } from "../utils.ts";
 import { PageLayout } from "../components/PageLayout.tsx";
 import { Button } from "../components/Button.tsx";
@@ -10,7 +10,7 @@ import {
   getPreparePartyByName,
   joinToParty,
 } from "../db-things.ts";
-import { $player, party } from "../model/game-new.model.ts";
+import { $player } from "../model/game-new.model.ts";
 
 const layout = css`
   display: flex;
@@ -127,33 +127,6 @@ const error = css`
   color: var(--danger-text);
 `;
 
-const resume = css`
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  background-color: var(--brand-bg);
-  border: 1px solid var(--brand-border);
-  border-radius: 14px;
-  padding: 12px 14px;
-
-  & > span {
-    font-size: 14px;
-    font-weight: 700;
-    color: var(--slate);
-  }
-
-  & > span b {
-    color: var(--ink);
-    font-weight: 900;
-  }
-`;
-
-const resumeLink = css`
-  margin-left: auto;
-  flex: none;
-  text-decoration: none;
-`;
-
 const rules = css`
   width: 300px;
   flex: none;
@@ -236,13 +209,10 @@ export function HomePage() {
 
 function JoinOrCreate() {
   const player = useUnit($player);
-  const allMyParties = useUnit(party.$allMyParties);
   const [roomCode, setRoomCode] = useState("");
   const [notFound, setNotFound] = useState(false);
   const [busy, setBusy] = useState(false);
   const [, navigate] = useLocation();
-
-  const unfinished = allMyParties.find((it) => it.status !== "finished");
 
   async function handleJoin(ev: React.FormEvent) {
     ev.preventDefault();
@@ -290,20 +260,6 @@ function JoinOrCreate() {
         <b>Играть с друзьями</b>
         <span>Введите код комнаты или создайте свою</span>
       </div>
-
-      {unfinished && (
-        <div className={resume}>
-          <span>
-            Есть незаконченная игра <b>{unfinished.name}</b>
-          </span>
-          <Link
-            href={getUrl("room/" + unfinished.name)}
-            className={resumeLink}
-          >
-            <Button size={1}>Вернуться</Button>
-          </Link>
-        </div>
-      )}
 
       <form className={joinForm} onSubmit={handleJoin}>
         <label className={codeRow}>

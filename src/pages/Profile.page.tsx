@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useUnit } from "effector-react";
 import { css } from "@linaria/core";
-import { Link } from "wouter";
 import { PageLayout } from "../components/PageLayout.tsx";
 import { TextField } from "../components/TextField.tsx";
 import { Button } from "../components/Button.tsx";
@@ -11,9 +10,9 @@ import { $localId, $player, party } from "../model/game-new.model.ts";
 import { $myPaintings, loadMyPaintings } from "../model/all-paintings.model.ts";
 import { doEventsUndo } from "../model/utils.ts";
 import { editUserAvatar, editUserName } from "../db-things.ts";
-import { countReactions, getUrl } from "../utils.ts";
+import { countReactions, paintingRooms } from "../utils.ts";
 import { parseAvatar } from "../avatar.ts";
-import { GAME_STATUS } from "../types.ts";
+import type { Painting } from "../types.ts";
 
 const layout = css`
   display: flex;
@@ -94,12 +93,12 @@ const characterTitle = css`
   color: var(--ink);
 `;
 
-const rooms = css`
+const stats = css`
   width: 300px;
   flex: none;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 8px;
   padding-top: 6px;
 
   @media (max-width: 815px) {
@@ -125,43 +124,44 @@ const listHeader = css`
   }
 `;
 
-const roomRow = css`
+const statTile = css`
   display: flex;
-  align-items: center;
+  align-items: baseline;
   gap: 10px;
-  padding: 8px 6px;
-  border-radius: 10px;
-  text-decoration: none;
-  color: inherit;
-
-  &:hover {
-    background-color: var(--sunken);
-  }
+  background-color: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 12px 16px;
 
   & > b {
-    font-weight: 800;
-    font-size: 15px;
-    min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    font-size: 26px;
+    font-weight: 900;
+    letter-spacing: -0.5px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  & > span {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--slate);
   }
 `;
 
-const statusBadge = css`
+/* разбивка по эмодзи — под плиткой реакций, мелочью */
+const statBreakdown = css`
   margin-left: auto;
-  flex: none;
-  font-size: 11px;
-  font-weight: 800;
-  border-radius: 999px;
-  padding: 2px 8px;
-  background-color: var(--sunken);
-  color: var(--slate);
+  display: flex;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
 `;
 
-const statusLive = css`
-  background-color: var(--success-bg);
-  color: var(--success-text);
+const roomTitle = css`
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--slate);
+  padding: 0 6px;
 `;
 
 const empty = css`
@@ -209,12 +209,6 @@ const tally = css`
   min-height: 18px;
 `;
 
-const STATUS_LABEL: Record<string, string> = {
-  [GAME_STATUS.prepare]: "лобби",
-  [GAME_STATUS.inProgress]: "идёт",
-  [GAME_STATUS.finished]: "финал",
-};
-
 export function ProfilePage() {
   const player = useUnit($player);
   const localId = useUnit($localId);
@@ -234,6 +228,29 @@ export function ProfilePage() {
 
   const avatar = player.avatar || parseAvatar(null, localId);
   const changed = name.trim() !== player.name;
+
+  const byEmoji: Record<string, number> = {};
+  paintings.forEach((painting) => {
+    Object.entries(countReactions(painting.reactions)).forEach(([e, count]) => {
+      byEmoji[e] = (byEmoji[e] || 0) + count;
+    });
+  });
+  const reactionsTotal = Object.values(byEmoji).reduce((a, b) => a + b, 0);
+
+  // комнаты идут в том же порядке, что в подписке (новые сверху); рисунки,
+  // чью комнату не видно (кикнули, комната закрыта), собираются в конце
+  const rooms = paintingRooms(myParties);
+  const groups: { key: string; title: string; items: Painting[] }[] = [];
+
+  myParties.forEach((room) => {
+    const items = paintings.filter((it) => rooms[it.id] === room.name);
+    if (items.length) groups.push({ key: room.id, title: room.name, items });
+  });
+
+  const others = paintings.filter((it) => !rooms[it.id]);
+  if (others.length) {
+    groups.push({ key: "others", title: "Другие комнаты", items: others });
+  }
 
   return (
     <PageLayout>
@@ -272,65 +289,75 @@ export function ProfilePage() {
           </div>
         </section>
 
-        <aside className={rooms}>
+        <aside className={stats}>
           <div className={listHeader}>
-            <span>Мои комнаты · {myParties.length}</span>
+            <span>Статистика</span>
           </div>
-          {myParties.length === 0 && <p className={empty}>Пока ни одной</p>}
-          {myParties.map((p) => (
-            <Link
-              key={p.id}
-              href={getUrl(`room/${p.name}`)}
-              className={roomRow}
-            >
-              <b>{p.name}</b>
-              <span
-                className={`${statusBadge} ${
-                  p.status === GAME_STATUS.inProgress ? statusLive : ""
-                }`}
-              >
-                {STATUS_LABEL[p.status] || p.status}
-              </span>
-            </Link>
-          ))}
+
+          <div className={statTile}>
+            <b>{myParties.length}</b>
+            <span>игр</span>
+          </div>
+          <div className={statTile}>
+            <b>{paintings.length}</b>
+            <span>рисунков</span>
+          </div>
+          <div className={statTile}>
+            <b>{reactionsTotal}</b>
+            <span>реакций собрано</span>
+            <span className={statBreakdown}>
+              {Object.entries(byEmoji).map(([emoji, count]) => (
+                <span key={emoji}>
+                  {emoji} {count}
+                </span>
+              ))}
+            </span>
+          </div>
         </aside>
       </div>
 
       <section className={gallery}>
         <div className={listHeader}>
           <span>Мои рисунки · {paintings.length}</span>
-          <span>из всех комнат, новые сверху</span>
+          <span>по комнатам, новые сверху</span>
         </div>
 
-        {paintings.length === 0 ? (
+        {paintings.length === 0 && (
           <p className={empty}>Вы ещё ничего не нарисовали</p>
-        ) : (
-          <div className={grid}>
-            {paintings.map((painting) => {
-              const totals = countReactions(painting.reactions);
-
-              return (
-                <div key={painting.id} className={item}>
-                  <ReadOnlyCanvas
-                    canvas={doEventsUndo(painting.canvas as any)}
-                    size={160}
-                    fill
-                  />
-                  <span className={word} title={painting.word}>
-                    {painting.word}
-                  </span>
-                  <span className={tally}>
-                    {Object.entries(totals).map(([emoji, count]) => (
-                      <span key={emoji}>
-                        {emoji} {count}
-                      </span>
-                    ))}
-                  </span>
-                </div>
-              );
-            })}
-          </div>
         )}
+
+        {groups.map((group) => (
+          <React.Fragment key={group.key}>
+            <p className={roomTitle}>
+              {group.title} · {group.items.length}
+            </p>
+            <div className={grid}>
+              {group.items.map((painting) => {
+                const totals = countReactions(painting.reactions);
+
+                return (
+                  <div key={painting.id} className={item}>
+                    <ReadOnlyCanvas
+                      canvas={doEventsUndo(painting.canvas as any)}
+                      size={160}
+                      fill
+                    />
+                    <span className={word} title={painting.word}>
+                      {painting.word}
+                    </span>
+                    <span className={tally}>
+                      {Object.entries(totals).map(([emoji, count]) => (
+                        <span key={emoji}>
+                          {emoji} {count}
+                        </span>
+                      ))}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          </React.Fragment>
+        ))}
       </section>
     </PageLayout>
   );

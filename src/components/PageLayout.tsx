@@ -1,10 +1,11 @@
 import React from "react";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import { css } from "@linaria/core";
 import { useUnit } from "effector-react";
 import { getUrl } from "../utils.ts";
 import { BUILD_INFO } from "../config.ts";
-import { $player } from "../model/game-new.model.ts";
+import { $player, party } from "../model/game-new.model.ts";
+import { GAME_STATUS } from "../types.ts";
 import { DeveloperTools } from "./DeveloperTools.tsx";
 import { PlayerFigure } from "./PlayerFigure.tsx";
 import { Button } from "./Button.tsx";
@@ -82,6 +83,31 @@ const doodleToggle = css`
   white-space: nowrap;
 `;
 
+/* Большая красная: игра идёт, а игрок ушёл на другую страницу. На самой
+   странице комнаты не показывается — он уже там */
+const backToGame = css`
+  width: 100%;
+  max-width: 820px;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background-color: var(--danger);
+  color: #fff;
+  text-decoration: none;
+  font-size: 18px;
+  font-weight: 900;
+  border-radius: 16px;
+  border-bottom: 4px solid var(--danger-text);
+  padding: 16px 26px;
+
+  &:active {
+    border-bottom-width: 2px;
+    transform: translateY(2px);
+  }
+`;
+
 const content = css`
   width: 100%;
   max-width: 820px;
@@ -110,11 +136,18 @@ const footer = css`
 
 export function PageLayout({ children, background }: Props) {
   const player = useUnit($player);
+  const myParties = useUnit(party.$allMyParties);
+  const [location] = useLocation();
   const [doodleEnabled, toggleDoodle] = useUnit([
     $doodleEnabled,
     doodleToggled,
   ]);
   const timeAgo = Date.now() - BUILD_INFO.buildTimestamp;
+
+  const unfinished = myParties.find((p) => p.status !== GAME_STATUS.finished);
+  // на любой странице комнаты кнопки нет: игрок и так в комнате, а если
+  // незаконченных партий у него две, звать из одной в другую — только путать
+  const inRoom = location.startsWith(getUrl("room/"));
 
   return (
     <div
@@ -149,6 +182,12 @@ export function PageLayout({ children, background }: Props) {
           </Button>
         )}
       </header>
+
+      {unfinished && !inRoom && (
+        <Link href={getUrl("room/" + unfinished.name)} className={backToGame}>
+          ↩ Вернуться в игру · {unfinished.name}
+        </Link>
+      )}
 
       <main className={content}>{children}</main>
 

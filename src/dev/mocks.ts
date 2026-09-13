@@ -306,7 +306,12 @@ export type MockScreen = {
     party: NewParty | null;
     canvas: CurrentCanvas;
     paintings?: Painting[];
-    myParties?: { id: string; name: string; status: NewParty["status"] }[];
+    myParties?: {
+      id: string;
+      name: string;
+      status: NewParty["status"];
+      gameProgress: GameProgress;
+    }[];
     myPaintings?: Painting[];
   };
 };
@@ -328,6 +333,7 @@ export const mockScreens = {
           id: "mock-party-id",
           name: "dev-room",
           status: GAME_STATUS.inProgress,
+          gameProgress: [[]],
         },
       ],
     }),
@@ -390,11 +396,19 @@ export const mockScreens = {
             id: "mock-party-id",
             name: "dev-room",
             status: GAME_STATUS.inProgress,
+            // через gameProgress профиль и раскладывает галерею по комнатам
+            gameProgress: [
+              [1, 2, 3].map((n) => finishedTurn(ME.id, [], `mock-p-${n}`)),
+            ],
           },
           {
             id: "mock-party-old",
             name: "кот-лиса-ракета",
             status: GAME_STATUS.finished,
+            gameProgress: [
+              [4, 5, 6].map((n) => finishedTurn(ME.id, [], `mock-p-${n}`)),
+              [7, 8, 9].map((n) => finishedTurn(ME.id, [], `mock-p-${n}`)),
+            ],
           },
         ],
         // в профиле показываются только свои рисунки, поэтому автор везде ME
