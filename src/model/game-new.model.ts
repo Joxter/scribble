@@ -62,8 +62,10 @@ sample({
   const gameState = party.gameState;
   const secretWord = gameState.state === "drawing" ? gameState.word : null;
   const isRevealed = secretWord ? calcRevealed(secretWord, guess) : "none";
+  const alreadyGuessed =
+    gameState.state === "drawing" && Boolean(gameState.guessed[localId]);
 
-  sendMessage(localId, party.id, guess, isRevealed);
+  sendMessage(localId, party.id, guess, isRevealed, alreadyGuessed);
 });
 
 function createUser() {

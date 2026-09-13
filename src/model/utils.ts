@@ -1,24 +1,4 @@
-import {
-  CanvasAndChatHistory,
-  GAME_STATUS,
-  LineEvent,
-  Party,
-} from "../types.ts";
-
-export function newParty(): Party {
-  return {
-    gameState: {} as any,
-    name: "",
-    staticPlayerIds: [],
-    gameProgress: [[]],
-    host: "",
-    gameParams: { rounds: 5, wordSuggestions: 3, drawTime: 60 },
-    status: GAME_STATUS.prepare,
-    newPlayers: [],
-    roomEvents: [],
-    id: "",
-  };
-}
+import { CanvasAndChatHistory, LineEvent } from "../types.ts";
 
 export function doEventsUndo(events: CanvasAndChatHistory[]): LineEvent[] {
   const lines: LineEvent[] = [];

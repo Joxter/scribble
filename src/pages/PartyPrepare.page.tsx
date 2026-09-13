@@ -413,11 +413,13 @@ export function PartyPrepare() {
               onSubmit={(ev) => {
                 ev.preventDefault();
 
+                // пустое имя не сохраняем: в списке игроков и в чате остался
+                // бы безымянный игрок. Так же устроена форма в профиле
                 const n = name.trim();
-                if (n !== player?.name) {
+                if (n && n !== player?.name) {
                   editUserName(localId, n);
                 } else {
-                  setName(n);
+                  setName(player?.name || "");
                 }
               }}
             >

@@ -21,20 +21,6 @@ export function liveQuery<T>(store: Store<T>, cb: (val: T) => () => void) {
   });
 }
 
-export function queryToStore<T>(store: Store<T>, cb: (val: T) => () => void) {
-  let prev: any;
-
-  let unsub = () => {};
-
-  store.watch((val) => {
-    if (val !== prev) {
-      unsub();
-      unsub = cb(val);
-      prev = val;
-    }
-  });
-}
-
 export function toPairs(arr: number[]): Array<[number, number]> {
   const pairs: Array<[number, number]> = [];
 
@@ -145,27 +131,6 @@ export function getUrl(path?: string): string {
   }
   return `${basePath}${path}`;
 }
-
-/*
-const examples = [
-  ["", ""],
-  [" ", " "],
-  ["", " "],
-  ["носорог", "НОСОРОГ"],
-  ["носорог", "rino"],
-  ["носорог", "носорогг"],
-  ["носорог", "носорогг"],
-  ["носорог", "новоног"],
-  ["носорог", "нового"],
-  ["носорог", "носоро"],
-  ["носорог", "носорогносорог"],
-  ["носорог", "носорогносорог"],
-];
-
-examples.forEach(([a, b]) => {
-  console.log([a, b], compareWords(a, b), calcRevelead(a, b));
-});
-*/
 
 export function calcRevealed(secret: string, guess: string): IsRevealed {
   const mistakes = levenshteinDistance(
@@ -300,32 +265,6 @@ function levenshteinDistance(str1: string, str2: string): number {
 
 export function delay(ms: number) {
   return new Promise((res) => setTimeout(res, ms));
-}
-
-export function promiseInLineTODO<T extends any[], R>() {
-  let isRunning = false;
-  let skipped: (() => Promise<any>) | null = null;
-
-  return function runner(callback: () => Promise<any>): any {
-    if (isRunning) {
-      console.log("skipped");
-      skipped = callback;
-      return;
-    }
-    run(callback);
-
-    function run(cb: () => Promise<any>) {
-      isRunning = true;
-
-      cb().finally(() => {
-        isRunning = false;
-        if (skipped) {
-          run(skipped);
-          skipped = null;
-        }
-      });
-    }
-  };
 }
 
 export function calculateTurnPoints(

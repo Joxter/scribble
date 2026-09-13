@@ -177,7 +177,7 @@ function finishedParty(hostId: string = ANNA.id): NewParty {
     host: hostId,
     status: GAME_STATUS.finished,
     gameState: { state: "game-finished" },
-    gameProgress: [round1, round2, []],
+    gameProgress: [round1, round2],
     roomEvents: [
       ...drawingEvents(VIKA.id),
       {

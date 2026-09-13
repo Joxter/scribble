@@ -108,7 +108,7 @@ function checkAll() {
 }
 
 function checkParty(party: ActiveParty) {
-  const { gameState, gameParams, staticPlayerIds } = party;
+  const { gameState, gameParams, newPlayers } = party;
   if (gameState.state !== "drawing") return;
   if (endedTurns.has(gameState.drawingId)) return;
 
@@ -126,10 +126,13 @@ function checkParty(party: ActiveParty) {
     ).catch((err) => console.error("startedAt:", party.id, err));
   }
 
-  // в одиночной комнате отгадывать некому, такой ход живёт только по таймеру
+  // Считаем по живому составу комнаты, как и nextTurn в endTurn:
+  // staticPlayerIds — снимок на старте игры, и после ухода игрока порог
+  // становился недостижимым — ход дожигал таймер, хотя все уже отгадали.
+  // В одиночной комнате отгадывать некому, такой ход живёт только по таймеру.
   const allGuessed =
-    staticPlayerIds.length > 1 &&
-    Object.keys(gameState.guessed).length >= staticPlayerIds.length - 1;
+    newPlayers.length > 1 &&
+    Object.keys(gameState.guessed).length >= newPlayers.length - 1;
   const timedOut = Date.now() - seenAt >= (gameParams.drawTime ?? 60) * 1000;
   if (!allGuessed && !timedOut) return;
 

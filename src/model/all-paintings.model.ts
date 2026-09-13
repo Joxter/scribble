@@ -1,6 +1,5 @@
 import { Painting } from "../types.ts";
 import { db } from "../DB.ts";
-import { id } from "@instantdb/core";
 import { createEvent, createStore } from "effector";
 import type { InstaQLResult } from "@instantdb/core";
 import type { AppSchema } from "../../instant.schema.ts";
@@ -40,10 +39,6 @@ export async function getAllPaintings(): Promise<Painting[]> {
   const res = await db.queryOnce({ paintings: {} });
 
   return res.data.paintings as Painting[];
-}
-
-export function createPainting(data: Omit<Painting, "id">) {
-  return db.transact([db.tx.paintings[id()].create(data)]);
 }
 
 export function deletePainting(id: string) {

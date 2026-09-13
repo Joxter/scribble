@@ -10,23 +10,10 @@ import {
   UserMessageEvent,
 } from "./types.ts";
 import { id } from "@instantdb/core";
-import {
-  generateClues,
-  newRandomWords,
-  normalizeRoomName,
-  wordToZeroClue,
-} from "./utils.ts";
-import { currentLine } from "./model/game-new.model.ts";
+import { generateClues, newRandomWords, normalizeRoomName } from "./utils.ts";
 import { getUsername } from "./code-worlds.ts";
 import { parseAvatar, randomAvatar } from "./avatar.ts";
 import { NewParty } from "./model/party.model.ts";
-
-// @deprecated - Use editUserName instead. This function updates the old players entity which is deprecated.
-export async function editPlayerName(localId: string, name: string) {
-  return await db.transact([
-    db.tx.players[localId].update({ name, localId, avatar: "" }),
-  ]);
-}
 
 export async function editUserName(userId: string, newName: string) {
   return db.transact([db.tx.$users[userId].update({ name: newName })]);
@@ -177,10 +164,10 @@ export async function createNewParty(userId: string, name: string) {
     })
     .then((it) => it.data);
 
-  if ($users[0]?.parties && $users[0].parties.length > 0) {
-    throw new Error(
-      "User already has a party in prepare status. Please finish or leave that party first.",
-    );
+  const open = $users[0]?.parties?.[0];
+  if (open) {
+    // текст показывается игроку на главной, см. Home.page
+    throw new Error(`Вы уже создали комнату «${open.name}» — она ждёт игроков`);
   }
 
   await db.transact([
@@ -292,6 +279,7 @@ export function sendMessage(
   partyId: string,
   guess: string,
   isRevealed: IsRevealed,
+  alreadyGuessed = false,
 ) {
   const event: Omit<UserMessageEvent, "id"> = {
     type: "user-message",
@@ -304,7 +292,10 @@ export function sendMessage(
 
   return db.transact([
     db.tx.roomEvent[id()].create(event).link({ party: partyId }),
-    ...(isRevealed === "revealed"
+    // время фиксируем один раз: очки за ход раздаются по порядку отгадавших
+    // (calculateTurnPoints), и второе такое же сообщение отодвигало игрока
+    // в конец очереди — то есть наказывало за лишний ввод
+    ...(isRevealed === "revealed" && !alreadyGuessed
       ? [
           db.tx.party[partyId].merge({
             gameState: {
@@ -338,36 +329,4 @@ export function saveCanvas(drawingId: string, canvas: CurrentCanvas) {
       canvas: canvas,
     }),
   );
-}
-
-export function firstLoadForCanvas(userId: string) {
-  db.queryOnce({
-    party: {
-      $: {
-        where: {
-          and: [
-            { status: GAME_STATUS.inProgress },
-            { "newPlayers.id": userId },
-          ],
-        },
-      },
-    },
-  }).then(({ data }) => {
-    // @ts-ignore
-    const innerState = data.party?.[0]?.gameState;
-
-    if (innerState?.state === "drawing") {
-      innerState.drawingId;
-
-      db.queryOnce({
-        paintings: {
-          $: { where: { id: innerState.drawingId } },
-        },
-      }).then(({ data }) => {
-        if (data.paintings[0]) {
-          currentLine.initLoad(data.paintings[0].canvas);
-        }
-      });
-    }
-  });
 }

@@ -64,9 +64,6 @@ export function createParty($localId: Store<string>) {
   const allPartiesLoaded = createEvent<DbParty[]>();
   const $allMyParties = createStore<DbParty[]>([]);
   $allMyParties.on(allPartiesLoaded, (_, parties) => parties);
-  $allMyParties.watch((p) => {
-    console.log("$allMyParties", p);
-  });
 
   const $allChatEvents = $newParty.map((p) => p?.roomEvents || []);
 
@@ -223,8 +220,6 @@ export function createParty($localId: Store<string>) {
 
   liveQuery($pagePartyName, (partyName) => {
     if (!partyName) return () => {};
-
-    // firstLoadForCanvas(localId);
 
     return db.subscribeQuery(
       {

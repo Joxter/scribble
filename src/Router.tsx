@@ -14,14 +14,11 @@ import { PageLayout } from "./components/PageLayout.tsx";
 import { GAME_STATUS } from "./types.ts";
 
 export function Router() {
-  const [party222, partyName, partyStatus, openedParty, localId] = useUnit([
-    party.$allMyParties,
-    party.$pagePartyName,
+  const [partyStatus, openedParty, localId] = useUnit([
     party.$partyStatus,
     $newParty,
     $localId,
   ]);
-  const partyy = party222.find((p) => p.name === partyName);
   const imInOpenedParty = Boolean(
     openedParty?.newPlayers.some((p) => p.id === localId),
   );
@@ -29,29 +26,25 @@ export function Router() {
   const [location, navigate] = useLocation();
   const player = useUnit($player);
 
+  // Единственный автоматический переход — выгнать из чужой комнаты. Обратно в
+  // свою игру зовёт кнопка в шапке (PageLayout): раньше сюда же затаскивало
+  // роутером по $pagePartyName, а он не сбрасывается при уходе со страницы
+  // комнаты — и профиль с остальными страницами открыть было нельзя.
   useEffect(() => {
     if (!player) return;
-    if (location.startsWith(getUrl("dev"))) return;
+    if (!location.startsWith(getUrl("room/"))) return;
 
-    if (location.startsWith(getUrl("room/"))) {
-      // пока комната грузится или не нашлась, решает страница комнаты:
-      // домой отправляем только из чужой комнаты. Лобби — не чужое: по ссылке
-      // приглашения сюда приходит как раз тот, кого в комнате ещё нет, и
-      // страница предложит ему войти
-      if (
-        partyStatus === "found" &&
-        !imInOpenedParty &&
-        openedParty?.status !== GAME_STATUS.prepare
-      ) {
-        navigate(getUrl(""));
-      }
-      return;
+    // пока комната грузится или не нашлась, решает страница комнаты.
+    // Лобби — не чужое: по ссылке приглашения сюда приходит как раз тот,
+    // кого в комнате ещё нет, и страница предложит ему войти
+    if (
+      partyStatus === "found" &&
+      !imInOpenedParty &&
+      openedParty?.status !== GAME_STATUS.prepare
+    ) {
+      navigate(getUrl(""));
     }
-
-    if (partyy) {
-      navigate(getUrl("room/" + partyy.name));
-    }
-  }, [partyy, player, partyStatus, imInOpenedParty]);
+  }, [player, location, partyStatus, imInOpenedParty]);
 
   if (!player) return null;
 

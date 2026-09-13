@@ -211,6 +211,7 @@ function JoinOrCreate() {
   const player = useUnit($player);
   const [roomCode, setRoomCode] = useState("");
   const [notFound, setNotFound] = useState(false);
+  const [createError, setCreateError] = useState("");
   const [busy, setBusy] = useState(false);
   const [, navigate] = useLocation();
 
@@ -241,6 +242,7 @@ function JoinOrCreate() {
     if (!player) return;
 
     setBusy(true);
+    setCreateError("");
     try {
       const created = await createNewParty(
         player.id,
@@ -248,7 +250,11 @@ function JoinOrCreate() {
       );
       navigate(getUrl("room/" + created.name));
     } catch (err) {
-      console.error("Failed to create party:", err);
+      // самая частая причина — незакрытая комната этого же игрока. Молча
+      // проглоченная ошибка выглядела как мёртвая кнопка
+      setCreateError(
+        err instanceof Error ? err.message : "Не получилось создать комнату",
+      );
     } finally {
       setBusy(false);
     }
@@ -291,6 +297,8 @@ function JoinOrCreate() {
       <Button variant="secondary" disabled={busy} onClick={handleCreate}>
         Создать новую игру
       </Button>
+
+      {createError && <p className={error}>{createError}</p>}
     </section>
   );
 }
