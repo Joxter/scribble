@@ -6,6 +6,7 @@ import {
   GameProgress,
   IsRevealed,
   Painting,
+  PaintingReactions,
   UserMessageEvent,
 } from "../types.ts";
 import { generateClues } from "../utils.ts";
@@ -299,13 +300,14 @@ function mockPaintings(): Painting[] {
 
 export type MockScreen = {
   title: string;
-  // какую страницу рендерить: стартовый экран живёт вне комнаты
-  page?: "start";
+  // какую страницу рендерить: стартовый экран и профиль живут вне комнаты
+  page?: "start" | "profile";
   make: () => {
     party: NewParty | null;
     canvas: CurrentCanvas;
     paintings?: Painting[];
     myParties?: { id: string; name: string; status: NewParty["status"] }[];
+    myPaintings?: Painting[];
   };
 };
 
@@ -369,5 +371,44 @@ export const mockScreens = {
       canvas: [],
       paintings: mockPaintings(),
     }),
+  },
+  profile: {
+    title: "Профиль",
+    page: "profile",
+    make: () => {
+      // на паре рисунков реакции есть: иначе строка под картинкой всегда пустая
+      const reactions: Record<number, PaintingReactions> = {
+        0: { [ANNA.id]: { "🔥": 3, "😂": 1 }, [BORIS.id]: { "🔥": 2 } },
+        2: { [VIKA.id]: { "😮": 1 } },
+      };
+
+      return {
+        party: null,
+        canvas: [],
+        myParties: [
+          {
+            id: "mock-party-id",
+            name: "dev-room",
+            status: GAME_STATUS.inProgress,
+          },
+          {
+            id: "mock-party-old",
+            name: "кот-лиса-ракета",
+            status: GAME_STATUS.finished,
+          },
+        ],
+        // в профиле показываются только свои рисунки, поэтому автор везде ME
+        myPaintings: mockPaintings().map((p, i) => ({
+          ...p,
+          playerId: ME.id,
+          reactions: reactions[i],
+        })),
+      };
+    },
+  },
+  profileEmpty: {
+    title: "Профиль: пусто",
+    page: "profile",
+    make: () => ({ party: null, canvas: [], myParties: [], myPaintings: [] }),
   },
 } satisfies Record<string, MockScreen>;

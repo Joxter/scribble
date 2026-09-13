@@ -37,7 +37,8 @@ const _schema = i.schema({
     }),
     paintings: i.entity({
       canvas: i.json<CurrentCanvas>(), // (line | undo)[]
-      playerId: i.string(),
+      // indexed: страница профиля выбирает рисунки игрока по всем комнатам
+      playerId: i.string().indexed(),
       word: i.string(),
       // { [playerId]: { [emoji]: сколько раз нажал } }
       reactions: i.json<PaintingReactions>().optional(),

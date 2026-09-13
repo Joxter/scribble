@@ -13,6 +13,8 @@ import { mockScreens, ME, MockScreen } from "../dev/mocks.ts";
 import { PaperTweaker } from "../dev/PaperTweaker.tsx";
 import { PartyPrepare } from "./PartyPrepare.page.tsx";
 import { HomePage } from "./Home.page.tsx";
+import { ProfilePage } from "./Profile.page.tsx";
+import { $myPaintings } from "../model/all-paintings.model.ts";
 
 const bar = css`
   position: sticky;
@@ -60,7 +62,13 @@ export function DevPage() {
   const screen: MockScreen = mockScreens[screenKey];
 
   const scope = useMemo(() => {
-    const { party: mockParty, canvas, paintings, myParties } = screen.make();
+    const {
+      party: mockParty,
+      canvas,
+      paintings,
+      myParties,
+      myPaintings,
+    } = screen.make();
 
     return fork({
       values: [
@@ -69,6 +77,7 @@ export function DevPage() {
         [currentLine.$currentDrawing, canvas],
         [$partyPaintings, paintings || []],
         [party.$allMyParties, myParties || []],
+        [$myPaintings, myPaintings || []],
       ],
     });
   }, [screenKey]);
@@ -89,7 +98,13 @@ export function DevPage() {
       </div>
       <PaperTweaker />
       <Provider key={screenKey} value={scope}>
-        {screen.page === "start" ? <HomePage /> : <PartyPrepare />}
+        {screen.page === "start" ? (
+          <HomePage />
+        ) : screen.page === "profile" ? (
+          <ProfilePage />
+        ) : (
+          <PartyPrepare />
+        )}
       </Provider>
     </div>
   );
