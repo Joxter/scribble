@@ -311,7 +311,7 @@ function JoinOrCreate() {
           <input
             className={codeInput}
             value={roomCode}
-            placeholder="warm-attic-482"
+            placeholder="кот лиса ракета"
             onChange={(e) => {
               setRoomCode(e.target.value);
               setNotFound(false);

@@ -9,7 +9,12 @@ import {
   UserMessageEvent,
 } from "./types.ts";
 import { id } from "@instantdb/core";
-import { generateClues, newRandomWords, wordToZeroClue } from "./utils.ts";
+import {
+  generateClues,
+  newRandomWords,
+  normalizeRoomName,
+  wordToZeroClue,
+} from "./utils.ts";
 import { currentLine } from "./model/game-new.model.ts";
 import { getUsername } from "./code-worlds.ts";
 import { parseAvatar, randomAvatar } from "./avatar.ts";
@@ -35,7 +40,9 @@ export async function getPreparePartyByName(name: string) {
     data: { party },
   } = await db.queryOnce({
     party: {
-      $: { where: { status: GAME_STATUS.prepare, name } },
+      $: {
+        where: { status: GAME_STATUS.prepare, name: normalizeRoomName(name) },
+      },
     },
   });
 
@@ -178,7 +185,9 @@ export async function createNewParty(userId: string, name: string) {
   await db.transact([
     db.tx.party[partyId]
       .create({
-        name: name,
+        // храним уже нормализованным: иначе комнату «Кот Лиса» не найти
+        // ничем, кроме точно такой же строки
+        name: normalizeRoomName(name),
         host: userId,
         gameState: { state: "game-prepare" },
         gameProgress: [[]],
