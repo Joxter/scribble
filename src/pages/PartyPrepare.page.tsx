@@ -525,7 +525,11 @@ export function PartyPrepare() {
                 size={3}
                 disabled={alone}
                 onClick={() => {
-                  startParty(party);
+                  // реальная причина отказа одна — игру уже начали (двойной
+                  // клик, второй хост), и экран сам переключится на неё
+                  startParty(party).catch((err) =>
+                    console.error("startParty:", err),
+                  );
                 }}
               >
                 Начать игру

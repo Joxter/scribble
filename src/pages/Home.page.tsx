@@ -210,7 +210,7 @@ export function HomePage() {
 function JoinOrCreate() {
   const player = useUnit($player);
   const [roomCode, setRoomCode] = useState("");
-  const [notFound, setNotFound] = useState(false);
+  const [joinError, setJoinError] = useState("");
   const [createError, setCreateError] = useState("");
   const [busy, setBusy] = useState(false);
   const [, navigate] = useLocation();
@@ -222,18 +222,23 @@ function JoinOrCreate() {
     if (!code || !player) return;
 
     setBusy(true);
-    setNotFound(false);
+    setJoinError("");
 
     try {
       const found = await getPreparePartyByName(code);
       if (!found) {
-        setNotFound(true);
+        setJoinError("Комната не найдена");
         return;
       }
 
       party.enteringRoom(true);
       await joinToParty(player.id, found.id);
       navigate(getUrl("room/" + found.name));
+    } catch {
+      // чаще всего комнату успели закрыть или начать игру между поиском и
+      // входом. Флаг сбрасываем: мы никуда не уходим, баннер нужен обратно
+      party.enteringRoom(false);
+      setJoinError("Не получилось войти — возможно, игра уже началась");
     } finally {
       setBusy(false);
     }
@@ -279,12 +284,12 @@ function JoinOrCreate() {
             placeholder="кот лиса ракета"
             onChange={(e) => {
               setRoomCode(e.target.value);
-              setNotFound(false);
+              setJoinError("");
             }}
           />
         </label>
 
-        {notFound && <p className={error}>Комната не найдена</p>}
+        {joinError && <p className={error}>{joinError}</p>}
 
         <Button type="submit" size={3} disabled={busy || !roomCode.trim()}>
           Войти в комнату

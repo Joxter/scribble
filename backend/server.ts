@@ -67,9 +67,9 @@ const turnSeenAt = new Map<string, number>();
 // id нет, а одновременно комната выбирает только одно слово. Отпечаток ловит
 // смену хода (игрок и набор слов меняются каждый раз).
 const chooseSeenAt = new Map<string, { fp: string; at: number }>();
-// Брошенное лобби: хост создал комнату и закрыл вкладку. Признак жизни — любое
-// изменение комнаты: кто вошёл или вышел, правка параметров, переименование
-// игрока или смена человечка (всё приходит тем же запросом).
+// Брошенное лобби: хост создал комнату и закрыл вкладку. Признак жизни —
+// изменение состава, имени игрока или параметров игры (всё приходит тем же
+// запросом). Смена человечка не в счёт: сервер её и не видит.
 const lobbySeen = new Map<string, { fp: string; at: number }>();
 const LOBBY_IDLE_MS = 2 * 60 * 60 * 1000;
 
@@ -142,7 +142,12 @@ function forgetGoneParties() {
 }
 
 function checkIdleLobby(party: ActiveParty) {
-  const fp = JSON.stringify([party.gameParams, party.newPlayers]);
+  // id сортируем: порядок связей в ответе не обещан, а «переехавший» игрок
+  // выглядел бы как изменение и продлевал жизнь лобби навсегда
+  const fp = JSON.stringify([
+    party.gameParams,
+    party.newPlayers.map((pl) => [pl.id, pl.name]).sort(),
+  ]);
   const seen = lobbySeen.get(party.id);
 
   if (!seen || seen.fp !== fp) {
@@ -219,9 +224,11 @@ function checkChoosingWord(party: ActiveParty) {
 
   if (Date.now() - seen.at < chooseWordTime * 1000) return;
 
-  // следующий тик увидит уже "drawing" и заведёт таймер хода; если запись не
-  // пройдёт — отпечаток тот же, значит попробуем снова через минуту
-  chooseSeenAt.delete(party.id);
+  // следующий тик увидит уже "drawing" и заведёт таймер хода. Отпечаток не
+  // стираем, а засекаем заново: тик со ещё не обновившимся снапшотом иначе
+  // принял бы комнату за новый выбор и переписал startedAt уже идущему ходу.
+  // Если запись не пройдёт — попробуем снова через минуту
+  seen.at = Date.now();
   console.log(`party ${party.id}: word chosen by timeout`);
   selectWord(party, gameState.playerId, gameState.words[0]!).catch((err) =>
     console.error("selectWord:", party.id, err),
