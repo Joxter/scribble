@@ -10,7 +10,7 @@ import {
   getPreparePartyByName,
   joinToParty,
 } from "../db-things.ts";
-import { $player } from "../model/game-new.model.ts";
+import { $player, party } from "../model/game-new.model.ts";
 
 const layout = css`
   display: flex;
@@ -231,6 +231,7 @@ function JoinOrCreate() {
         return;
       }
 
+      party.enteringRoom(true);
       await joinToParty(player.id, found.id);
       navigate(getUrl("room/" + found.name));
     } finally {
@@ -243,6 +244,7 @@ function JoinOrCreate() {
 
     setBusy(true);
     setCreateError("");
+    party.enteringRoom(true);
     try {
       const created = await createNewParty(
         player.id,
@@ -255,6 +257,7 @@ function JoinOrCreate() {
       setCreateError(
         err instanceof Error ? err.message : "Не получилось создать комнату",
       );
+      party.enteringRoom(false);
     } finally {
       setBusy(false);
     }

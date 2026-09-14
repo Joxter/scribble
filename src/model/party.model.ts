@@ -45,6 +45,15 @@ export function createParty($localId: Store<string>) {
   const pageOpened = createEvent<string>();
   $pagePartyName.on(pageOpened, (_, p) => p);
 
+  // Между кликом «создать/войти» и открытием комнаты проходит пара кадров:
+  // live-query отдаёт свежую партию раньше, чем сработает navigate, и баннер
+  // «вернуться в игру» успевает мигнуть на главной. Гасим его на это время.
+  // false — если создать комнату не вышло и мы никуда не уходим
+  const enteringRoom = createEvent<boolean>();
+  const $enteringRoom = createStore(false)
+    .on(enteringRoom, (_, v) => v)
+    .on(pageOpened, () => false);
+
   const $newParty = createStore<NewParty | null>(null);
   const newPartyLoaded = createEvent<NewParty>();
   const partyNotFound = createEvent();
@@ -270,5 +279,7 @@ export function createParty($localId: Store<string>) {
     $timeout,
     $pagePartyName,
     pageOpened,
+    enteringRoom,
+    $enteringRoom,
   };
 }

@@ -127,6 +127,7 @@ const footer = css`
 export function PageLayout({ children, background }: Props) {
   const player = useUnit($player);
   const myParties = useUnit(party.$allMyParties);
+  const enteringRoom = useUnit(party.$enteringRoom);
   const [location] = useLocation();
   const [doodleEnabled, toggleDoodle] = useUnit([
     $doodleEnabled,
@@ -173,7 +174,7 @@ export function PageLayout({ children, background }: Props) {
         )}
       </header>
 
-      {unfinished && !inRoom && (
+      {unfinished && !inRoom && !enteringRoom && (
         <Link href={getUrl("room/" + unfinished.name)} className={backToGame}>
           ↩ Вернуться в игру · {unfinished.name}
         </Link>

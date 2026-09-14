@@ -75,6 +75,10 @@ export async function startParty(_party: NewParty) {
 
   const players = _party.newPlayers.map((p) => p.id);
 
+  // кнопка в лобби и так заблокирована, но старт идёт через эту функцию —
+  // проверка живёт здесь, а не у кнопки
+  if (players.length < 2) throw new Error("Need at least 2 players to start");
+
   const res = await db.transact([
     db.tx.party[partyId].update({
       status: GAME_STATUS.inProgress,
@@ -115,9 +119,14 @@ export async function kickPlayer(partyId: string, userId: string) {
   return res;
 }
 
-export async function leaveParty(userId: string, partyId: string) {
+// Последний вышедший гасит свет: пустая комната в списке живых висела бы
+// вечно, а вернуться в неё всё равно некому — ссылка ведёт в никуда
+export async function leaveParty(userId: string, party: NewParty) {
+  const lastOne = party.newPlayers.length <= 1;
+  const tx = db.tx.party[party.id].unlink({ newPlayers: userId });
+
   const res = await db.transact([
-    db.tx.party[partyId].unlink({ newPlayers: userId }),
+    lastOne ? tx.update({ status: GAME_STATUS.finished }) : tx,
   ]);
 
   return res;

@@ -199,6 +199,13 @@ const paramSelect = css`
   width: 150px;
 `;
 
+const startHint = css`
+  margin: 0;
+  text-align: center;
+  font-size: 13px;
+  color: var(--muted);
+`;
+
 const closeRow = css`
   display: flex;
   justify-content: center;
@@ -370,6 +377,9 @@ export function PartyPrepare() {
     (party.host && currentPlayers[party.host]?.name) || party.host;
   const imHost = localId === party.host;
 
+  // в одиночку игра выродится: рисовальщику некому отгадывать
+  const alone = party.newPlayers.length < 2;
+
   const roomPath = getUrl("room/" + party.name);
   const roomLink = `${window.location.origin}${roomPath}`;
 
@@ -513,12 +523,18 @@ export function PartyPrepare() {
             <>
               <Button
                 size={3}
+                disabled={alone}
                 onClick={() => {
                   startParty(party);
                 }}
               >
                 Начать игру
               </Button>
+              {alone && (
+                <p className={startHint}>
+                  Играть одному не с кем — позовите друзей по ссылке выше.
+                </p>
+              )}
               <div className={closeRow}>
                 <Button
                   variant="text"
@@ -555,7 +571,7 @@ export function PartyPrepare() {
                 <button
                   className={`${rowAction} ${leaveAction}`}
                   onClick={() => {
-                    leaveParty(localId, party.id).then(() => {
+                    leaveParty(localId, party).then(() => {
                       navigate(getUrl(""));
                     });
                   }}
