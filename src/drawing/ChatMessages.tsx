@@ -4,9 +4,13 @@ import { css } from "@linaria/core";
 import { useAutoScroll } from "../hooks/useAutoScroll";
 import {
   $allChatEvents,
+  $canCancelGame,
   $currentPlayers,
+  $newParty,
   $playerColors,
 } from "../model/game-new.model.ts";
+import { restartParty } from "../db-things.ts";
+import { Button } from "../components/Button.tsx";
 
 const container = css`
   flex: 1;
@@ -84,11 +88,29 @@ const clueMask = css`
   letter-spacing: 2px;
 `;
 
+/* видит только хост, в базу не пишется: пропадёт само, как выберут слово */
+const cancelNote = css`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
+  padding: 8px 10px;
+  border: 1px dashed var(--line-strong);
+  border-radius: 10px;
+  font-size: 11px;
+  color: var(--muted);
+  font-weight: 700;
+  text-align: center;
+`;
+
 export function ChatMessages() {
-  const [events, players, colors] = useUnit([
+  const [events, players, colors, party, canCancel] = useUnit([
     $allChatEvents,
     $currentPlayers,
     $playerColors,
+    $newParty,
+    $canCancelGame,
   ]);
   const scrollRef = useAutoScroll(events);
 
@@ -191,6 +213,19 @@ export function ChatMessages() {
             </p>
           );
         })}
+
+        {canCancel && party && (
+          <div className={cancelNote}>
+            <span>Начали раньше времени? Игру ещё можно отменить</span>
+            <Button
+              variant="secondary"
+              size={1}
+              onClick={() => restartParty(party)}
+            >
+              Вернуть в лобби
+            </Button>
+          </div>
+        )}
       </div>
     </div>
   );

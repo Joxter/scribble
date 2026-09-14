@@ -183,6 +183,19 @@ export function createParty($localId: Store<string>) {
   // Сколько осталось на выбор слова, и только вторая половина: в начале
   // обратный отсчёт над словами только давит, а смысл у него один — показать,
   // что ожидание кончится. startedAt проставляет сервер, он же и выберет
+  // Страховка от преждевременного старта: хост нажал «Начать игру», а кто-то
+  // ещё не подошёл. Работает до первого рисунка — он появляется вместе с
+  // первым выбранным словом, дальше отменять уже поздно, есть что терять
+  const $canCancelGame = combine($localId, $newParty, (localId, p) => {
+    if (!p || p.status !== GAME_STATUS.inProgress) return false;
+    if (p.host !== localId) return false;
+
+    return (
+      p.gameState.state === "choosing-word" &&
+      p.gameProgress.flat().length === 0
+    );
+  });
+
   const $chooseTimeout = combine($newParty, $tickStore, (p) => {
     if (!p || p.status !== GAME_STATUS.inProgress) return null;
     if (p.gameState.state !== "choosing-word") return null;
@@ -292,6 +305,7 @@ export function createParty($localId: Store<string>) {
     $guessed,
     $choosingWord,
     $chooseTimeout,
+    $canCancelGame,
     $drawingState,
     $timeout,
     $pagePartyName,

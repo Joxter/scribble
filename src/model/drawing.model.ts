@@ -14,6 +14,7 @@ import { liveQuery } from "../utils.ts";
 import { db } from "../DB.ts";
 import { saveCanvas } from "../db-things.ts";
 import { NewParty } from "./party.model.ts";
+import { throttle } from "patronum";
 
 export function createCurrentLine() {
   const setSmoothConf = createEvent<Partial<typeof smoothConf>>();
@@ -141,39 +142,44 @@ export function createDrawing(params: {
 }) {
   const { $localId, $newParty, log, $timeout } = params;
 
-  const $drawing = combine($localId, $newParty, $timeout, (loadId, p, timeout) => {
-    if (!p) return { drawing: false } as const;
+  const $drawing = combine(
+    $localId,
+    $newParty,
+    $timeout,
+    (loadId, p, timeout) => {
+      if (!p) return { drawing: false } as const;
 
-    if (
-      p.status === GAME_STATUS.inProgress &&
-      p.gameState.state === "drawing"
-    ) {
-      const s = p.gameState;
+      if (
+        p.status === GAME_STATUS.inProgress &&
+        p.gameState.state === "drawing"
+      ) {
+        const s = p.gameState;
 
-      // Calculate current clue based on time passed
-      let currentClue = s.allClues[0].clue;
-      if (timeout) {
-        for (const clueEntry of s.allClues) {
-          if (timeout.passed >= clueEntry.time) {
-            currentClue = clueEntry.clue;
-          } else {
-            break;
+        // Calculate current clue based on time passed
+        let currentClue = s.allClues[0].clue;
+        if (timeout) {
+          for (const clueEntry of s.allClues) {
+            if (timeout.passed >= clueEntry.time) {
+              currentClue = clueEntry.clue;
+            } else {
+              break;
+            }
           }
         }
+
+        return {
+          gameState: p.gameState,
+          drawing: true,
+          iam: loadId === s.playerId,
+          who: s.playerId,
+          word: s.word,
+          clue: currentClue,
+        } as const;
       }
 
-      return {
-        gameState: p.gameState,
-        drawing: true,
-        iam: loadId === s.playerId,
-        who: s.playerId,
-        word: s.word,
-        clue: currentClue,
-      } as const;
-    }
-
-    return { drawing: false } as const;
-  });
+      return { drawing: false } as const;
+    },
+  );
 
   const $imDrawing = $drawing.map((t) => {
     return t.drawing && t.iam;
@@ -218,6 +224,17 @@ export function createDrawing(params: {
       unsubscribeTopic();
       room.leaveRoom();
     };
+  });
+
+  // Пока идёт штрих, холст в базе отстаёт: он писался только на отпускании
+  // пальца. Ход, который закончился посреди линии (все отгадали или вышло
+  // время), терял её целиком — отпускание приходило уже в состоянии
+  // "choosing-word", а туда запись не проходит. Пишем раз в секунду по ходу
+  // рисования: теряется максимум последняя секунда, заодно переживаем смерть
+  // вкладки художника посреди хода
+  sample({
+    clock: throttle({ source: currentLine.lineExtended, timeout: 1000 }),
+    target: currentLine.saveCanvasToPaining,
   });
 
   // сохранить рисунок в базу
