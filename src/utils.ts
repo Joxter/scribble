@@ -7,6 +7,11 @@ import { ru } from "../dictionaries/ru.ts";
 
 export const canvasSize = 600;
 
+// Сколько даём на выбор слова. Не игровой параметр, а страховка: без неё
+// игрок, закрывший вкладку на выборе, вешал партию навсегда. Сервер по
+// истечении выбирает первое слово сам (backend/server.ts)
+export const chooseWordTime = 60;
+
 export function liveQuery<T>(store: Store<T>, cb: (val: T) => () => void) {
   let prev: any;
 

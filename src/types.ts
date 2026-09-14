@@ -68,6 +68,9 @@ export type GameStateChoosingWord = {
   state: "choosing-word";
   playerId: string;
   words: string[];
+  // проставляет сервер, когда впервые видит этот выбор: его часы — те же, по
+  // которым он выберет слово за игрока. См. startedAt у "drawing"
+  startedAt?: number;
 };
 
 export type GameStateFinished = {

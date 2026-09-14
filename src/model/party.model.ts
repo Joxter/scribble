@@ -6,7 +6,7 @@ import {
   Party,
   PlayerAvatar,
 } from "../types.ts";
-import { liveQuery } from "../utils.ts";
+import { chooseWordTime, liveQuery } from "../utils.ts";
 import { parseAvatar } from "../avatar.ts";
 import { interval } from "patronum";
 import { db } from "../DB.ts";
@@ -180,6 +180,22 @@ export function createParty($localId: Store<string>) {
     return p.gameState;
   });
 
+  // Сколько осталось на выбор слова, и только вторая половина: в начале
+  // обратный отсчёт над словами только давит, а смысл у него один — показать,
+  // что ожидание кончится. startedAt проставляет сервер, он же и выберет
+  const $chooseTimeout = combine($newParty, $tickStore, (p) => {
+    if (!p || p.status !== GAME_STATUS.inProgress) return null;
+    if (p.gameState.state !== "choosing-word") return null;
+    if (!p.gameState.startedAt) return null;
+
+    const left = Math.max(
+      Math.ceil(chooseWordTime - (Date.now() - p.gameState.startedAt) / 1000),
+      0,
+    );
+
+    return left > chooseWordTime / 2 ? null : left;
+  });
+
   const $timeout = combine(
     $drawingState,
     $newParty,
@@ -275,6 +291,7 @@ export function createParty($localId: Store<string>) {
     $lastPainting,
     $guessed,
     $choosingWord,
+    $chooseTimeout,
     $drawingState,
     $timeout,
     $pagePartyName,

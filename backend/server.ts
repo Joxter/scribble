@@ -5,10 +5,13 @@ import {
   type DrawingEndedEvent,
   type GameFinishedEvent,
   type GameProgress,
+  type NewWord,
   type Party,
 } from "../src/types.ts";
 import {
   calculateTotalScores,
+  chooseWordTime,
+  generateClues,
   newRandomWords,
   nextTurn,
 } from "../src/utils.ts";
@@ -20,16 +23,20 @@ const db = init({
   schema,
 });
 
+// prepare тоже watched: брошенное лобби некому закрыть, кроме нас
 const query = {
   party: {
-    $: { where: { status: GAME_STATUS.inProgress } },
+    $: {
+      where: { status: { $in: [GAME_STATUS.prepare, GAME_STATUS.inProgress] } },
+    },
     newPlayers: {},
   },
-} as const;
+};
 
 type ActiveParty = {
   id: string;
   name: string;
+  status: Party["status"];
   gameState: Party["gameState"];
   gameProgress: GameProgress;
   gameParams: Party["gameParams"];
@@ -56,6 +63,15 @@ const endedTurns = new Set<string>();
 // иначе клиентский таймер показывал бы одно, а ход заканчивался по другому.
 // ponytail: при рестарте сервера идущий ход получит свежий отсчёт заново.
 const turnSeenAt = new Map<string, number>();
+// То же для выбора слова, только ключ — сама комната: у choosing-word своего
+// id нет, а одновременно комната выбирает только одно слово. Отпечаток ловит
+// смену хода (игрок и набор слов меняются каждый раз).
+const chooseSeenAt = new Map<string, { fp: string; at: number }>();
+// Брошенное лобби: хост создал комнату и закрыл вкладку. Признак жизни — любое
+// изменение комнаты: кто вошёл или вышел, правка параметров, переименование
+// игрока или смена человечка (всё приходит тем же запросом).
+const lobbySeen = new Map<string, { fp: string; at: number }>();
+const LOBBY_IDLE_MS = 2 * 60 * 60 * 1000;
 
 db.subscribeQuery(query, (resp) => {
   if (resp.type === "error") {
@@ -77,12 +93,15 @@ db.subscribeQuery(query, (resp) => {
 setInterval(checkAll, 1000);
 
 function notifyStarted() {
-  const active = new Set(activeParties.map((p) => p.id));
+  const started = activeParties.filter(
+    (p) => p.status === GAME_STATUS.inProgress,
+  );
+  const active = new Set(started.map((p) => p.id));
   for (const partyId of startedParties) {
     if (!active.has(partyId)) startedParties.delete(partyId);
   }
 
-  for (const party of activeParties) {
+  for (const party of started) {
     if (startedParties.has(party.id)) continue;
     startedParties.add(party.id);
     if (firstSnapshot) continue;
@@ -100,15 +119,50 @@ function checkAll() {
   for (const party of activeParties) {
     // кривая запись в одной комнате не должна ронять таймеры всех остальных
     try {
-      checkParty(party);
+      if (party.status === GAME_STATUS.prepare) checkIdleLobby(party);
+      else checkParty(party);
     } catch (err) {
       console.error("checkParty:", party.id, err);
     }
   }
+
+  forgetGoneParties();
+}
+
+// Комната ушла из запроса (началась игра, финал, закрыли) — её записи в
+// памяти больше не нужны. Без этой уборки мапы росли до рестарта.
+function forgetGoneParties() {
+  const active = new Set(activeParties.map((p) => p.id));
+  for (const partyId of chooseSeenAt.keys()) {
+    if (!active.has(partyId)) chooseSeenAt.delete(partyId);
+  }
+  for (const partyId of lobbySeen.keys()) {
+    if (!active.has(partyId)) lobbySeen.delete(partyId);
+  }
+}
+
+function checkIdleLobby(party: ActiveParty) {
+  const fp = JSON.stringify([party.gameParams, party.newPlayers]);
+  const seen = lobbySeen.get(party.id);
+
+  if (!seen || seen.fp !== fp) {
+    lobbySeen.set(party.id, { fp, at: Date.now() });
+    return;
+  }
+  if (Date.now() - seen.at < LOBBY_IDLE_MS) return;
+
+  // забываем сразу: следующий тик заведёт отсчёт заново, так что повторной
+  // записи не будет, а если транзакция не пройдёт — попробуем ещё через два часа
+  lobbySeen.delete(party.id);
+  console.log(`party ${party.id}: lobby closed by inactivity`);
+  db.transact(
+    db.tx.party[party.id]!.update({ status: GAME_STATUS.finished }),
+  ).catch((err) => console.error("closeIdleLobby:", party.id, err));
 }
 
 function checkParty(party: ActiveParty) {
   const { gameState, gameParams, newPlayers } = party;
+  if (gameState.state === "choosing-word") return checkChoosingWord(party);
   if (gameState.state !== "drawing") return;
   if (endedTurns.has(gameState.drawingId)) return;
 
@@ -141,6 +195,70 @@ function checkParty(party: ActiveParty) {
     endedTurns.delete(gameState.drawingId);
     console.error("endTurn:", party.id, err);
   });
+}
+
+// Единственный способ подвесить партию навсегда: игрок закрыл вкладку на
+// выборе слова, и ход не начинался — значит и таймер хода не тикал. По
+// истечении выбираем первое слово за него.
+function checkChoosingWord(party: ActiveParty) {
+  const { gameState } = party;
+  if (gameState.state !== "choosing-word") return;
+
+  const fp = JSON.stringify([gameState.playerId, gameState.words]);
+  let seen = chooseSeenAt.get(party.id);
+
+  if (!seen || seen.fp !== fp) {
+    seen = { fp, at: Date.now() };
+    chooseSeenAt.set(party.id, seen);
+    // клиент рисует обратный отсчёт от startedAt, а истечёт он по нашим часам
+    db.transact(
+      db.tx.party[party.id]!.merge({ gameState: { startedAt: seen.at } }),
+    ).catch((err) => console.error("choose startedAt:", party.id, err));
+    return;
+  }
+
+  if (Date.now() - seen.at < chooseWordTime * 1000) return;
+
+  // следующий тик увидит уже "drawing" и заведёт таймер хода; если запись не
+  // пройдёт — отпечаток тот же, значит попробуем снова через минуту
+  chooseSeenAt.delete(party.id);
+  console.log(`party ${party.id}: word chosen by timeout`);
+  selectWord(party, gameState.playerId, gameState.words[0]!).catch((err) =>
+    console.error("selectWord:", party.id, err),
+  );
+}
+
+// Двойник клиентского selectWord из src/db-things.ts: там браузерный db,
+// здесь админский, поэтому транзакцию приходится держать в двух местах.
+// Меняешь одну — меняй вторую.
+async function selectWord(party: ActiveParty, playerId: string, word: string) {
+  if (!word) return;
+
+  const drawingId = id();
+  const selected: Omit<NewWord, "id"> = {
+    type: "new-selected-word",
+    payload: { playerId, word },
+  };
+
+  await db.transact([
+    db.tx.roomEvent[id()]!.create(selected).link({ party: party.id }),
+    db.tx.paintings[drawingId]!.create({
+      canvas: [],
+      playerId,
+      word,
+    }).link({ party: party.id }),
+    db.tx.party[party.id]!.update({
+      gameState: {
+        state: "drawing",
+        playerId,
+        word,
+        allClues: generateClues(word, party.gameParams.drawTime),
+        drawingId,
+        guessed: {},
+        startedAt: Date.now(),
+      },
+    }),
+  ]);
 }
 
 async function endTurn(party: ActiveParty, byTimeout: boolean) {

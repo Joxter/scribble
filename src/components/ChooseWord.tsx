@@ -3,6 +3,7 @@ import { css } from "@linaria/core";
 import { useUnit } from "effector-react";
 import {
   $choosingWord,
+  $chooseTimeout,
   $currentPlayers,
   newWordSelected,
 } from "../model/game-new.model.ts";
@@ -30,11 +31,12 @@ const timerChip = css`
   font-family: var(--font-mono);
   font-size: 13px;
   font-weight: 700;
-  color: #aab0b8;
+  color: var(--danger);
   background-color: var(--sunken);
   border: 1px dashed var(--line-strong);
   border-radius: 10px;
   padding: 2px 12px;
+  font-variant-numeric: tabular-nums;
 `;
 
 const words = css`
@@ -57,22 +59,33 @@ const waiting = css`
 
 export function ChooseWord() {
   const choosingWord = useUnit($choosingWord);
+  const chooseLeft = useUnit($chooseTimeout);
   const currentPlayers = useUnit($currentPlayers);
 
   if (!choosingWord.choose || !choosingWord.who) return null;
 
   if (!choosingWord.iam) {
     const chooserName = currentPlayers[choosingWord.who]?.name || "";
-    return <p className={waiting}>{chooserName} выбирает слово…</p>;
+    return (
+      <p className={waiting}>
+        {chooserName} выбирает слово…
+        {chooseLeft !== null && ` ещё ${chooseLeft} сек`}
+      </p>
+    );
   }
 
   return (
     <div className={root}>
       <div className={header}>
         <span className={title}>Ваш ход! Выберите слово</span>
-        <span className={timerChip} title="таймер выбора слова — скоро">
-          --:--
-        </span>
+        {chooseLeft !== null && (
+          <span
+            className={timerChip}
+            title="не выберете — начнём с первого слова"
+          >
+            {chooseLeft} сек
+          </span>
+        )}
       </div>
       <div className={words}>
         {(choosingWord.words || []).map((w) => (

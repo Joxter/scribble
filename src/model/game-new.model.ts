@@ -34,6 +34,7 @@ export const {
   $lastPainting,
   $guessed,
   $choosingWord,
+  $chooseTimeout,
 } = party;
 
 const drawing = createDrawing({
