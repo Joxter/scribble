@@ -23,6 +23,9 @@ const _schema = i.schema({
       gameProgress: i.json<GameProgress>(),
       gameParams: i.json<Party["gameParams"]>(),
       staticPlayerIds: i.json<string[]>(),
+      // { [userId]: true } — кикнутые. Объект, а не массив: пишется merge-ом,
+      // два кика подряд не затирают друг друга
+      kicked: i.json<Record<string, true>>().optional(),
       status: i.string<Party["status"]>(),
     }),
     roomEvent: i.entity({

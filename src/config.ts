@@ -115,11 +115,12 @@ export const playerColors = [
   "#8b4513",
 ];
 
+// цвет холста: им же красит ластик
+export const paperColor = "#f6eee2";
+
 export const colors = [
   "#111111",
   "#34495e",
-  // "#faf9f5",
-  "#f6eee2",
   "#ffffff",
   "#8b4513",
   "#fa3224",

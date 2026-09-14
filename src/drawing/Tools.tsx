@@ -1,10 +1,11 @@
-import React from "react";
+import React, { useRef } from "react";
 import { css } from "@linaria/core";
 import { useUnit } from "effector-react";
 import { WidthSelector } from "../components/WidthSelector.tsx";
 import { ColorSelector } from "../components/ColorSelector.tsx";
 import { Button } from "../components/Button.tsx";
 import { currentLine } from "../model/game-new.model.ts";
+import { paperColor } from "../config.ts";
 
 /* высота общая с полем отгадки: под холстом ничего не прыгает при смене роли */
 const root = css`
@@ -31,8 +32,27 @@ const undoButton = css`
   margin-left: auto;
 `;
 
+// ластик — та же кисть цветом бумаги, только шире: стирать точечно неудобно
+const ERASER_K = 1.5;
+
 export function Tools() {
   const { width, color } = useUnit(currentLine.$currentLineParams);
+  const isEraser = color === paperColor;
+  // куда вернуться, когда ластик выключат
+  const beforeEraser = useRef({ color, width });
+
+  function toggleEraser() {
+    if (isEraser) {
+      currentLine.lineParamsChanged(beforeEraser.current);
+      return;
+    }
+
+    beforeEraser.current = { color, width };
+    currentLine.lineParamsChanged({
+      color: paperColor,
+      width: Math.round(width * ERASER_K),
+    });
+  }
 
   return (
     <div className={root}>
@@ -45,6 +65,13 @@ export function Tools() {
           value={width}
           onChange={(width) => currentLine.lineParamsChanged({ width })}
         />
+        <Button
+          variant={isEraser ? "primary" : "secondary"}
+          size={1}
+          onClick={toggleEraser}
+        >
+          ◻ Ластик
+        </Button>
         <Button
           variant="secondary"
           size={1}

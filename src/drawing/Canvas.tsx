@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback, memo } from "react";
 import { useUnit } from "effector-react";
 import { canvasSize, toFixed } from "../utils";
+import { paperColor } from "../config.ts";
 import { currentLine, $drawing, $newParty } from "../model/game-new.model.ts";
 
 const PIXEL_RATIO = window.devicePixelRatio || 1;
@@ -63,7 +64,7 @@ const containerStyle = {
   maxWidth: "var(--col-main)",
   aspectRatio: "1 / 1" as const,
   position: "relative" as const,
-  background: "#f6eee2",
+  background: paperColor,
   borderRadius: "18px",
   boxShadow: `inset 0 0 0 1px #e8dfcb, 0 14px 26px -16px rgba(30, 40, 50, 0.45)`,
 };

@@ -122,16 +122,6 @@ const footer = css`
   font-size: 14px;
   flex-wrap: wrap;
   color: var(--muted);
-
-  & a {
-    text-decoration: none;
-    color: var(--slate);
-    font-weight: 700;
-  }
-
-  & a:hover {
-    color: var(--ink);
-  }
 `;
 
 export function PageLayout({ children, background }: Props) {
@@ -191,13 +181,9 @@ export function PageLayout({ children, background }: Props) {
 
       <main className={content}>{children}</main>
 
-      <DeveloperTools />
+      {import.meta.env.DEV && <DeveloperTools />}
 
       <footer className={footer}>
-        <Link href={getUrl("")}>Главная</Link>
-        <Link href={getUrl("all-rooms")}>Все комнаты</Link>
-        <Link href={getUrl("words")}>Слова</Link>
-        <Link href={getUrl("paintings")}>Картины</Link>
         <p>build {(timeAgo / (1000 * 60)).toFixed(1)} min ago</p>
       </footer>
     </div>

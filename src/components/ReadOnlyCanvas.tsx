@@ -1,6 +1,7 @@
 import React, { useRef, useEffect } from "react";
 import { canvasSize } from "../utils.ts";
 import { CanvasLine } from "../types.ts";
+import { paperColor } from "../config.ts";
 
 const PIXEL_RATIO = window.devicePixelRatio || 1;
 
@@ -53,12 +54,7 @@ type Props = {
   className?: string;
 };
 
-export function ReadOnlyCanvas({
-  canvas,
-  size = 200,
-  fill,
-  className,
-}: Props) {
+export function ReadOnlyCanvas({ canvas, size = 200, fill, className }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
@@ -74,7 +70,7 @@ export function ReadOnlyCanvas({
     height: fill ? "auto" : `${size}px`,
     aspectRatio: fill ? ("1" as const) : undefined,
     position: "relative" as const,
-    background: "#f6eee2",
+    background: paperColor,
     borderRadius: "9px",
     boxShadow: "inset 0 0 0 1px #e8dfcb",
   };

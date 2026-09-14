@@ -332,6 +332,17 @@ export function PartyPrepare() {
     );
   }
 
+  // кикнутого не пускаем обратно ни в лобби, ни в идущую игру: ссылка у него
+  // осталась, а кнопка «Войти» вернула бы его сразу после кика
+  if (party.kicked?.[localId]) {
+    return (
+      <RoomNotice
+        title="Вас исключили"
+        text="Хост убрал вас из этой комнаты. Попросите пригласить вас снова или создайте свою."
+      />
+    );
+  }
+
   if (party.status === GAME_STATUS.inProgress) {
     return <DrawingPage />;
   }
@@ -487,10 +498,10 @@ export function PartyPrepare() {
                     });
                   }}
                   options={[
-                    { value: 10, label: "10 секунд" },
                     { value: 30, label: "30 секунд" },
                     { value: 60, label: "60 секунд" },
                     { value: 90, label: "90 секунд" },
+                    { value: 120, label: "120 секунд" },
                   ]}
                   disabled={!imHost}
                 />

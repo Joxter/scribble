@@ -104,9 +104,12 @@ export async function getAllPlayers() {
   return res.data.players;
 }
 
+// кикнутого запоминаем: иначе он входит обратно по той же ссылке
 export async function kickPlayer(partyId: string, userId: string) {
   const res = await db.transact([
-    db.tx.party[partyId].unlink({ newPlayers: userId }),
+    db.tx.party[partyId]
+      .unlink({ newPlayers: userId })
+      .merge({ kicked: { [userId]: true } }),
   ]);
 
   return res;
