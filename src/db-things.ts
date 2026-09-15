@@ -202,11 +202,17 @@ export async function createNewParty(userId: string, name: string) {
       .link({ newPlayers: userId }),
   ]);
 
+  // сразу со связями: этой записью главная заселяет модель до перехода в
+  // комнату, а лобби без списка игроков — это экран «войти в комнату»
   return db
     .queryOnce({
-      party: { $: { where: { id: partyId } } },
+      party: {
+        $: { where: { id: partyId } },
+        newPlayers: {},
+        roomEvents: {},
+      },
     })
-    .then((it) => it.data.party[0]!);
+    .then((it) => it.data.party[0]! as NewParty);
 }
 
 export function selectWord(localId: string, party: NewParty, word: string) {

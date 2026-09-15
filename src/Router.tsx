@@ -24,27 +24,50 @@ export function Router() {
   );
 
   const [location, navigate] = useLocation();
+  const [inRoom, roomParams] = useRoute("/scribble/room/:roomName");
   const player = useUnit($player);
 
-  // Единственный автоматический переход — выгнать из чужой комнаты. Обратно в
-  // свою игру зовёт кнопка в шапке (PageLayout): раньше сюда же затаскивало
-  // роутером по $pagePartyName, а он не сбрасывается при уходе со страницы
-  // комнаты — и профиль с остальными страницами открыть было нельзя.
-  useEffect(() => {
-    if (!player) return;
-    if (!location.startsWith(getUrl("room/"))) return;
+  // Подписку на комнату переключает эффект страницы, поэтому первый кадр
+  // новой комнаты рисуется ещё с данными прошлой. Решать по ним нельзя:
+  // так только что созданная комната выкидывала обратно на главную
+  const partyIsThisRoom = openedParty?.name === roomParams?.roomName;
 
-    // пока комната грузится или не нашлась, решает страница комнаты.
+  // Комнату закрыли, не начав игру (брошенное лобби: закрыл сервер или
+  // последний вышедший) — подиум с нулями показывать не за что
+  const emptyFinish =
+    openedParty?.status === GAME_STATUS.finished &&
+    openedParty.gameProgress.flat().length === 0;
+
+  // Единственное место с автоматическими переходами: уводим из чужой и из
+  // закрытой комнаты. Обратно в свою игру зовёт кнопка в шапке (PageLayout):
+  // раньше сюда же затаскивало роутером по $pagePartyName, а он не
+  // сбрасывается при уходе со страницы комнаты — и профиль с остальными
+  // страницами открыть было нельзя.
+  useEffect(() => {
+    if (!player || !inRoom) return;
+    // пока комната грузится или не нашлась, решает страница комнаты
+    if (partyStatus !== "found" || !partyIsThisRoom) return;
+
     // Лобби — не чужое: по ссылке приглашения сюда приходит как раз тот,
     // кого в комнате ещё нет, и страница предложит ему войти
-    if (
-      partyStatus === "found" &&
-      !imInOpenedParty &&
-      openedParty?.status !== GAME_STATUS.prepare
-    ) {
+    const foreign =
+      !imInOpenedParty && openedParty?.status !== GAME_STATUS.prepare;
+
+    if (foreign || emptyFinish) {
       navigate(getUrl(""));
     }
-  }, [player, location, partyStatus, imInOpenedParty]);
+    // openedParty?.status в зависимостях не для красоты: без него зритель,
+    // открывший ссылку-приглашение и не нажавший «Войти», оставался на
+    // странице, когда в комнате начиналась игра
+  }, [
+    player,
+    location,
+    partyStatus,
+    imInOpenedParty,
+    partyIsThisRoom,
+    emptyFinish,
+    openedParty?.status,
+  ]);
 
   if (!player) return null;
 

@@ -5,7 +5,9 @@ import {
   compareWords,
   countReactions,
   generateClues,
+  mergeChatTimeline,
   newRandomWords,
+  newRoomName,
   nextTurn,
   normalizeRoomName,
   rankByScore,
@@ -137,6 +139,16 @@ describe("newRandomWords", () => {
   });
 });
 
+describe("newRoomName", () => {
+  test("три коротких слова через дефис: такое имя можно продиктовать", () => {
+    for (let i = 0; i < 50; i++) {
+      const parts = newRoomName().split("-");
+      expect(parts).toHaveLength(3);
+      parts.forEach((word) => expect(word).toMatch(/^[а-яё]{3,6}$/i));
+    }
+  });
+});
+
 describe("nextTurn", () => {
   // Крутит партию так же, как backend/server.ts: закончившийся ход
   // записывается в последний круг, потом спрашиваем, кто следующий.
@@ -254,5 +266,38 @@ describe("countReactions", () => {
   test("пусто, пока никто не нажимал", () => {
     expect(countReactions(undefined)).toEqual({});
     expect(countReactions({})).toEqual({});
+  });
+});
+
+describe("mergeChatTimeline", () => {
+  const items = (
+    t: ReturnType<typeof mergeChatTimeline<string, { after: number }>>,
+  ) => t.map((it) => ("prompt" in it ? `[${it.prompt.after}]` : it.ev));
+
+  test("блок стоит после сообщения, которое было последним при открытии", () => {
+    expect(items(mergeChatTimeline(["a", "b", "c"], [{ after: 2 }]))).toEqual([
+      "a",
+      "b",
+      "[2]",
+      "c",
+    ]);
+  });
+
+  test("новые сообщения встают ниже блока", () => {
+    const prompts = [{ after: 1 }];
+    expect(items(mergeChatTimeline(["a"], prompts))).toEqual(["a", "[1]"]);
+    expect(items(mergeChatTimeline(["a", "b"], prompts))).toEqual([
+      "a",
+      "[1]",
+      "b",
+    ]);
+  });
+
+  test("пустой чат и почищенный чат: блок остаётся в конце", () => {
+    expect(items(mergeChatTimeline([], [{ after: 0 }]))).toEqual(["[0]"]);
+    expect(items(mergeChatTimeline(["a"], [{ after: 5 }]))).toEqual([
+      "a",
+      "[5]",
+    ]);
   });
 });

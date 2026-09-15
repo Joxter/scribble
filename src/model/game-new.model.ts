@@ -38,6 +38,39 @@ export const {
   $canCancelGame,
 } = party;
 
+// Локальные блоки в чате: живут только в этой вкладке и стоят в ленте там,
+// где их открыли — новые сообщения двигают их вверх, как обычные сообщения
+export type KickPrompt = { playerId: string; after: number };
+
+export const playerTileClicked = createEvent<string>();
+export const kickPrompted = createEvent<string>();
+export const kickPromptClosed = createEvent<string>();
+
+// сменилась комната или игру вернули в лобби — старые плашки не про эту игру
+const gameChanged = $newParty.map((p) => `${p?.id}:${p?.status}`).updates;
+
+export const $selectedPlayerId = createStore("")
+  .on(playerTileClicked, (selected, id) => (selected === id ? "" : id))
+  .reset(kickPrompted, gameChanged);
+
+export const $kickPrompts = createStore<KickPrompt[]>([])
+  .on(
+    sample({
+      source: $allChatEvents,
+      clock: kickPrompted,
+      fn: (events, playerId) => ({ playerId, after: events.length }),
+    }),
+    // повторный клик по тому же игроку не плодит блоки, а переносит вниз
+    (prompts, prompt) => [
+      ...prompts.filter((p) => p.playerId !== prompt.playerId),
+      prompt,
+    ],
+  )
+  .on(kickPromptClosed, (prompts, playerId) =>
+    prompts.filter((p) => p.playerId !== playerId),
+  )
+  .reset(gameChanged);
+
 const drawing = createDrawing({
   $localId,
   $newParty,

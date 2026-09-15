@@ -354,7 +354,11 @@ export const mockScreens = {
   },
   drawingGuess: {
     title: "Рисование: я отгадываю",
-    make: () => ({ party: drawingParty(ANNA.id), canvas: doodle() }),
+    // хост здесь я: только так на dev видно кик игрока по ходу игры
+    make: () => ({
+      party: { ...drawingParty(ANNA.id), host: ME.id },
+      canvas: doodle(),
+    }),
   },
   finished: {
     title: "Финал: я гость",

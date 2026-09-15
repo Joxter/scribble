@@ -355,6 +355,10 @@ export function PartyPrepare() {
   }
 
   if (party.status === GAME_STATUS.finished) {
+    // комнату закрыли, не начав игру: подиум с нулями показывать не за что,
+    // на главную уводит роутер
+    if (party.gameProgress.flat().length === 0) return null;
+
     return <FinishedGamePage />;
   }
 

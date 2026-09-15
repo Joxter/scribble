@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useUnit } from "effector-react";
 import { css } from "@linaria/core";
 import { useLocation } from "wouter";
-import { getUrl, newRandomWords } from "../utils.ts";
+import { getUrl, newRoomName } from "../utils.ts";
 import { PageLayout } from "../components/PageLayout.tsx";
 import { Button } from "../components/Button.tsx";
 import {
@@ -207,12 +207,32 @@ export function HomePage() {
   );
 }
 
+/* комнату создаём и ждём ответа базы прямо на кнопке: переход в лобби
+   происходит уже с готовой комнатой, отдельного экрана загрузки нет */
+const spinner = css`
+  display: inline-block;
+  width: 13px;
+  height: 13px;
+  margin-left: 8px;
+  vertical-align: -1px;
+  border: 2px solid currentColor;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+`;
+
 function JoinOrCreate() {
   const player = useUnit($player);
   const [roomCode, setRoomCode] = useState("");
   const [joinError, setJoinError] = useState("");
   const [createError, setCreateError] = useState("");
-  const [busy, setBusy] = useState(false);
+  const [busy, setBusy] = useState<"join" | "create" | null>(null);
   const [, navigate] = useLocation();
 
   async function handleJoin(ev: React.FormEvent) {
@@ -221,7 +241,7 @@ function JoinOrCreate() {
     const code = roomCode.trim();
     if (!code || !player) return;
 
-    setBusy(true);
+    setBusy("join");
     setJoinError("");
 
     try {
@@ -240,21 +260,23 @@ function JoinOrCreate() {
       party.enteringRoom(false);
       setJoinError("Не получилось войти — возможно, игра уже началась");
     } finally {
-      setBusy(false);
+      setBusy(null);
     }
   }
 
   async function handleCreate() {
     if (!player) return;
 
-    setBusy(true);
+    setBusy("create");
     setCreateError("");
     party.enteringRoom(true);
     try {
-      const created = await createNewParty(
-        player.id,
-        newRandomWords(3).join("-"),
-      );
+      const created = await createNewParty(player.id, newRoomName());
+      // комната уже в руках — кладём её в модель до перехода. Иначе лобби
+      // открывалось экраном «Открываем комнату…» и ждало, пока доедет
+      // подписка, хотя ждать нечего
+      party.pageOpened(created.name);
+      party.newPartyLoaded(created);
       navigate(getUrl("room/" + created.name));
     } catch (err) {
       // самая частая причина — незакрытая комната этого же игрока. Молча
@@ -264,7 +286,7 @@ function JoinOrCreate() {
       );
       party.enteringRoom(false);
     } finally {
-      setBusy(false);
+      setBusy(null);
     }
   }
 
@@ -291,7 +313,11 @@ function JoinOrCreate() {
 
         {joinError && <p className={error}>{joinError}</p>}
 
-        <Button type="submit" size={3} disabled={busy || !roomCode.trim()}>
+        <Button
+          type="submit"
+          size={3}
+          disabled={Boolean(busy) || !roomCode.trim()}
+        >
           Войти в комнату
         </Button>
       </form>
@@ -302,8 +328,13 @@ function JoinOrCreate() {
         <i />
       </div>
 
-      <Button variant="secondary" disabled={busy} onClick={handleCreate}>
+      <Button
+        variant="secondary"
+        disabled={Boolean(busy)}
+        onClick={handleCreate}
+      >
         Создать новую игру
+        {busy === "create" && <span className={spinner} />}
       </Button>
 
       {createError && <p className={error}>{createError}</p>}

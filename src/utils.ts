@@ -61,16 +61,26 @@ export function fix2(n: number | string) {
 // заметно меньше, чем ru.length
 const uniqWords = [...new Set(ru)];
 
-export function newRandomWords(count: number) {
-  const pool = [...uniqWords];
+export function newRandomWords(count: number, words: string[] = uniqWords) {
+  const pool = [...words];
   const arr: string[] = [];
 
-  while (arr.length < Math.min(count, uniqWords.length)) {
+  while (arr.length < Math.min(count, words.length)) {
     const i = Math.floor(Math.random() * pool.length);
     arr.push(pool.splice(i, 1)[0]!);
   }
 
   return arr;
+}
+
+// Имя комнаты диктуют голосом и вводят руками, поэтому слова для него берём
+// только короткие и цельные: в словаре есть и «солнечная система», и
+// «программист» — набирать такое никто не станет. Слова с ё тоже мимо:
+// normalizeRoomName не сводит ё к е, и «лед» не найдёт комнату «лёд»
+const roomWords = uniqWords.filter((w) => /^[а-я]{3,6}$/i.test(w));
+
+export function newRoomName() {
+  return newRandomWords(3, roomWords).join("-");
 }
 
 // Имя комнаты — то, что вводят руками, чтобы зайти: регистр и чем разделены
@@ -346,4 +356,27 @@ export function rankByScore<T extends { score: number }>(
     ...p,
     place: sorted.findIndex((o) => o.score === p.score) + 1,
   }));
+}
+
+// Локальные блоки чата стоят там, где их открыли: after — сколько сообщений
+// было в ленте в тот момент. Новые сообщения встают после блока и двигают
+// его вверх, как обычное сообщение. Если чат почистили и сообщений стало
+// меньше — блок съезжает в конец, а не пропадает.
+export function mergeChatTimeline<E, P extends { after: number }>(
+  events: E[],
+  prompts: P[],
+): ({ ev: E; i: number } | { prompt: P })[] {
+  const at = new Map<number, P[]>();
+  prompts.forEach((p) => {
+    const key = Math.min(p.after, events.length);
+    at.set(key, [...(at.get(key) || []), p]);
+  });
+
+  return [
+    ...(at.get(0) || []).map((prompt) => ({ prompt })),
+    ...events.flatMap((ev, i) => [
+      { ev, i },
+      ...(at.get(i + 1) || []).map((prompt) => ({ prompt })),
+    ]),
+  ];
 }
